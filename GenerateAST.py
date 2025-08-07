@@ -1,0 +1,51 @@
+def defineAST(directory, classes, file):
+    file.write(f"class {directory}:\n")
+
+    for entry in classes:
+        parts = entry.split(":")
+        className = parts[0].strip()
+        fields = parts[1].split(",")
+
+        file.write(f"\tclass {className}:\n")
+        file.write(f"\t\tdef __init__(self")
+        for field in fields:
+            field = field.strip()
+            file.write(f", {field}")
+        file.write("):\n")
+
+        for field in fields:
+            field = field.strip()
+            file.write(f"\t\t\tself.{field} = {field}\n")
+
+        file.write("\n")
+        file.write("\t\tdef accept(self, visitor):\n")
+        file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
+
+ExprClasses = ["Assign : name, value",
+                "Binary : left, operator, right",
+                "Call : callee, paren, arguments",
+                "Comma : expressions",
+                "Grouping : expression",
+                "Lambda : params,  body",
+                "Literal : value",
+                "Logical : left, operator, right",
+                "Ternary : condition,  trueBranch,  falseBranch",
+                "Unary : operator, right",
+                "Variable : name"]
+
+StmtClasses = ["Break : breakCMD, loopType",
+                "Block: statements",
+                "Continue: continueCMD, loopType",
+                "Function: name, params, body",
+                "If : condition, thenBranch, elseBranch",
+                "Expression : expression",
+                "Print : expression",
+                "Return : keyword, value",
+                "Var : name, initializer",
+                "While : condition, body"]
+
+with open("Expr.py", "w") as f:
+    defineAST("Expr", ExprClasses, f)
+
+with open("Stmt.py", "w") as f:
+    defineAST("Stmt", StmtClasses, f)
