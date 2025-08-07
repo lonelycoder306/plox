@@ -1,0 +1,4 @@
+*.ps1
+*.md
+Extras/
+*.lox
