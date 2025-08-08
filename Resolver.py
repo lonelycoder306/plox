@@ -30,16 +30,19 @@ class Resolver:
         if len(self.scopes) == 0:
             return
         
-        if name.lexeme in self.scopes[-1].keys():
-            ResolveError(name, "Already a variable with this name in this scope.").show()
+        scope = self.scopes[-1]
+        for key in scope.keys():
+            if key.lexeme == name.lexeme:
+                raise ResolveError(name, "Already a variable with this name in this scope.")
         
-        self.scopes[-1][name] = False
+        scope[name] = False
         # Add the token instead of the lexeme in case its fields are required for error-reporting.
         self.localVars[name] = [name.line, False] # False = has not been used in this scope; using a list since a tuple is immutable.
 
     def define(self, name: Token):
         if len(self.scopes) == 0:
             return
+        
         self.scopes[-1][name] = True
 
     def resolve(self, target: Expr | Stmt | list[Stmt]):
@@ -53,10 +56,12 @@ class Resolver:
                 error.show()
     
     def resolveLocal(self, expr: Expr, name: Token):
-        for i in range(len(self.scopes) - 1, -1, -1): # -1 increment to iterate in reverse
-            for key in self.scopes[-1].keys():
+        size = len(self.scopes)
+
+        for i in range(size - 1, -1, -1): # -1 increment to iterate in reverse
+            for key in self.scopes[i].keys():
                 if key.lexeme == name.lexeme:
-                    self.interpreter.resolve(expr, len(self.scopes) - 1 - i)
+                    self.interpreter.resolve(expr, size - 1 - i)
                     if not self.inAssign:
                         self.localVars[key][1] = True # True = has been used in this scope (in other than an assignment).
                     return
@@ -64,23 +69,27 @@ class Resolver:
     def resolveFunction(self, function: Stmt.Function, type):
         enclosingFunction = self.currentFunction
         self.currentFunction = type
+
         self.beginScope()
         for param in function.params:
             self.declare(param)
             self.define(param)
         self.resolve(function.body)
         self.endScope()
+
         self.currentFunction = enclosingFunction
     
     def resolveLambda(self, expr: Expr.Lambda, type):
         enclosingLambda = self.currentFunction
         self.currentFunction = type
+
         self.beginScope()
         for param in expr.params:
             self.declare(param)
             self.define(param)
         self.resolve(expr.body)
         self.endScope()
+
         self.currentFunction = enclosingLambda
 
     def varWarnings(self, varList: list):
@@ -142,6 +151,7 @@ class Resolver:
 
     def visitAssignExpr(self, expr: Expr.Assign):
         self.resolve(expr.value)
+
         self.inAssign = True
         self.resolveLocal(expr, expr.name)
         self.inAssign = False
@@ -184,8 +194,9 @@ class Resolver:
     def visitVariableExpr(self, expr: Expr.Variable):
         if len(self.scopes) != 0:
             # Check that variable in expression is declared (but not yet defined) in current scope.
-            for local in self.scopes[-1].keys():
-                if (local.lexeme == expr.name.lexeme) and (self.scopes[-1].get(local, None) == False):
+            scope = self.scopes[-1]
+            for key in scope.keys():
+                if (key.lexeme == expr.name.lexeme) and (scope.get(key, None) == False):
                     raise ResolveError(expr.name, "Can't read local variable in its own initializer.")
         
         self.resolveLocal(expr, expr.name)
