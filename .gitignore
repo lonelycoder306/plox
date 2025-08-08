@@ -4,3 +4,5 @@ Extras/
 .vscode/
 *.lox
 *.pyc
+*.txt
+*.json
