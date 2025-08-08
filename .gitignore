@@ -3,3 +3,4 @@
 Extras/
 .vscode/
 *.lox
+*.pyc
