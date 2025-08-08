@@ -183,6 +183,7 @@ class Resolver:
     
     def visitVariableExpr(self, expr: Expr.Variable):
         if len(self.scopes) != 0:
+            # Check that variable in expression is declared (but not yet defined) in current scope.
             for local in self.scopes[-1].keys():
                 if (local.lexeme == expr.name.lexeme) and (self.scopes[-1].get(local, None) == False):
                     raise ResolveError(expr.name, "Can't read local variable in its own initializer.")
