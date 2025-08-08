@@ -182,9 +182,9 @@ class Resolver:
         self.resolve(expr.right)
     
     def visitVariableExpr(self, expr: Expr.Variable):
-        if ((len(self.scopes) != 0) 
-            and (expr.name in self.scopes[-1].keys()) 
-            and (self.scopes[-1].get(expr.name, None) == False)):
-                raise ResolveError(expr.name, "Can't read local variable in its own initializer.")
+        if len(self.scopes) != 0:
+            for local in self.scopes[-1].keys():
+                if (local.lexeme == expr.name.lexeme) and (self.scopes[-1].get(local, None) == False):
+                    raise ResolveError(expr.name, "Can't read local variable in its own initializer.")
         
         self.resolveLocal(expr, expr.name)

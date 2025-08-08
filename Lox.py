@@ -34,13 +34,14 @@ def run(source):
     resolver = Resolver(interpreter)
     resolver.resolve(statements)
 
-    # Print out a warning for each unused variable after resolving is complete.
-    # Must be done after resolving has fully concluded so that warnings can be done only once and in order.
-    resolver.varWarnings(resolver.localVars)
-
     # Stop if there was a resolution error.
     if State.hadError:
         return
+    
+    # Print out a warning for each unused variable after resolving is complete.
+    # Must be done after resolving has fully concluded so that warnings can be done only once and in order.
+    # Warnings only issued if no resolve errors (or errors before that) occured; personal design choice to limit warn/error messages.
+    resolver.varWarnings(resolver.localVars)
 
     interpreter.interpret(statements)
 
