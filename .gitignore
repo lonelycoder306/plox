@@ -1,4 +1,5 @@
 *.ps1
 *.md
 Extras/
+.vscode/
 *.lox
