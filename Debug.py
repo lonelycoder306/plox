@@ -139,7 +139,7 @@ class breakpointStop(Exception):
 
     def debugStart(self):
         import State
-        State.debugMode = True
+        State.debugMode = True # Will turn off some features or specifications in our interpreter.
         if not State.inAFile:
             print("No debug breakpoint option for command-line interpreter.")
             return
@@ -148,7 +148,7 @@ class breakpointStop(Exception):
             print("(debug)", end = " ")
             prompt = input("")
             if prompt == "":
-                self.debugInstructions("continue")
+                self.debugInstruction("continue")
             else:
                 prompt = prompt.split()
                 choice = prompt[0].strip()
@@ -156,16 +156,16 @@ class breakpointStop(Exception):
                 if (choice in self.instructions.keys()) or (choice in self.instructions.values()):
                     choice = self.instructions.get(choice, choice) # If it is a key, return its value; if it is a value, return itself.
                     if len(arguments) == 0:
-                        self.debugInstructions(choice)
+                        self.debugInstruction(choice)
                     else:
                         print("Instruction does not take arguments.")
                 elif (choice in self.commands.keys()) or (choice in self.commands.values()):
                     choice = self.commands.get(choice, choice)
-                    self.debugCommands(choice, arguments)
+                    self.debugCommand(choice, arguments)
                 else:
                     print("Not a valid command/instruction.")
 
-    def debugInstructions(self, choice):
+    def debugInstruction(self, choice):
         match choice:
             case "continue":
                 pass
@@ -190,7 +190,7 @@ class breakpointStop(Exception):
                 self.quit = True
                 return
 
-    def debugCommands(self, command, arguments):
+    def debugCommand(self, command, arguments):
         match command:
             case "value": # Can evaluate expressions, but they must contain NO spaces.
                 if len(arguments) == 0:
