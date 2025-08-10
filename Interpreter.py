@@ -37,7 +37,7 @@ class Interpreter:
         except RuntimeError as error: # Stops all execution.
             error.show()
     
-    def resolve(self, expr: Expr, depth: int):
+    def resolve(self, expr: Expr.Variable, depth: int):
         self.locals[expr] = depth
     
     def execute(self, stmt):
