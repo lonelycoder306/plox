@@ -15,6 +15,7 @@ class Interpreter:
     locals = dict()
 
     # Implement clock function (and breakpoint).
+    # Variables are different for stylistic and semantic reasons (can be anything, though).
     clock = BuiltinFunction("clock")
     varType = BuiltinFunction("type")
     makeString = BuiltinFunction("str")
