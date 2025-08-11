@@ -73,6 +73,9 @@ def runPrompt():
         line = input("")
         if line == "":
             break
+        while line[-1] == "\\":
+            line = line[:-1]
+            line += input(" " * 4)
         run(line)
         import State
         if State.debugMode: # Do not issue proper errors while in debug mode.
