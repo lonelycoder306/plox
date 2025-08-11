@@ -13,5 +13,5 @@ switchCLI = False # Whether or not to end file execution and switch to terminal 
 debugMode = False # Whether or not we are in a debug session (will alter format of error-reporting).
 debugError = False # Different error variable for any errors that occur during a debug prompt session (to not impact system exits or exit codes).
 # Sometimes our error messages are shifted since the actual command being run in the interpreter is different from the debug prompt.
-# E.g., "v [variable]" is run by interpreting "print [variable];".
+# E.g., "v l [variable]" is run by interpreting "print [variable];".
 debugOffset = 0
