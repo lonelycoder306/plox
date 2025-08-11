@@ -10,12 +10,13 @@ fileName = None
 if len(sys.argv) == 2:
     fileName = sys.argv[1]
 
+interpreter = Interpreter()
+
 def run(source):
     import State
 
     scanner = Scanner(source)
     tokens = scanner.scanTokens()
-    State.debugTokens = tokens
 
     # Stop if there was a syntax (scanning) error.
     if State.hadError:
@@ -23,13 +24,10 @@ def run(source):
 
     parser = Parser(tokens)
     statements = parser.parse()
-    State.debugStatements = statements
 
     # Stop if there was a syntax (parsing) error.
     if State.hadError:
         return
-    
-    interpreter = Interpreter()
     
     resolver = Resolver(interpreter)
     resolver.resolve(statements)
@@ -72,7 +70,6 @@ def runFile(path):
 def runPrompt():
     while True:
         print(">>>", end = " ")
-        line = ""
         line = input("")
         if line == "":
             break
@@ -120,20 +117,21 @@ def report(error, line, column, where, message):
                 sys.stderr.write(f'error{where} ["{fileName}", line {line}, {column}-{column + lexemeLen - 1}]: {message}\n')
                 printErrorLine(line, column, column + lexemeLen - 1)
         else: # Using REPL.
+            offset = State.debugOffset
             if len(error.token.lexeme) == 0:
                 sys.stderr.write(f'error{where}: {message}\n')
             elif len(error.token.lexeme) == 1:
-                sys.stderr.write(f'error{where} [{column}]: {message}\n')
+                sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
             else:
                 lexemeLen = len(error.token.lexeme)
-                sys.stderr.write(f'error{where} [{column}-{column + lexemeLen - 1}]: {message}\n')
+                sys.stderr.write(f'error{where} [{column - offset}-{column + lexemeLen - 1 - offset}]: {message}\n')
     else: # Lex Error.
         if (fileName != None) and (not State.debugMode):
             sys.stderr.write(f'error{where} ["{fileName}", line {line}, {column}]: {message}\n')
             printErrorLine(line, column, column)
         else:
-            sys.stderr.write(f'error{where} [{column}]: {message}\n')
-    import State
+            offset = State.debugOffset
+            sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
     State.hadError = True
 
 def runtimeError(error: RuntimeError):
@@ -152,12 +150,13 @@ def runtimeError(error: RuntimeError):
             sys.stderr.write(f'Runtime error ["{fileName}", line {line}, {column}-{column + lexemeLen - 1}]: {error.message}\n')
             printErrorLine(line, column, column + lexemeLen - 1)
     else: # No point in printing the line since the REPL interpreter will always consider the prompt to be line 1.
+        offset = State.debugOffset
         if lexemeLen == 0:
             sys.stderr.write(f'Runtime error: {error.message}\n')
         elif lexemeLen == 1:
-            sys.stderr.write(f'Runtime error [{column}]: {error.message}\n')
+            sys.stderr.write(f'Runtime error [{column - offset}]: {error.message}\n')
         else:
-            sys.stderr.write(f'Runtime error [{column}-{column + lexemeLen - 1}]: {error.message}\n')
+            sys.stderr.write(f'Runtime error [{column - offset}-{column + lexemeLen - 1 - offset}]: {error.message}\n')
     if State.debugMode:
         State.debugError = True
     else:

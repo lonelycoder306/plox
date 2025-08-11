@@ -24,7 +24,7 @@ class BuiltinFunction(LoxCallable):
             return interpreter.stringify(arguments[0])
         if self.mode == "breakpoint":
             from Debug import breakpointStop
-            raise breakpointStop(interpreter)
+            raise breakpointStop(interpreter, interpreter.environment)
     
     def arity(self):
         if self.mode == "clock":

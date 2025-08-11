@@ -120,10 +120,13 @@ Possibly:
 #             # Clear the line.
 #             sys.stdout.write('\x1b[2K')
 
+from Token import Token, TokenType
+from Error import RuntimeError
 class breakpointStop(Exception):
-    def __init__(self, interpreter):
+    def __init__(self, interpreter, environment):
         self.breakpoints = []
         self.interpreter = interpreter
+        self.environment = environment
         # Implementing them as dictionaries allows us to make easier match-case structures later.
         # Instructions -> Do X.
         # Commands -> Do X with Y as argument(s).
@@ -133,6 +136,7 @@ class breakpointStop(Exception):
                              "q": "quit",
                              "t": "term",
                              "sh": "shell"}
+        # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
                          "vars": "vars"}
         self.quit = False # Continue debug prompt so long as this is false.
@@ -193,11 +197,46 @@ class breakpointStop(Exception):
     def debugCommand(self, command, arguments):
         match command:
             case "value": # Can evaluate expressions, but they must contain NO spaces.
+                options = ["l", "local", "g", "global"]
                 if len(arguments) == 0:
                     print("No argument provided.")
                     return
-                from Lox import run
-                run(f"print {arguments[0]};")
+                
+                elif len(arguments) == 1:
+                    if arguments[0] in options:
+                        print("No value argument.")
+                    else:
+                        print("No proper modifier (l/local, g/global).")
+                    return
+                
+                elif len(arguments) > 2:
+                    print("Too many arguments.")
+                    return
+                
+                import State
+                State.debugOffset = 4 # FIX: Does not match all prompt combinations.
+
+                if (arguments[0] == "g") or (arguments[0] == "global"):
+                    from Lox import run
+                    run(f"print {arguments[1]};")
+
+                elif (arguments[0] == "l") or (arguments[0] == "local"):
+                    prevEnv = self.interpreter.environment
+                    try:
+                        from Scanner import Scanner
+                        from Parser import Parser
+                        tokens = Scanner(f"print {arguments[1]};").scanTokens()
+                        statements = Parser(tokens).parse()
+
+                        self.interpreter.environment = self.environment
+                        value = self.interpreter.interpret(statements)
+                    except RuntimeError as error:
+                        error.show()
+                        return
+                    finally:
+                        self.interpreter.environment = prevEnv
+                    
+                State.debugOffset = 0
                 return
             case "vars":
                 if len(arguments) == 0:
@@ -206,23 +245,15 @@ class breakpointStop(Exception):
                 elif len(arguments) > 1:
                     print("Too many arguments.")
                     return
-                if arguments[0] == "local": # FIX.
-                    import State
-                    variables = State.debugEnv
-                    # Must keep track of variables that have been printed.
-                    # If a variable is declared in a deeper scope, we should not print it (or its value) if it was also declared in an outer scope.
-                    printedVariables = []
-                    print("Variables in local scope:")
-                    while variables != None:
-                        for var in variables.values:
-                            value = self.interpreter.stringify(variables.values[var])
-                            if var not in printedVariables:
-                                print(f"{var}: {value}")
-                            printedVariables.append(var)
-                        variables = variables.enclosing
+                if arguments[0] == "local":
+                    variables = self.environment.values
+                    print("Objects in current scope:")
+                    for var in variables:
+                        value = self.interpreter.stringify(variables[var])
+                        print(f"{var}: {value}")
                 elif arguments[0] == "global":
                     variables = self.interpreter.globals.values
-                    print("Variables in global scope:")
+                    print("Objects in global scope:")
                     for var in variables:
                         value = self.interpreter.stringify(variables[var])
                         print(f"{var}: {value}")

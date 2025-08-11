@@ -2,6 +2,7 @@ from Token import Token, TokenType
 from Expr import Expr
 from Stmt import Stmt
 from Environment import Environment
+from LoxCallable import LoxCallable
 from LoxFunction import LoxFunction
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, breakError, continueError, Return
@@ -19,11 +20,11 @@ class Interpreter:
     clock = BuiltinFunction("clock")
     varType = BuiltinFunction("type")
     makeString = BuiltinFunction("str")
-    debugbreak = BuiltinFunction("breakpoint")
+    debugBreak = BuiltinFunction("breakpoint")
     builtins.define("clock", clock)
     builtins.define("type", varType)
     builtins.define("str", makeString)
-    builtins.define("breakpoint", debugbreak)
+    builtins.define("breakpoint", debugBreak)
 
     def interpret(self, statements):
         try:
@@ -48,14 +49,11 @@ class Interpreter:
         previous = self.environment
         try:
             self.environment = environment
-            import State
-            State.debugEnv = environment # To always keep the debug environment updated to the inner-most.
 
             for statement in statements:
                 self.execute(statement)
         finally:
             self.environment = previous
-            State.debugEnv = previous # Reset environment if breakpoint outside block (-> outside its scope as well).
 
     # No need to check that 'break' or 'continue' are inside a loop, since their presence outside one raises a Parse Error (before the interpreter phase).
     # Making it a Parse Error rather than a Runtime Error avoids the case where 'break' and 'continue' are placed inside the block after a false condition; the program will never run those statements, so no error gets raised (despite it being bad code).
@@ -198,6 +196,10 @@ class Interpreter:
         return text
     
     def lookUpVariable(self, name: Token, expr: Expr):
+        import State
+        if State.debugMode:
+            return self.environment.get(name)
+
         distance = self.locals.get(expr, None)
         if distance != None:
             return self.environment.getAt(distance, name)
@@ -283,7 +285,7 @@ class Interpreter:
         for argument in expr.arguments:
             arguments.append(self.evaluate(argument))
         
-        if (type(callee) != LoxFunction) and (type(callee) != BuiltinFunction):
+        if not isinstance(callee, LoxCallable):
             raise RuntimeError(expr.paren, "Can only call functions and classes.")
         
         if len(arguments) != callee.arity():
