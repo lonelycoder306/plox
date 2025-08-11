@@ -178,7 +178,6 @@ def warn(warning):
         else:
             sys.stderr.write(f'Warning [line {line}, {column}-{column + lexemeLen - 1}]: ' + warning.message)
 
-
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
 def printErrorLine(line: int, start = None, end = None):
