@@ -120,7 +120,6 @@ Possibly:
 #             # Clear the line.
 #             sys.stdout.write('\x1b[2K')
 
-from Token import Token, TokenType
 from Error import RuntimeError
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment):
@@ -230,9 +229,6 @@ class breakpointStop(Exception):
 
                         self.interpreter.environment = self.environment
                         value = self.interpreter.interpret(statements)
-                    except RuntimeError as error:
-                        error.show()
-                        return
                     finally:
                         self.interpreter.environment = prevEnv
                     
