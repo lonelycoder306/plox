@@ -1,4 +1,5 @@
 from LoxCallable import LoxCallable
+from Environment import Environment
 
 # General class to implement built-in functions.
 '''
@@ -9,6 +10,9 @@ To define a built-in function, simply include its logic under its mode for both 
 # 1. clock() - Prints the current time.
 # 2. type(x) - Prints the type of x.
 # 3. str(x) - Returns a string form of x.
+
+builtins = Environment()
+functions = ["clock", "type", "str", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode): # Specify mode type (str).
@@ -38,3 +42,7 @@ class BuiltinFunction(LoxCallable):
 
     def toString(self):
         return "<native fn>"
+    
+def builtinSetUp():
+    for function in functions:
+        builtins.define(function, BuiltinFunction(function))

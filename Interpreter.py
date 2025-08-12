@@ -11,20 +11,12 @@ from Debug import breakpointStop
 class Interpreter:
     globals = Environment()
     environment = globals
-    builtins = Environment() # Environment to contain all the built-in functions.
     loopLevel = 0
     locals = dict()
 
-    # Implement clock function (and breakpoint).
-    # Variables are different for stylistic and semantic reasons (can be anything, though).
-    clock = BuiltinFunction("clock")
-    varType = BuiltinFunction("type")
-    makeString = BuiltinFunction("str")
-    debugBreak = BuiltinFunction("breakpoint")
-    builtins.define("clock", clock)
-    builtins.define("type", varType)
-    builtins.define("str", makeString)
-    builtins.define("breakpoint", debugBreak)
+    from BuiltinFunction import builtinSetUp
+    builtinSetUp()
+    from BuiltinFunction import builtins
 
     from Modules.userIO import userIOSetUp
     userIOSetUp()
