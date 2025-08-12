@@ -4,8 +4,8 @@ from Environment import Environment
 # General class to implement built-in functions.
 '''
 To define a built-in function, simply include its logic under its mode for both call() and arity(), 
-and then create an object with the appropriate name and mode.
-You then assign the same name to the object in the variable environment.
+and then create an object with the appropriate mode.
+You then assign the appropriate name to the object in the variable environment.
 '''
 
 # Current built-in functions supported:
