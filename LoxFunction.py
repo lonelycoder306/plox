@@ -8,7 +8,7 @@ class LoxFunction(LoxCallable):
         self.declaration = declaration
         self.closure = closure
     
-    def call(self, interpreter, arguments):
+    def call(self, interpreter, expr, arguments):
         environment = Environment(self.closure)
 
         for i in range(0, len(self.declaration.params)):

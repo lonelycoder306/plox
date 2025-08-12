@@ -26,6 +26,10 @@ class Interpreter:
     builtins.define("str", makeString)
     builtins.define("breakpoint", debugBreak)
 
+    from Modules.userIO import userIOSetUp
+    userIOSetUp()
+    from Modules.userIO import userIO
+
     def interpret(self, statements):
         try:
             for statement in statements:
@@ -206,6 +210,8 @@ class Interpreter:
         else:
             if name.lexeme in self.globals.values.keys(): # Check if variable is in the user-defined global scope.
                 return self.globals.get(name)
+            if name.lexeme in self.userIO.values.keys():
+                return self.userIO.get(name)
             return self.builtins.get(name)
     
     def evaluate(self, expr):
@@ -296,7 +302,7 @@ class Interpreter:
                 raise RuntimeError(expr.paren, 
                                f"Expected {callee.arity()} arguments but got {len(arguments)}.")
         
-        return callee.call(self, arguments)
+        return callee.call(self, expr, arguments)
 
     def visitCommaExpr(self, expr: Expr.Comma):
         expressions = expr.expressions

@@ -11,10 +11,10 @@ To define a built-in function, simply include its logic under its mode for both 
 # 3. str(x) - Returns a string form of x.
 
 class BuiltinFunction(LoxCallable):
-    def __init__(self, mode):
+    def __init__(self, mode): # Specify mode type (str).
         self.mode = mode
     
-    def call(self, interpreter, arguments):
+    def call(self, interpreter, expr, arguments):
         if self.mode == "clock":
             from datetime import datetime
             return datetime.now().time()
