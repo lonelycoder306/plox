@@ -1,5 +1,6 @@
 from LoxCallable import LoxCallable
 from Environment import Environment
+from Error import RuntimeError
 
 # General class to implement built-in functions.
 '''
@@ -12,9 +13,11 @@ You then assign the appropriate name to the object in the variable environment.
 # 1. clock() - Prints the current time.
 # 2. type(x) - Prints the type of x.
 # 3. str(x) - Returns a string form of x.
+# 4. number(x) - Returns a number (float) form of x.
+# 5. breakpoint() - Starts a debug prompt when run from a file.
 
 builtins = Environment()
-functions = ["clock", "type", "str", "breakpoint"]
+functions = ["clock", "type", "str", "number", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -28,6 +31,11 @@ class BuiltinFunction(LoxCallable):
             return f"<{interpreter.varType(arguments[0])}>"
         if self.mode == "str":
             return interpreter.stringify(arguments[0])
+        if self.mode == "number":
+            for char in arguments[0]:
+                if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
+                    raise RuntimeError(expr.callee.name, "Invalid input to number().")
+            return float(arguments[0])
         if self.mode == "breakpoint":
             from Debug import breakpointStop
             raise breakpointStop(interpreter, interpreter.environment)
@@ -38,6 +46,8 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "type":
             return 1
         if self.mode == "str":
+            return 1
+        if self.mode == "number":
             return 1
         if self.mode == "breakpoint":
             return 0 # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
