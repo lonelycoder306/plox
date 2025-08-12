@@ -154,6 +154,8 @@ class Interpreter:
                 return "string"
             case bool(): # Fun fact: Bool is a subclass of int.
                 return "boolean"
+            case bytes():
+                return "bytes"
             case LoxFunction():
                 if object.declaration.name == None:
                     return "lambda"
