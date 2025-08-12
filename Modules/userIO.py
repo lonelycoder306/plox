@@ -95,7 +95,7 @@ class IOFunction(LoxCallable):
     # Error checking.
 
     def check_inchars(self, arguments):
-        # No need for argument number checks since that is already part of the interpreter.
+        # No need for argument number checks since that is already a part of the interpreter.
         if (type(arguments[0]) == float) and (type(arguments[1]) == bool):
             return True
         return False
