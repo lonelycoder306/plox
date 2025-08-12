@@ -17,7 +17,7 @@ builtins = Environment()
 functions = ["clock", "type", "str", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
-    def __init__(self, mode): # Specify mode type (str).
+    def __init__(self, mode: str):
         self.mode = mode
     
     def call(self, interpreter, expr, arguments):
