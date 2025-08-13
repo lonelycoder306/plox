@@ -27,13 +27,18 @@ class Parser:
         return statements
     
     def declaration(self):
-        # Moved the try-catch block here to parse() instead.
+        # Moved the try-catch block from here to parse() instead.
         # Avoid the inclusion of None-value declarations in the statement list.
+
+        if self.match(TokenType.CLASS):
+            return self.classDeclaration()
+
         if self.match(TokenType.FUN):
             if self.check(TokenType.IDENTIFIER):
                 return self.function("function")
             # Signal that the function is an unassigned lambda (so interpreter does nothing with it).
             return self.function("lambda")
+        
         if self.match(TokenType.VAR):
             return self.varDeclaration()
         
@@ -65,6 +70,18 @@ class Parser:
             raise ParseError(breakToken, "Cannot have 'break' outside loop.")
         self.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.")
         return Stmt.Break(breakToken, self.loopType)
+    
+    def classDeclaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+
+        methods = list()
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
+            methods.append(self.function("method"))
+
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+
+        return Stmt.Class(name, methods)
 
     def continueStatement(self):
         continueToken = self.previous()
