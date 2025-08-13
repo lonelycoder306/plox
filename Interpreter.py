@@ -24,6 +24,10 @@ class Interpreter:
     userIOSetUp()
     from Modules.userIO import userIO
 
+    from Modules.fileIO import fileIOSetUp
+    fileIOSetUp()
+    from Modules.fileIO import fileIO
+
     def interpret(self, statements):
         try:
             for statement in statements:
@@ -223,6 +227,8 @@ class Interpreter:
                 return self.globals.get(name)
             if name.lexeme in self.userIO.values.keys():
                 return self.userIO.get(name)
+            if name.lexeme in self.fileIO.values.keys():
+                return self.fileIO.get(name)
             return self.builtins.get(name)
     
     def evaluate(self, expr):
