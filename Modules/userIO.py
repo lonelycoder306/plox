@@ -14,31 +14,33 @@ class IOFunction(LoxCallable):
         match self.mode:
             case "inchars":
                 if not self.check_inchars(arguments):
-                    raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
-                                                        "Types are: number, boolean.")
+                    raise RuntimeError(expr.callee.name, 
+                                       "Arguments do not match accepted parameter types.\nTypes are: number, boolean.")
                 return self.io_inchars(int(arguments[0]), arguments[1]) # Our numbers are all saved as floats, but read() only accepts integers.
             case "inbytes":
                 if not self.check_inbytes(arguments):
-                    raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
-                                                        "Types are: number.")
+                    raise RuntimeError(expr.callee.name, 
+                                       "Arguments do not match accepted parameter types.\nTypes are: number.")
                 return self.io_inbytes(int(arguments[0]))
             case "inline":
                 if not self.check_inline(arguments):
-                    raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.")
+                    raise RuntimeError(expr.callee.name, 
+                                       "Arguments do not match accepted parameter types.")
                 return self.io_inline()
             case "inlines":
                 if not self.check_inlines(arguments):
-                    raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
-                                                        "Types are: number.")
+                    raise RuntimeError(expr.callee.name, 
+                                       "Arguments do not match accepted parameter types.\nTypes are: number.")
                 return self.io_inlines(int(arguments[0]))
             case "inpeek":
                 if not self.check_inpeek(arguments):
-                    raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.")
+                    raise RuntimeError(expr.callee.name, 
+                                       "Arguments do not match accepted parameter types.")
                 return self.io_inpeek()
             case "echo":
                 if not self.check_echo(arguments):
-                    raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
-                                                        "Types are: string.")
+                    raise RuntimeError(expr.callee.name, 
+                                       "Arguments do not match accepted parameter types.\nTypes are: string.")
                 self.io_echo(arguments[0])
     
     def arity(self):
