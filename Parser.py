@@ -400,7 +400,7 @@ class Parser:
             while self.match(TokenType.COMMA):
                 if len(arguments) > 255:
                     raise ParseError(self.peek(), "Can't have more than 255 arguments.")
-                arguments.append(self.expression())
+                arguments.append(self.lambdaExpr())
         
         paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
 
