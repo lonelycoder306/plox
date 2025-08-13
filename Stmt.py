@@ -14,6 +14,14 @@ class Stmt:
 		def accept(self, visitor):
 			return visitor.visitBlockStmt(self)
 
+	class Class:
+		def __init__(self, name, methods):
+			self.name = name
+			self.methods = methods
+
+		def accept(self, visitor):
+			return visitor.visitClassStmt(self)
+
 	class Continue:
 		def __init__(self, continueCMD, loopType):
 			self.continueCMD = continueCMD
@@ -21,6 +29,13 @@ class Stmt:
 
 		def accept(self, visitor):
 			return visitor.visitContinueStmt(self)
+
+	class Expression:
+		def __init__(self, expression):
+			self.expression = expression
+
+		def accept(self, visitor):
+			return visitor.visitExpressionStmt(self)
 
 	class Function:
 		def __init__(self, name, params, body):
@@ -39,13 +54,6 @@ class Stmt:
 
 		def accept(self, visitor):
 			return visitor.visitIfStmt(self)
-
-	class Expression:
-		def __init__(self, expression):
-			self.expression = expression
-
-		def accept(self, visitor):
-			return visitor.visitExpressionStmt(self)
 
 	class Print:
 		def __init__(self, expression):

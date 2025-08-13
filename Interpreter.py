@@ -4,6 +4,8 @@ from Stmt import Stmt
 from Environment import Environment
 from LoxCallable import LoxCallable
 from LoxFunction import LoxFunction
+from LoxClass import LoxClass
+from LoxInstance import LoxInstance
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, breakError, continueError, Return
 from Debug import breakpointStop
@@ -58,9 +60,27 @@ class Interpreter:
 
     def visitBlockStmt(self, stmt: Stmt.Block):
         self.executeBlock(stmt.statements, Environment(self.environment))
+    
+    def visitClassStmt(self, stmt: Stmt.Class):
+        self.environment.define(stmt.name.lexeme, None)
+        klass = LoxClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, klass)
 
     def visitContinueStmt(self, stmt: Stmt.Continue):
         raise continueError(stmt.continueCMD, stmt.loopType)
+
+    def visitExpressionStmt(self, stmt: Stmt.Expression):
+        # Print out the return value of any expression statement 
+        # (except assignments, function calls, and comma-combined expressions).
+        # Assignments/field assignments are excluded so that the RHS of an assignment 
+        # is not automatically printed every time an assignment is carried out.
+        # Have chosen not to exclude comma expressions. Thus, the value of the 
+        # last expression is printed to the screen.
+        if (type(stmt.expression) != Expr.Assign) and (type(stmt.expression) != Expr.Set):
+            self.visitPrintStmt(Stmt.Print(stmt.expression))
+        
+        else:
+            self.evaluate(stmt.expression)
 
     def visitFunctionStmt(self, stmt: Stmt.Function):
         # Check that function is not an unassigned lambda (do nothing if it is).
@@ -73,16 +93,6 @@ class Interpreter:
             self.execute(stmt.thenBranch)
         elif stmt.elseBranch != None:
             self.execute(stmt.elseBranch)
-
-    def visitExpressionStmt(self, stmt: Stmt.Expression):
-        # Print out the return value of any expression statement (except assignments, function calls, and comma-combined expressions).
-        # Assignments are excluded so that the RHS of an assignment is not automatically printed every time an assignment is carried out.
-        # Have chosen not to exclude comma expressions. Thus, the value of the last expression is printed to the screen.
-        if (type(stmt.expression) != Expr.Assign):
-            self.visitPrintStmt(Stmt.Print(stmt.expression))
-        
-        else:
-            self.evaluate(stmt.expression)
 
     def visitPrintStmt(self, stmt: Stmt.Print):
         value = self.evaluate(stmt.expression)
@@ -173,7 +183,7 @@ class Interpreter:
         if object == None:
             return "nil"
         
-        if (type(object) == LoxFunction) or (type(object) == BuiltinFunction):
+        if (isinstance(object, LoxCallable)) or (type(object) == LoxInstance):
             return object.toString()
         
         # Booleans in Lox are all-lowercase, unlike in Python.
@@ -305,6 +315,13 @@ class Interpreter:
             self.evaluate(expressions[i])
         
         return self.evaluate(expressions[-1])
+    
+    def visitGetExpr(self, expr: Expr.Get):
+        object = self.evaluate(expr.object)
+        if isinstance(object, LoxInstance):
+            return object.get(expr.name)
+        
+        raise RuntimeError(expr.name, "Only instances have properties.")
 
     def visitGroupingExpr(self, expr: Expr.Grouping):
         return self.evaluate(expr.expression)
@@ -328,6 +345,16 @@ class Interpreter:
                 return left
         
         return self.evaluate(expr.right)
+    
+    def visitSetExpr(self, expr: Expr.Set):
+        object = self.evaluate(expr.object)
+
+        if isinstance(object, LoxInstance):
+            value = self.evaluate(expr.value)
+            object.set(expr.name, value)
+            return value
+        
+        raise RuntimeError(expr.name, "Only instances have fields.")
     
     # Ternary implementation my own.
     def visitTernaryExpr(self, expr: Expr.Ternary):

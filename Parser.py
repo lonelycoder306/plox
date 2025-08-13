@@ -291,6 +291,9 @@ class Parser:
                 name = expr.name
                 return Expr.Assign(name, value)
             
+            if type(expr) == Expr.Get:
+                return Expr.Set(expr.object, expr.name, value)
+            
             raise ParseError(equals, "Invalid assignment target.")
         
         return expr
@@ -412,6 +415,9 @@ class Parser:
         while True:
             if self.match(TokenType.LEFT_PAREN):
                 expr = self.finishCall(expr)
+            elif self.match(TokenType.DOT):
+                name = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
+                expr = Expr.Get(expr, name)
             else:
                 break
         

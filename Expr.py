@@ -32,6 +32,14 @@ class Expr:
 		def accept(self, visitor):
 			return visitor.visitCommaExpr(self)
 
+	class Get:
+		def __init__(self, object, name):
+			self.object = object
+			self.name = name
+
+		def accept(self, visitor):
+			return visitor.visitGetExpr(self)
+
 	class Grouping:
 		def __init__(self, expression):
 			self.expression = expression
@@ -62,6 +70,15 @@ class Expr:
 
 		def accept(self, visitor):
 			return visitor.visitLogicalExpr(self)
+
+	class Set:
+		def __init__(self, object, name, value):
+			self.object = object
+			self.name = name
+			self.value = value
+
+		def accept(self, visitor):
+			return visitor.visitSetExpr(self)
 
 	class Ternary:
 		def __init__(self, condition, trueBranch, falseBranch):

@@ -21,28 +21,31 @@ def defineAST(directory, classes, file):
         file.write("\t\tdef accept(self, visitor):\n")
         file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
 
-ExprClasses = ["Assign : name, value",
-                "Binary : left, operator, right",
-                "Call : callee, paren, arguments",
-                "Comma : expressions",
-                "Grouping : expression",
-                "Lambda : params,  body",
-                "Literal : value",
-                "Logical : left, operator, right",
-                "Ternary : condition,  trueBranch,  falseBranch",
-                "Unary : operator, right",
-                "Variable : name"]
+ExprClasses = ["Assign      : name, value",
+                "Binary     : left, operator, right",
+                "Call       : callee, paren, arguments",
+                "Comma      : expressions",
+                "Get        : object, name",
+                "Grouping   : expression",
+                "Lambda     : params, body",
+                "Literal    : value",
+                "Logical    : left, operator, right",
+                "Set        : object, name, value",
+                "Ternary    : condition,  trueBranch,  falseBranch",
+                "Unary      : operator, right",
+                "Variable   : name"]
 
-StmtClasses = ["Break : breakCMD, loopType",
-                "Block: statements",
-                "Continue: continueCMD, loopType",
-                "Function: name, params, body",
-                "If : condition, thenBranch, elseBranch",
+StmtClasses = ["Break       : breakCMD, loopType",
+                "Block      : statements",
+                "Class      : name, methods",
+                "Continue   : continueCMD, loopType",
                 "Expression : expression",
-                "Print : expression",
-                "Return : keyword, value",
-                "Var : name, initializer",
-                "While : condition, body"]
+                "Function   : name, params, body",
+                "If         : condition, thenBranch, elseBranch",
+                "Print      : expression",
+                "Return     : keyword, value",
+                "Var        : name, initializer",
+                "While      : condition, body"]
 
 with open("Expr.py", "w") as f:
     defineAST("Expr", ExprClasses, f)

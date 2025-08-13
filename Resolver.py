@@ -111,6 +111,10 @@ class Resolver:
         self.resolve(stmt.statements)
         self.endScope()
     
+    def visitClassStmt(self, stmt: Stmt.Class):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+    
     def visitContinueStmt(self, stmt: Stmt.Continue):
         pass
 
@@ -170,6 +174,9 @@ class Resolver:
         for expression in expr.expressions:
             self.resolve(expression)
     
+    def visitGetExpr(self, expr: Expr.Get):
+        self.resolve(expr.object)
+    
     def visitGroupingExpr(self, expr: Expr.Grouping):
         self.resolve(expr.expression)
     
@@ -182,6 +189,10 @@ class Resolver:
     def visitLogicalExpr(self, expr: Expr.Logical):
         self.resolve(expr.left)
         self.resolve(expr.right)
+    
+    def visitSetExpr(self, expr: Expr.Set):
+        self.resolve(expr.value)
+        self.resolve(expr.object)
     
     def visitTernaryExpr(self, expr: Expr.Ternary):
         self.resolve(expr.condition)
