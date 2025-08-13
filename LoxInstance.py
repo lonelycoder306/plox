@@ -1,3 +1,5 @@
+from Error import RuntimeError
+
 class LoxInstance:
     from LoxClass import LoxClass
     def __init__(self, klass: LoxClass):
@@ -8,7 +10,11 @@ class LoxInstance:
         if name.lexeme in self.fields.keys():
             return self.fields[name.lexeme]
         
-        raise RuntimeError(name, f"Undefined property '{name.lexeme}'.")
+        method = self.klass.findMethod(name.lexeme)
+        if method != None:
+            return method
+        
+        raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
     def set(self, name, value):
         self.fields[name.lexeme] = value

@@ -10,7 +10,7 @@ class Resolver:
     def __init__(self, interpreter: Interpreter):
         self.interpreter = interpreter
         self.scopes = list()
-        self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA')
+        self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA, METHOD')
         self.currentFunction = self.FunctionType.NONE
         # Will record all the defined variables (until they are used) and their line of declaration.
         # Once the variable is used somewhere, it is removed from the dictionary.
@@ -114,6 +114,10 @@ class Resolver:
     def visitClassStmt(self, stmt: Stmt.Class):
         self.declare(stmt.name)
         self.define(stmt.name)
+
+        for method in stmt.methods:
+            declaration = self.FunctionType.METHOD
+            self.resolveFunction(method, declaration)
     
     def visitContinueStmt(self, stmt: Stmt.Continue):
         pass

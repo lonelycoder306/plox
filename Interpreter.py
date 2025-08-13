@@ -63,7 +63,13 @@ class Interpreter:
     
     def visitClassStmt(self, stmt: Stmt.Class):
         self.environment.define(stmt.name.lexeme, None)
-        klass = LoxClass(stmt.name.lexeme)
+
+        methods = dict()
+        for method in stmt.methods:
+            function = LoxFunction(method, self.environment)
+            methods[method.name.lexeme] = function
+
+        klass = LoxClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, klass)
 
     def visitContinueStmt(self, stmt: Stmt.Continue):
@@ -212,7 +218,8 @@ class Interpreter:
         if distance != None:
             return self.environment.getAt(distance, name)
         else:
-            if name.lexeme in self.globals.values.keys(): # Check if variable is in the user-defined global scope.
+            # Check if variable is in the user-defined global scope.
+            if name.lexeme in self.globals.values.keys():
                 return self.globals.get(name)
             if name.lexeme in self.userIO.values.keys():
                 return self.userIO.get(name)
