@@ -25,21 +25,36 @@ class BuiltinFunction(LoxCallable):
     
     def call(self, interpreter, expr, arguments):
         if self.mode == "clock":
-            from datetime import datetime
-            return datetime.now().time()
+            return self.b_clock()
         if self.mode == "type":
-            return f"<{interpreter.varType(arguments[0])}>"
+            return self.b_type(interpreter, arguments[0])
         if self.mode == "str":
-            return interpreter.stringify(arguments[0])
+            return self.b_str(interpreter, arguments[0])
         if self.mode == "number":
-            for char in arguments[0]:
-                if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
-                    raise RuntimeError(expr.callee.name, "Invalid input to number().")
-            return float(arguments[0])
+            return self.b_number(arguments[0], expr)
         if self.mode == "breakpoint":
-            from Debug import breakpointStop
-            raise breakpointStop(interpreter, interpreter.environment)
+            self.b_breakpoint(interpreter)
     
+    def b_clock(self):
+        from datetime import datetime
+        return datetime.now().time()
+    
+    def b_type(self, interpreter, object):
+        return f"<{interpreter.varType(object)}>"
+    
+    def b_str(self, interpreter, object):
+        return interpreter.stringify(object)
+    
+    def b_number(self, object, expr):
+        for char in object:
+            if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
+                raise RuntimeError(expr.callee.name, "Invalid input to number().")
+        return float(object)
+    
+    def b_breakpoint(self, interpreter):
+        from Debug import breakpointStop
+        raise breakpointStop(interpreter, interpreter.environment)
+
     def arity(self):
         if self.mode == "clock":
             return 0
