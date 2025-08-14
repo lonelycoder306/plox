@@ -51,7 +51,12 @@ class Interpreter:
         previous = self.environment
         try:
             self.environment = environment
-            self.varEnvs.append([self.globals, self.builtins])
+            lastEnv = self.varEnvs[-1]
+            # Copy everything in the last environment into the new environment.
+            # Make a shallow copy so objects defined in the new environment
+            # don't stay behind once the scope is exited.
+            # Allows imports in an outer scope to still be defined in an inner scope.
+            self.varEnvs.append(lastEnv.copy())
 
             for statement in statements:
                 self.execute(statement)
