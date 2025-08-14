@@ -155,10 +155,14 @@ class fileFunction(LoxCallable):
             word = ""
             fd = self.fd
             while True:
+                c = fd.read(1)
                 if c.isspace():
-                    c = fd.read(1)
+                    continue
                 else:
                     break
+            pos = fd.tell()
+            if pos != 0: # Fail-safe.
+                fd.seek(fd.tell() - 1) # Previous for-loop will go past the first character.
             while True:
                 c = fd.read(1)
                 if c.isspace() or (c == ""): # Check for EOF.
