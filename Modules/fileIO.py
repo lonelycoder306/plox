@@ -106,7 +106,8 @@ class fileFunction(LoxCallable):
     def f_filemake(self, path, expr):
         try:
             instance = LoxInstance(fileRef)
-            instance.fields["fd"] = open(path, "x")
+            open(path, "x").close() # Just create the file.
+            instance.fields["fd"] = open(path, "r+")
             return instance
         except FileExistsError:
             raise RuntimeError(expr.callee.name, "File already exists.")
@@ -114,12 +115,12 @@ class fileFunction(LoxCallable):
     def f_fileopen(self, path, expr):
         try:
             instance = LoxInstance(fileRef)
-            instance.fields["fd"] = open(path, "r")
+            instance.fields["fd"] = open(path, "r+")
             return instance
         except FileNotFoundError:
             raise RuntimeError(expr.callee.name, "File does not exist.")
     
-    def f_filehas(self, path):
+    def f_filehas(self, path, expr):
         from pathlib import Path
         return Path(path).is_file()
     
