@@ -28,7 +28,10 @@ class Scanner:
         "while": TokenType.WHILE,
         "break": TokenType.BREAK,
         "continue": TokenType.CONTINUE,
-        "list": TokenType.LIST
+        "list": TokenType.LIST,
+        "GetMod": TokenType.GET,
+        "GetLib": TokenType.GET,
+        "GetFile": TokenType.GET
     }
 
     def __init__(self, source):

@@ -125,6 +125,9 @@ class Resolver:
     def visitExpressionStmt(self, stmt: Stmt.Expression):
         self.resolve(stmt.expression)
     
+    def visitFetchStmt(self, stmt: Stmt.Fetch):
+        pass
+    
     def visitFunctionStmt(self, stmt: Stmt.Function):
         self.declare(stmt.name)
         self.define(stmt.name)

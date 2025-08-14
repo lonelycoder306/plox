@@ -13,24 +13,20 @@ from Debug import breakpointStop
 class Interpreter:
     globals = Environment()
     environment = globals
-    varEnvs = [globals]
+    # varEnvs is a list of lists, each entry containing the environments currently in scope.
+    # Allows us to have scoped imports, i.e., import a module but only within a particular scope.
+    # Enter a scope -> Append a list with globals and builtins (they are defined in every scope).
+    # Exit a scope -> Pop the last list from the varEnvs stack.
+    # Function (variable) look-up is done over the last list in the varEnvs stack.
+    # After popping, any imports in the scope no longer apply outside it.
+    varEnvs = [[globals]] # List of all the environments we reference for variable/function names.
     loopLevel = 0
     locals = dict()
 
     from BuiltinFunction import builtinSetUp
     builtinSetUp()
     from BuiltinFunction import builtins
-    varEnvs.append(builtins)
-
-    from Modules.userIO import userIOSetUp
-    userIOSetUp()
-    from Modules.userIO import userIO
-    varEnvs.append(userIO)
-
-    from Modules.fileIO import fileIOSetUp
-    fileIOSetUp()
-    from Modules.fileIO import fileIO
-    varEnvs.append(fileIO)
+    varEnvs[0].append(builtins)
 
     def interpret(self, statements):
         try:
@@ -55,14 +51,19 @@ class Interpreter:
         previous = self.environment
         try:
             self.environment = environment
+            self.varEnvs.append([self.globals, self.builtins])
 
             for statement in statements:
                 self.execute(statement)
         finally:
+            self.varEnvs.pop()
             self.environment = previous
 
-    # No need to check that 'break' or 'continue' are inside a loop, since their presence outside one raises a Parse Error (before the interpreter phase).
-    # Making it a Parse Error rather than a Runtime Error avoids the case where 'break' and 'continue' are placed inside the block after a false condition; the program will never run those statements, so no error gets raised (despite it being bad code).
+    # No need to check that 'break' or 'continue' are inside a loop, since their presence outside one 
+    # raises a Parse Error (before the interpreter phase).
+    # Making it a Parse Error rather than a Runtime Error avoids the case where 'break' and 'continue' are
+    # placed inside the block after a false condition; 
+    # the program will never run those statements, so no error gets raised (despite it being bad code).
     def visitBreakStmt(self, stmt: Stmt.Break):
         raise breakError(stmt.breakCMD, stmt.loopType)
 
@@ -95,6 +96,24 @@ class Interpreter:
         
         else:
             self.evaluate(stmt.expression)
+    
+    def visitFetchStmt(self, stmt: Stmt.Fetch):
+        import importlib
+        mode = stmt.mode.lexeme[3:]
+        match mode:
+            case "Mod":
+                try:
+                    module = importlib.import_module(f"Modules.{stmt.name.lexeme}")
+                    setUp = getattr(module, f"{stmt.name.lexeme}SetUp")
+                    setUp()
+                    env = getattr(module, stmt.name.lexeme)
+                    self.varEnvs[-1].append(env)
+                except ModuleNotFoundError:
+                    raise RuntimeError(stmt.name, "Module not found.")
+            case "Lib":
+                pass
+            case "File":
+                pass
 
     def visitFunctionStmt(self, stmt: Stmt.Function):
         # Check that function is not an unassigned lambda (do nothing if it is).
@@ -229,7 +248,7 @@ class Interpreter:
             return self.environment.getAt(distance, name)
         else:
             # Check if variable is in the user-defined global scope.
-            for env in self.varEnvs:
+            for env in self.varEnvs[-1]:
                 if name.lexeme in env.values.keys():
                     return env.get(name)
     
@@ -311,7 +330,7 @@ class Interpreter:
             arguments.append(self.evaluate(argument))
         
         if not isinstance(callee, LoxCallable):
-            raise RuntimeError(expr.paren, "Can only call functions and classes.")
+            raise RuntimeError(expr.paren, "No such function or class.")
         
         if len(arguments) != callee.arity():
             if callee.arity() == 1: # To make argument singular rather than plural (plural for 0 as well).

@@ -61,6 +61,8 @@ class Parser:
             return self.whileStatement()
         if self.match(TokenType.LEFT_BRACE):
             return Stmt.Block(self.block())
+        if self.match(TokenType.GET):
+            return self.fetchStatement()
 
         return self.expressionStatement()
 
@@ -90,6 +92,12 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.")
         return Stmt.Continue(continueToken, self.loopType)
     
+    def fetchStatement(self):
+            mode = self.previous()
+            name = self.consume(TokenType.IDENTIFIER, "Expect name of import.")
+            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+            return Stmt.Fetch(mode, name)
+
     def forStatement(self):
         self.loopLevel += 1
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")

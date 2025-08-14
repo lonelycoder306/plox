@@ -37,6 +37,14 @@ class Stmt:
 		def accept(self, visitor):
 			return visitor.visitExpressionStmt(self)
 
+	class Fetch:
+		def __init__(self, mode, name):
+			self.mode = mode
+			self.name = name
+
+		def accept(self, visitor):
+			return visitor.visitFetchStmt(self)
+
 	class Function:
 		def __init__(self, name, params, body):
 			self.name = name
