@@ -56,7 +56,7 @@ class BuiltinFunction(LoxCallable):
     def b_length(self, object, expr):
         if type(object) != str: # Will work for strings (other data types to be added).
             raise RuntimeError(expr.callee.name, "Invalid input to length().")
-        return len(object)
+        return float(len(object))
     
     def b_breakpoint(self, interpreter):
         from Debug import breakpointStop
