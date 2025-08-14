@@ -36,10 +36,10 @@ Additional: add option in each one to shift or not shift file pointer.
 '''
 
 fileIO = Environment()
-functions = ["filemake", "fileopen", "filehas", "fileremove", "filedrop",
+functions = ["filemake", "fileopen", "filehas", "fileremove", "filedrop", "fileflush",
              "filechars", "filebytes", "fileword", "fileline", "filelines", "fileall",
              "filewrite", "fileput",
-             "filejump", "fileskip", "filelimits", "feof"]
+             "filejump", "fileskip", "filelimits", "filepos", "feof"]
 
 class fileFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -73,6 +73,8 @@ class fileFunction(LoxCallable):
                 return self.f_fileremove(arguments[0], expr)
             case "filedrop":
                 self.f_filedrop()
+            case "fileflush":
+                self.f_fileflush()
 
             case "filechars":
                 return self.f_filechars(int(arguments[0]), expr)
@@ -90,7 +92,7 @@ class fileFunction(LoxCallable):
             case "filewrite":
                 self.f_filewrite(arguments[0], arguments[1], expr)
             case "fileput":
-                self.f_fileput(arguments[0], arguments[1], expr)
+                self.f_fileput(arguments[0], arguments[1], arguments[2], expr)
             
             case "filejump":
                 self.f_filejump(arguments[0], expr)
@@ -98,6 +100,8 @@ class fileFunction(LoxCallable):
                 self.f_fileskip(arguments[0], expr)
             case "filelimits":
                 self.f_filelimits(arguments[0], expr)
+            case "filepos":
+                return self.f_filepos(expr)
             case "feof":
                 return self.f_feof(expr)
     
@@ -105,7 +109,7 @@ class fileFunction(LoxCallable):
 
     # File handling.
 
-    def f_filemake(self, path, expr):
+    def f_filemake(self, path: str, expr):
         try:
             instance = LoxInstance(fileRef)
             open(path, "x").close() # Just create the file.
@@ -114,7 +118,7 @@ class fileFunction(LoxCallable):
         except FileExistsError:
             raise RuntimeError(expr.callee.name, "File already exists.")
 
-    def f_fileopen(self, path, expr):
+    def f_fileopen(self, path: str, expr):
         try:
             instance = LoxInstance(fileRef)
             instance.fields["fd"] = open(path, "r+")
@@ -122,11 +126,11 @@ class fileFunction(LoxCallable):
         except FileNotFoundError:
             raise RuntimeError(expr.callee.name, "File does not exist.")
     
-    def f_filehas(self, path, expr):
+    def f_filehas(self, path: str, expr):
         from pathlib import Path
         return Path(path).is_file()
     
-    def f_fileremove(self, path, expr):
+    def f_fileremove(self, path: str, expr):
         import os
         if os.path.exists(path): # Check that file exists.
             try:
@@ -139,6 +143,9 @@ class fileFunction(LoxCallable):
     
     def f_filedrop(self):
         self.fd.close()
+    
+    def f_fileflush(self):
+        self.fd.flush()
     
     # File input.
 
@@ -217,16 +224,24 @@ class fileFunction(LoxCallable):
     
     def f_filewrite(self, string: str, format: bool, expr):
         try:
-            self.fd.write(string)
+            if format:
+                text = string.encode("utf-8").decode("unicode_escape")
+                self.fd.write(text)
+            else:
+                self.fd.write(string)
         except ValueError:
             raise RuntimeError(expr.callee.name, "File is closed.")
     
     # Will not change cursor position (use jump then write instead for that).
-    def f_fileput(self, string: str, pos: int, expr):
+    def f_fileput(self, string: str, pos: int, format: bool, expr):
         try:
             previous = self.fd.tell()
             self.fd.seek(pos)
-            self.fd.write(string)
+            if format:
+                text = string.encode("utf-8").decode("unicode_escape")
+                self.fd.write(text)
+            else:
+                self.fd.write(string)
             self.fd.seek(previous)
         except ValueError:
             raise RuntimeError(expr.callee.name, "File is closed.")
@@ -255,6 +270,9 @@ class fileFunction(LoxCallable):
                     self.fd.seek(0,2)
         except ValueError:
             raise RuntimeError(expr.callee.name, "File is closed.")
+    
+    def f_filepos(self, expr):
+        return float(self.fd.tell()) # Make sure all our numbers are floats.
 
     def f_feof(self, expr) -> bool:
         try:
@@ -282,6 +300,8 @@ class fileFunction(LoxCallable):
                 return self.check_fileremove(expr, arguments)
             case "filedrop":
                 return self.check_filedrop(expr, arguments)
+            case "fileflush":
+                return self.check_fileflush(expr, arguments)
 
             case "filechars":
                 return self.check_filechars(expr, arguments)
@@ -307,6 +327,8 @@ class fileFunction(LoxCallable):
                 return self.check_fileskip(expr, arguments)
             case "filelimits":
                 return self.check_filelimits(expr, arguments)
+            case "filepos":
+                return self.check_filepos(expr, arguments)
             case "feof":
                 return self.check_feof(expr, arguments)
 
@@ -337,6 +359,9 @@ class fileFunction(LoxCallable):
                                        "Types are: string.")
 
     def check_filedrop(self, expr, arguments):
+        return True
+    
+    def check_fileflush(self, expr, arguments):
         return True
 
     def check_filechars(self, expr, arguments):
@@ -373,19 +398,23 @@ class fileFunction(LoxCallable):
                                        "Types are: string, boolean.")
 
     def check_fileput(self, expr, arguments):
-        if (type(arguments[0]) == str)  and (type(arguments[1]) == float):
+        if (type(arguments[0]) == str) and (type(arguments[1]) == float) and (type(arguments[2] == bool)):
             return True
         raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string, number.")
 
     def check_filejump(self, expr, arguments):
         if type(arguments[0]) == float:
+            if int(arguments[0]) < 0:
+                raise RuntimeError(expr.callee.name, "Jump value cannot be negative.")
             return True
         raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
 
     def check_fileskip(self, expr, arguments):
         if type(arguments[0]) == float:
+            if int(arguments[0]) < 0:
+                raise RuntimeError(expr.callee.name, "Skip value cannot be negative.")
             return True
         raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
@@ -395,6 +424,9 @@ class fileFunction(LoxCallable):
             return True
         raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
+
+    def check_filepos(self, expr, arguments):
+        return True
 
     def check_feof(self, expr, arguments):
         return True
@@ -413,6 +445,8 @@ class fileFunction(LoxCallable):
                 return 1
             case "filedrop":
                 return 0
+            case "fileflush":
+                return 0
             case "filechars":
                 return 1
             case "filebytes":
@@ -428,13 +462,15 @@ class fileFunction(LoxCallable):
             case "filewrite":
                 return 2
             case "fileput":
-                return 2
+                return 3
             case "filejump":
                 return 1
             case "fileskip":
                 return 1
             case "filelimits":
                 return 1
+            case "filepos":
+                return 0
             case "feof":
                 return 0
 

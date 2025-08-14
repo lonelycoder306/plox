@@ -177,6 +177,8 @@ class Interpreter:
                 return "native function"
             case _ if isinstance(object, time): # Format to check Boolean conditions in match-case structure.
                 return "datetime"
+            case _ if isinstance(object, LoxInstance):
+                return object.toString()[1:-1] # To avoid writing the <> twice.
             case _:
                 return "unknown type"
     
