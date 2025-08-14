@@ -35,6 +35,18 @@ Additional: add option in each one to shift or not shift file pointer.
 
 '''
 
+
+'''
+To add a function:
+1. Add its name to "functions" list below.
+2. Add its mode to the match-case structure in call().
+3. Add a function definition for it below call (syntax: f_[function name]).
+4. Add a case for it under check().
+5. Add a check function (syntax: check_[function name]) for it to validate its arguments.
+6. Add its name and arity in the match-case within arity().
+7. Make any necessary changes to fileIOSetUp below to accommodate the new function.
+'''
+
 fileIO = Environment()
 functions = ["filemake", "fileopen", "filehas", "fileremove", "filedrop", "fileflush",
              "filechars", "filebytes", "fileword", "fileline", "filelines", "fileall",
