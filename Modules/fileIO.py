@@ -36,7 +36,7 @@ Additional: add option in each one to shift or not shift file pointer.
 '''
 
 fileIO = Environment()
-functions = ["filemake", "fileopen", "filehas", "filedrop",
+functions = ["filemake", "fileopen", "filehas", "fileremove", "filedrop",
              "filechars", "filebytes", "fileword", "fileline", "filelines", "fileall",
              "filewrite", "fileput",
              "filejump", "fileskip", "filelimits", "feof"]
@@ -69,6 +69,8 @@ class fileFunction(LoxCallable):
                     raise error
             case "filehas":
                 return self.f_filehas(arguments[0], expr)
+            case "fileremove":
+                return self.f_fileremove(arguments[0], expr)
             case "filedrop":
                 self.f_filedrop()
 
@@ -123,6 +125,17 @@ class fileFunction(LoxCallable):
     def f_filehas(self, path, expr):
         from pathlib import Path
         return Path(path).is_file()
+    
+    def f_fileremove(self, path, expr):
+        import os
+        if os.path.exists(path): # Check that file exists.
+            try:
+                os.remove(path)
+            # In case of any OS errors, like lack of permissions or file being used in another process.
+            except OSError as error:
+                raise RuntimeError(expr.callee.name, f"Error deleting file '{path}':\n{str(error)}")
+        else:
+            raise RuntimeError(expr.callee.name, "File not found.")
     
     def f_filedrop(self):
         self.fd.close()
@@ -265,6 +278,8 @@ class fileFunction(LoxCallable):
                 return self.check_fileopen(expr, arguments)
             case "filehas":
                 return self.check_filehas(expr, arguments)
+            case "fileremove":
+                return self.check_fileremove(expr, arguments)
             case "filedrop":
                 return self.check_filedrop(expr, arguments)
 
@@ -310,6 +325,12 @@ class fileFunction(LoxCallable):
                                        "Types are: string.")
 
     def check_filehas(self, expr, arguments):
+        if type(arguments[0]) == str:
+            return True
+        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+                                       "Types are: string.")
+    
+    def check_fileremove(self, expr, arguments):
         if type(arguments[0]) == str:
             return True
         raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
@@ -388,6 +409,8 @@ class fileFunction(LoxCallable):
                 return 1
             case "filehas":
                 return 1
+            case "fileremove":
+                return 1
             case "filedrop":
                 return 0
             case "filechars":
@@ -417,7 +440,7 @@ class fileFunction(LoxCallable):
 
 fileRef = LoxClass("file", {})
 def fileIOSetUp():
-    for function in functions[:3]:
+    for function in functions[:4]:
         fileIO.define(function, fileFunction(function))
-    for function in functions[3:]:
+    for function in functions[4:]:
         fileRef.methods[function] = fileFunction(function)
