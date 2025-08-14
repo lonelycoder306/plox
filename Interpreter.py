@@ -13,20 +13,24 @@ from Debug import breakpointStop
 class Interpreter:
     globals = Environment()
     environment = globals
+    varEnvs = [globals]
     loopLevel = 0
     locals = dict()
 
     from BuiltinFunction import builtinSetUp
     builtinSetUp()
     from BuiltinFunction import builtins
+    varEnvs.append(builtins)
 
     from Modules.userIO import userIOSetUp
     userIOSetUp()
     from Modules.userIO import userIO
+    varEnvs.append(userIO)
 
     from Modules.fileIO import fileIOSetUp
     fileIOSetUp()
     from Modules.fileIO import fileIO
+    varEnvs.append(fileIO)
 
     def interpret(self, statements):
         try:
@@ -225,13 +229,9 @@ class Interpreter:
             return self.environment.getAt(distance, name)
         else:
             # Check if variable is in the user-defined global scope.
-            if name.lexeme in self.globals.values.keys():
-                return self.globals.get(name)
-            if name.lexeme in self.userIO.values.keys():
-                return self.userIO.get(name)
-            if name.lexeme in self.fileIO.values.keys():
-                return self.fileIO.get(name)
-            return self.builtins.get(name)
+            for env in self.varEnvs:
+                if name.lexeme in env.values.keys():
+                    return env.get(name)
     
     def evaluate(self, expr):
         return expr.accept(self)
