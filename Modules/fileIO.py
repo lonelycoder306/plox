@@ -413,7 +413,7 @@ class fileFunction(LoxCallable):
 
 fileRef = LoxClass("file", {})
 def fileIOSetUp():
-    for function in functions:
+    for function in functions[:3]:
         fileIO.define(function, fileFunction(function))
     for function in functions[3:]:
         fileRef.methods[function] = fileFunction(function)
