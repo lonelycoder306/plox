@@ -94,7 +94,11 @@ class Parser:
     
     def fetchStatement(self):
             mode = self.previous()
-            name = self.consume(TokenType.IDENTIFIER, "Expect name of import.")
+            name = None
+            if (mode.lexeme[3:] == "Lib") or (mode.lexeme[3:] == "File"):
+                name = self.consume(TokenType.STRING, "Expect name of import.")
+            elif mode.lexeme[3:] == "Mod":
+                name = self.consume(TokenType.IDENTIFIER, "Expect name of import.")
             self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
             return Stmt.Fetch(mode, name)
 
