@@ -54,7 +54,7 @@ class Scanner:
         c = self.advance()
         self.column += 1
 
-        match(c):
+        match c:
             case '(':
                 self.addToken(TokenType.LEFT_PAREN)
             case ')':
