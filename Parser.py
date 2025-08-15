@@ -100,7 +100,7 @@ class Parser:
                 self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
                 from Scanner import Scanner
-                file = "Library/" + name.lexeme[1:-1]
+                file = "Libraries/" + name.lexeme[1:-1]
                 text = open(file, "r").read()
                 scanner = Scanner(text)
                 newTokens = scanner.scanTokens()[:-1]
