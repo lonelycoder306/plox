@@ -11,7 +11,9 @@ class Resolver:
         self.interpreter = interpreter
         self.scopes = list()
         self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA, METHOD')
+        self.classType = Enum('classType', 'NONE, CLASS')
         self.currentFunction = self.FunctionType.NONE
+        self.currentClass = self.classType.NONE
         # Will record all the defined variables (until they are used) and their line of declaration.
         # Once the variable is used somewhere, it is removed from the dictionary.
         self.localVars = dict()
@@ -122,6 +124,9 @@ class Resolver:
         self.endScope()
     
     def visitClassStmt(self, stmt: Stmt.Class):
+        enclosingClass = self.currentClass
+        self.currentClass = self.classType.CLASS
+
         self.declare(stmt.name)
         self.define(stmt.name)
 
@@ -135,6 +140,8 @@ class Resolver:
             self.resolveFunction(method, declaration)
         
         self.endScope()
+
+        self.currentClass = enclosingClass
     
     def visitContinueStmt(self, stmt: Stmt.Continue):
         pass
@@ -229,6 +236,9 @@ class Resolver:
         self.resolve(expr.falseBranch)
     
     def visitThisExpr(self, expr: Expr.This):
+        if self.currentClass == self.classType.NONE:
+            raise ResolveError(expr.keyword, "Can't use 'this' outside of a class.")
+
         self.resolveLocal(expr, expr.keyword)
     
     def visitUnaryExpr(self, expr: Expr.Unary):
