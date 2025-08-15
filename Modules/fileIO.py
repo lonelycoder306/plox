@@ -210,7 +210,7 @@ class fileFunction(LoxCallable):
             previous = self.fd.tell()
             line = self.fd.readline()
             self.fd.seek(previous)
-            return line
+            return line.strip()
         except ValueError:
             raise RuntimeError(expr.callee.name, "File is closed.")
     
@@ -235,6 +235,7 @@ class fileFunction(LoxCallable):
     # File output.
     
     def f_filewrite(self, string: str, format: bool, expr):
+        previous = self.fd.tell()
         try:
             if format:
                 text = string.encode("utf-8").decode("unicode_escape")
@@ -243,11 +244,13 @@ class fileFunction(LoxCallable):
                 self.fd.write(string)
         except ValueError:
             raise RuntimeError(expr.callee.name, "File is closed.")
+        finally:
+            self.fd.seek(previous)
     
     # Will not change cursor position (use jump then write instead for that).
     def f_fileput(self, string: str, pos: int, format: bool, expr):
+        previous = self.fd.tell()
         try:
-            previous = self.fd.tell()
             self.fd.seek(pos)
             if format:
                 text = string.encode("utf-8").decode("unicode_escape")
@@ -257,6 +260,8 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
         except ValueError:
             raise RuntimeError(expr.callee.name, "File is closed.")
+        finally:
+            self.fd.seek(previous)
 
     # General operations.
 
