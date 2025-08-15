@@ -128,6 +128,9 @@ class IOFunction(LoxCallable):
             return True
         return False
     
+    def toString(self):
+        return "<userIO function>"
+    
 def userIOSetUp():
     for function in functions:
         userIO.define(function, IOFunction(function))
