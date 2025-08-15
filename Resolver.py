@@ -103,6 +103,16 @@ class Resolver:
         for var in varList:
             unusedWarning(var).warn()
     
+    def getStatements(self, stmt: Stmt.Fetch):
+        from Scanner import Scanner
+        from Parser import Parser
+        file = stmt.name.lexeme[1:-1]
+        text = open(file, "r").read()
+        print(text)
+        scanner = Scanner(text)
+        parser = Parser(scanner.scanTokens())
+        return parser.parse()
+    
     def visitBreakStmt(self, stmt: Stmt.Break):
         pass
     
@@ -126,7 +136,12 @@ class Resolver:
         self.resolve(stmt.expression)
     
     def visitFetchStmt(self, stmt: Stmt.Fetch):
-        pass
+        mode = stmt.mode.lexeme[3:]
+        match mode:
+            case "Mod":
+                pass
+            case "Lib" | "File":
+                self.resolve(self.getStatements(stmt))
     
     def visitFunctionStmt(self, stmt: Stmt.Function):
         self.declare(stmt.name)
