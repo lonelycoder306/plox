@@ -103,7 +103,8 @@ class Parser:
                 file = "Library/" + name.lexeme[1:-1]
                 text = open(file, "r").read()
                 scanner = Scanner(text)
-                self.tokens[self.current:self.current] = scanner.scanTokens()
+                newTokens = scanner.scanTokens()[:-1]
+                self.tokens[self.current:self.current] = newTokens
 
             elif (mode.lexeme[3:] == "File"):
                 name = self.consume(TokenType.STRING, "Expect name of import.")
@@ -113,7 +114,8 @@ class Parser:
                 file = name.lexeme[1:-1]
                 text = open(file, "r").read()
                 scanner = Scanner(text)
-                self.tokens[self.current:self.current] = scanner.scanTokens()
+                newTokens = scanner.scanTokens()[:-1]
+                self.tokens[self.current:self.current] = newTokens
 
             elif mode.lexeme[3:] == "Mod":
                 name = self.consume(TokenType.IDENTIFIER, "Expect name of import.")
