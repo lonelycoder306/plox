@@ -322,15 +322,37 @@ class Interpreter:
                     raise RuntimeError(expr.operator, "Division by zero not allowed.")
                 return (float(left) / float(right))
             case TokenType.STAR:
-                if (type(left) == str) and (type(right) == float):
-                    if int(right) == right: # Number is an integer.
-                        return left * int(right)
-                    raise RuntimeError(expr.operator, "Cannot multiply string by non-integer value.")
-                # If we get here, then we got a string + non-number combination.
-                if (type(left) == str) or (type(right) == str):
-                    raise RuntimeError(expr.operator, "Support only provided for string * number expressions.")
-                self.checkNumberOperands(expr.operator, left, right)
-                return (float(left) * float(right))
+                if type(left) == str:
+                    if type(right) == float:
+                        if int(right) == right:
+                            return left * int(right)
+                        raise RuntimeError(expr.operator, 
+                                           "Cannot multiply string by non-integer number.")
+                    elif type(right) == str:
+                        raise RuntimeError(expr.operator, 
+                                           "Cannot multiply string by string.")
+                    
+                    elif type(right) == bool:
+                        return left * right
+                
+                elif type(right) == str:
+                    if type(left) == float:
+                        if int(left) == left:
+                            return right * int(left)
+                        raise RuntimeError(expr.operator, 
+                                           "Cannot multiply string by non-integer number.")
+                    elif type(left) == str:
+                        raise RuntimeError(expr.operator, 
+                                           "Cannot multiply string by string.")
+
+                    elif type(left) == bool:
+                        return left * right
+
+                options = [(float, float), (float, bool), (bool, float), (bool, bool)]
+                if (type(left), type(right)) in options:
+                    return (float(left) * float(right))
+                
+                raise RuntimeError(expr.operator, "Invalid product.")
             case TokenType.MOD:
                 self.checkNumberOperands(expr.operator, left, right)
                 return (float(left) % float(right))
