@@ -256,6 +256,11 @@ class Interpreter:
             for env in self.varEnvs[-1]:
                 if name.lexeme in env.values.keys():
                     return env.get(name)
+            # We only fetch a variable's value if it is defined in the environment, i.e.,
+            # its name is a key in the environment's value dictionary.
+            # If the variable is undefined, we never try to fetch it, so no error is raised.
+            # This addresses that.
+            raise RuntimeError(name, f"Uninitialized variable '{name.lexeme}'.")
     
     def evaluate(self, expr):
         return expr.accept(self)
