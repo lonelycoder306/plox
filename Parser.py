@@ -101,7 +101,10 @@ class Parser:
 
                 from Scanner import Scanner
                 file = "Libraries/" + name.lexeme[1:-1]
-                text = open(file, "r").read()
+                try:
+                    text = open(file, "r").read()
+                except FileNotFoundError:
+                    raise ParseError(name, "No such library file.")
                 scanner = Scanner(text)
                 newTokens = scanner.scanTokens()[:-1]
                 self.tokens[self.current:self.current] = newTokens
@@ -112,7 +115,10 @@ class Parser:
 
                 from Scanner import Scanner
                 file = name.lexeme[1:-1]
-                text = open(file, "r").read()
+                try:
+                    text = open(file, "r").read()
+                except FileNotFoundError:
+                    raise ParseError(name, "File not found.")
                 scanner = Scanner(text)
                 newTokens = scanner.scanTokens()[:-1]
                 self.tokens[self.current:self.current] = newTokens
