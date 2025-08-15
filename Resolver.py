@@ -1,6 +1,6 @@
 from Expr import Expr
 from Stmt import Stmt
-from Token import Token
+from Token import Token, TokenType
 from Error import ResolveError
 from enum import Enum
 from Interpreter import Interpreter
@@ -125,9 +125,16 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        self.beginScope()
+        dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0)
+        self.declare(dummyThis)
+        self.define(dummyThis)
+
         for method in stmt.methods:
             declaration = self.FunctionType.METHOD
             self.resolveFunction(method, declaration)
+        
+        self.endScope()
     
     def visitContinueStmt(self, stmt: Stmt.Continue):
         pass
@@ -220,6 +227,9 @@ class Resolver:
         self.resolve(expr.condition)
         self.resolve(expr.trueBranch)
         self.resolve(expr.falseBranch)
+    
+    def visitThisExpr(self, expr: Expr.This):
+        self.resolveLocal(expr, expr.keyword)
     
     def visitUnaryExpr(self, expr: Expr.Unary):
         self.resolve(expr.right)

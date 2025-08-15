@@ -8,6 +8,11 @@ class LoxFunction(LoxCallable):
         self.declaration = declaration
         self.closure = closure
     
+    def bind(self, instance):
+        environment = Environment(self.closure)
+        environment.define("this", instance)
+        return LoxFunction(self.declaration, environment)
+    
     def call(self, interpreter, expr, arguments):
         environment = Environment(self.closure)
 

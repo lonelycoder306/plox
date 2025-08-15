@@ -405,6 +405,9 @@ class Interpreter:
         if self.isTruthy(self.evaluate(expr.condition)):
             return self.evaluate(expr.trueBranch)
         return self.evaluate(expr.falseBranch)
+    
+    def visitThisExpr(self, expr: Expr.This):
+        return self.lookUpVariable(expr.keyword, expr)
 
     def visitUnaryExpr(self, expr: Expr.Unary):
         right = self.evaluate(expr.right)

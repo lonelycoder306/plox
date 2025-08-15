@@ -13,7 +13,9 @@ class LoxInstance:
         
         method = self.klass.findMethod(name.lexeme)
         if method != None:
-            if type(method) != LoxFunction:
+            if type(method) == LoxFunction:
+                return method.bind(self)
+            else:
                 import copy
                 func = copy.deepcopy(method)
                 func.bind(self)

@@ -89,6 +89,13 @@ class Expr:
 		def accept(self, visitor):
 			return visitor.visitTernaryExpr(self)
 
+	class This:
+		def __init__(self, keyword):
+			self.keyword = keyword
+
+		def accept(self, visitor):
+			return visitor.visitThisExpr(self)
+
 	class Unary:
 		def __init__(self, operator, right):
 			self.operator = operator

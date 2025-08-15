@@ -32,6 +32,7 @@ ExprClasses = ["Assign      : name, value",
                 "Logical    : left, operator, right",
                 "Set        : object, name, value",
                 "Ternary    : condition,  trueBranch,  falseBranch",
+                "This       : keyword",
                 "Unary      : operator, right",
                 "Variable   : name"]
 

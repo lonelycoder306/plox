@@ -446,6 +446,9 @@ class Parser:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Expr.Literal(self.previous().literal)
         
+        if self.match(TokenType.THIS):
+            return Expr.This(self.previous())
+        
         if self.match(TokenType.IDENTIFIER):
             return Expr.Variable(self.previous())
         
