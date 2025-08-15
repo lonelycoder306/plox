@@ -150,12 +150,7 @@ class Resolver:
         self.resolve(stmt.expression)
     
     def visitFetchStmt(self, stmt: Stmt.Fetch):
-        mode = stmt.mode.lexeme[3:]
-        match mode:
-            case "Mod":
-                pass
-            case "Lib" | "File":
-                self.resolve(self.getStatements(stmt))
+        pass
     
     def visitFunctionStmt(self, stmt: Stmt.Function):
         self.declare(stmt.name)

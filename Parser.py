@@ -97,9 +97,17 @@ class Parser:
             name = None
             if (mode.lexeme[3:] == "Lib") or (mode.lexeme[3:] == "File"):
                 name = self.consume(TokenType.STRING, "Expect name of import.")
+                self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+
+                from Scanner import Scanner
+                file = name.lexeme[1:-1]
+                text = open(file, "r").read()
+                scanner = Scanner(text)
+                self.tokens[self.current:self.current] = scanner.scanTokens()
+                
             elif mode.lexeme[3:] == "Mod":
                 name = self.consume(TokenType.IDENTIFIER, "Expect name of import.")
-            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+                self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
             return Stmt.Fetch(mode, name)
 
     def forStatement(self):
