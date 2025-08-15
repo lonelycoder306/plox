@@ -14,10 +14,12 @@ You then assign the appropriate name to the object in the variable environment.
 # 2. type(x) - Prints the type of x.
 # 3. str(x) - Returns a string form of x.
 # 4. number(x) - Returns a number (float) form of x.
-# 5. breakpoint() - Starts a debug prompt when run from a file.
+# 5. length(x) - Returns the length of a string (other iterable data types to be added).
+# 6. strformat(x) - Returns an ASCII-encoded/formatted version of its argument string.
+# 7. breakpoint() - Starts a debug prompt when run from a file.
 
 builtins = Environment()
-functions = ["clock", "type", "string", "number", "length", "breakpoint"]
+functions = ["clock", "type", "string", "number", "length", "strformat", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -34,6 +36,8 @@ class BuiltinFunction(LoxCallable):
             return self.b_number(arguments[0], expr)
         if self.mode == "length":
             return self.b_length(arguments[0], expr)
+        if self.mode == "strformat":
+            return self.b_strformat(arguments[0], expr)
         if self.mode == "breakpoint":
             self.b_breakpoint(interpreter)
     
@@ -58,6 +62,11 @@ class BuiltinFunction(LoxCallable):
             raise RuntimeError(expr.callee.name, "Invalid input to length().")
         return float(len(object))
     
+    def b_strformat(self, object, expr):
+        if type(object) != str:
+            raise RuntimeError(expr.callee.name, "strformat() only accepts string arguments.")
+        return object.encode("utf-8").decode("unicode_escape")
+    
     def b_breakpoint(self, interpreter):
         from Debug import breakpointStop
         raise breakpointStop(interpreter, interpreter.environment)
@@ -72,6 +81,8 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "number":
             return 1
         if self.mode == "length":
+            return 1
+        if self.mode == "strformat":
             return 1
         if self.mode == "breakpoint":
             return 0 # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
