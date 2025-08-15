@@ -322,6 +322,13 @@ class Interpreter:
                     raise RuntimeError(expr.operator, "Division by zero not allowed.")
                 return (float(left) / float(right))
             case TokenType.STAR:
+                if (type(left) == str) and (type(right) == float):
+                    if int(right) == right: # Number is an integer.
+                        return left * int(right)
+                    raise RuntimeError(expr.operator, "Cannot multiply string by non-integer value.")
+                # If we get here, then we got a string + non-number combination.
+                if (type(left) == str) or (type(right) == str):
+                    raise RuntimeError(expr.operator, "Support only provided for string * number expressions.")
                 self.checkNumberOperands(expr.operator, left, right)
                 return (float(left) * float(right))
             case TokenType.MOD:
