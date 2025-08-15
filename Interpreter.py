@@ -105,13 +105,14 @@ class Interpreter:
     def visitFetchStmt(self, stmt: Stmt.Fetch):
         import importlib
         mode = stmt.mode.lexeme[3:]
+        name = stmt.name.lexeme[1:-1]
         match mode:
             case "Mod":
                 try:
-                    module = importlib.import_module(f"Modules.{stmt.name.lexeme}")
-                    setUp = getattr(module, f"{stmt.name.lexeme}SetUp")
+                    module = importlib.import_module(f"Modules.{name}")
+                    setUp = getattr(module, f"{name}SetUp")
                     setUp()
-                    env = getattr(module, stmt.name.lexeme)
+                    env = getattr(module, name)
                     self.varEnvs[-1].append(env)
                 except ModuleNotFoundError:
                     raise RuntimeError(stmt.name, "Module not found.")

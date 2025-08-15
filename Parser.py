@@ -93,41 +93,41 @@ class Parser:
         return Stmt.Continue(continueToken, self.loopType)
     
     def fetchStatement(self):
-            mode = self.previous()
-            name = None
-            if (mode.lexeme[3:] == "Lib"):
-                name = self.consume(TokenType.STRING, "Expect name of import.")
-                self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+        mode = self.previous()
+        name = None
+        if (mode.lexeme[3:] == "Lib"):
+            name = self.consume(TokenType.STRING, "Expect name of import.")
+            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
-                from Scanner import Scanner
-                file = "Libraries/" + name.lexeme[1:-1]
-                try:
-                    text = open(file, "r").read()
-                except FileNotFoundError:
-                    raise ParseError(name, "No such library file.")
-                scanner = Scanner(text)
-                newTokens = scanner.scanTokens()[:-1]
-                self.tokens[self.current:self.current] = newTokens
+            from Scanner import Scanner
+            file = "Libraries/" + name.lexeme[1:-1]
+            try:
+                text = open(file, "r").read()
+            except FileNotFoundError:
+                raise ParseError(name, "No such library file.")
+            scanner = Scanner(text)
+            newTokens = scanner.scanTokens()[:-1]
+            self.tokens[self.current:self.current] = newTokens
 
-            elif (mode.lexeme[3:] == "File"):
-                name = self.consume(TokenType.STRING, "Expect name of import.")
-                self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+        elif (mode.lexeme[3:] == "File"):
+            name = self.consume(TokenType.STRING, "Expect name of import.")
+            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
-                from Scanner import Scanner
-                file = name.lexeme[1:-1]
-                try:
-                    text = open(file, "r").read()
-                except FileNotFoundError:
-                    raise ParseError(name, "File not found.")
-                scanner = Scanner(text)
-                newTokens = scanner.scanTokens()[:-1]
-                self.tokens[self.current:self.current] = newTokens
+            from Scanner import Scanner
+            file = name.lexeme[1:-1]
+            try:
+                text = open(file, "r").read()
+            except FileNotFoundError:
+                raise ParseError(name, "File not found.")
+            scanner = Scanner(text)
+            newTokens = scanner.scanTokens()[:-1]
+            self.tokens[self.current:self.current] = newTokens
 
-            elif mode.lexeme[3:] == "Mod":
-                name = self.consume(TokenType.IDENTIFIER, "Expect name of import.")
-                self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+        elif mode.lexeme[3:] == "Mod":
+            name = self.consume(TokenType.STRING, "Expect name of import.")
+            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
-            return Stmt.Fetch(mode, name)
+        return Stmt.Fetch(mode, name)
 
     def forStatement(self):
         self.loopLevel += 1
