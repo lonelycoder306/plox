@@ -1,4 +1,5 @@
 from Error import RuntimeError
+from LoxFunction import LoxFunction
 
 class LoxInstance:
     from LoxClass import LoxClass
@@ -12,8 +13,11 @@ class LoxInstance:
         
         method = self.klass.findMethod(name.lexeme)
         if method != None:
-            method.bind(self)
-            return method
+            if type(method) != LoxFunction:
+                import copy
+                func = copy.deepcopy(method)
+                func.bind(self)
+                return func
         
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
