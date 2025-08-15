@@ -169,7 +169,7 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after return value.")
 
         # Report a warning if any code follows a return statement in the same scope.
-        if not self.check(TokenType.RIGHT_BRACE):
+        if (not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
             returnWarning(self.peek()).warn()
 
         return Stmt.Return(keyword, value)
