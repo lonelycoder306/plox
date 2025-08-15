@@ -260,7 +260,7 @@ class Interpreter:
             # its name is a key in the environment's value dictionary.
             # If the variable is undefined, we never try to fetch it, so no error is raised.
             # This addresses that.
-            raise RuntimeError(name, f"Uninitialized variable '{name.lexeme}'.")
+            raise RuntimeError(name, f"Uninitialized variable or function '{name.lexeme}'.")
     
     def evaluate(self, expr):
         return expr.accept(self)

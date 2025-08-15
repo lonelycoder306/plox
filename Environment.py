@@ -13,12 +13,12 @@ class Environment:
             if type(value) != tuple:
                 return value
             
-            raise RuntimeError(name, f"Uninitialized variable '{name.lexeme}'.")
+            raise RuntimeError(name, f"Uninitialized variable or function '{name.lexeme}'.")
         
-        elif self.enclosing != None :
+        elif self.enclosing != None:
             return self.enclosing.get(name)
         
-        raise RuntimeError(name, f"Undefined variable '{name.lexeme}'.")
+        raise RuntimeError(name, f"Undefined variable or function '{name.lexeme}'.")
     
     def assign(self, name: Token, value):
         if name.lexeme in self.values.keys():
