@@ -326,7 +326,10 @@ class Parser:
     # Lambda expressions create name-less functions.
     # Called lambdaExpr since lambda is a keyword.
     '''
-    Made it an expression since a lambda is supposed to be an evaluated value parameter in a function or operation (it is passed as a value, not "run" as a statement) and since its visit method returns an expression, and it would be unwise to mix statement classes and expression-returning visit methods.
+    Made it an expression since a lambda is supposed to be an evaluated value parameter
+    in a function or operation (it is passed as a value, not "run" as a statement) and 
+    since its visit method returns an expression, and it would be unwise to mix 
+    statement classes and expression-returning visit methods.
     '''
     def lambdaExpr(self):
         if self.match(TokenType.FUN):
