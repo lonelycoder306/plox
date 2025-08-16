@@ -122,7 +122,7 @@ class Scanner:
                             self.advance()
                         self.advance() # Avoids adding an extra advance() in each block.
                     if count != 0:
-                        raise LexError(self.line, self.column, "Unterminated comment block.")
+                        raise LexError(self.line, self.column, self.fileName, "Unterminated comment block.")
                 
                 else:
                     self.addToken(TokenType.SLASH)
@@ -149,7 +149,7 @@ class Scanner:
                 elif c.isalpha() or c == '_':
                     self.identifier()
                 else:
-                    raise LexError(self.line, self.column, "Unexpected character.")
+                    raise LexError(self.line, self.column, self.fileName, "Unexpected character.")
     
     def identifier(self):
         while self.peek().isalnum() or self.peek() == '_':
@@ -183,7 +183,7 @@ class Scanner:
                 self.column = 0
             self.advance()
         if self.isAtEnd():
-            raise LexError(self.line, self.column, "Unterminated string.")
+            raise LexError(self.line, self.column, self.fileName, "Unterminated string.")
         # The closing ".
         self.advance()
         

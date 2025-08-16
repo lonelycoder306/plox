@@ -1,9 +1,10 @@
 from Token import Token
 
 class LexError(Exception):
-    def __init__(self, line: int, column: int, message: str):
+    def __init__(self, line: int, column: int, file: str, message: str):
         self.line = line
         self.column = column
+        self.file = file
         self.message = message
     def show(self):
         from Lox import lError

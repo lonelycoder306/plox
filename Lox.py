@@ -84,7 +84,7 @@ def runPrompt():
             State.hadError = False
 
 def lError(error: LexError): #lError: line-error
-    report(error, error.line, error.column, "", error.message)
+    report(error, error.line, error.column, "", error.message, error.file)
 
 def tError(error: ParseError | ResolveError): #tError: token-error
     if error.token.type == TokenType.EOF:
@@ -99,7 +99,7 @@ def tError(error: ParseError | ResolveError): #tError: token-error
 # If it doesn't, the error message will contain only the column containing the (single-character) token.
 # Lex errors are treated differently since they are issued before the formation of any tokens in the first place.
 # Length = 0 -> token = EOF (no significant column value).
-def report(error, line, column, where, message):
+def report(error, line, column, where, message, lexerFile = None):
     if type(error) == LexError:
         sys.stderr.write("Scan ")
     elif type(error) == ParseError:
@@ -107,8 +107,8 @@ def report(error, line, column, where, message):
     elif type(error) == ResolveError:
         sys.stderr.write("Resolve ")
     import State
-    file = error.token.fileName
     if type(error) != LexError: # Lex errors are different since there are no tokens whose fields we can use.
+        file = error.token.fileName
         if (file != None) and (not State.debugMode): # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
             if len(error.token.lexeme) == 0:
                 sys.stderr.write(f'error{where} ["{file}", line {line}]: {message}\n')
@@ -130,9 +130,9 @@ def report(error, line, column, where, message):
                 lexemeLen = len(error.token.lexeme)
                 sys.stderr.write(f'error{where} [{column - offset}-{column + lexemeLen - 1 - offset}]: {message}\n')
     else: # Lex Error.
-        if (file != None) and (not State.debugMode):
-            sys.stderr.write(f'error{where} ["{file}", line {line}, {column}]: {message}\n')
-            printErrorLine(line, file, column, column)
+        if (lexerFile != None) and (not State.debugMode):
+            sys.stderr.write(f'error{where} ["{lexerFile}", line {line}, {column}]: {message}\n')
+            printErrorLine(line, lexerFile, column, column)
         else:
             offset = State.debugOffset
             sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
