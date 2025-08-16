@@ -8,7 +8,7 @@ functions = ["inchars", "inbytes", "inline", "inlines", "inpeek", "echo"]
 
 class IOFunction(LoxCallable):
     def __init__(self, mode: str):
-        self.mode = self.mode = mode
+        self.mode = mode
     
     def call(self, interpreter, expr, arguments):
         match self.mode:
