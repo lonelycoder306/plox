@@ -166,6 +166,12 @@ class Resolver:
         if stmt.elseBranch != None:
             self.resolve(stmt.elseBranch)
     
+    def visitListStmt(self, stmt: Stmt.List):
+        self.declare(stmt.name)
+        for element in stmt.elements:
+            self.resolve(element)
+        self.define(stmt.name)
+    
     def visitPrintStmt(self, stmt: Stmt.Print):
         self.resolve(stmt.expression)
     
@@ -190,7 +196,9 @@ class Resolver:
         self.resolve(stmt.body)
 
     def visitAccessExpr(self, expr: Expr.Access):
-        self.resolve(expr.index)
+        self.resolve(expr.start)
+        if expr.end != None:
+            self.resolve(expr.end)
         self.resolve(expr.object)
 
     def visitAssignExpr(self, expr: Expr.Assign):

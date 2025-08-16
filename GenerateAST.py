@@ -21,7 +21,7 @@ def defineAST(directory, classes, file):
         file.write("\t\tdef accept(self, visitor):\n")
         file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
 
-ExprClasses = [ "Access     : object, operator, index",
+ExprClasses = [ "Access     : object, operator, start, end",
                 "Assign     : name, value",
                 "Binary     : left, operator, right",
                 "Call       : callee, paren, arguments",
@@ -37,7 +37,7 @@ ExprClasses = [ "Access     : object, operator, index",
                 "Unary      : operator, right",
                 "Variable   : name"]
 
-StmtClasses = ["Break       : breakCMD, loopType",
+StmtClasses = [ "Break      : breakCMD, loopType",
                 "Block      : statements",
                 "Class      : name, methods",
                 "Continue   : continueCMD, loopType",
@@ -45,6 +45,7 @@ StmtClasses = ["Break       : breakCMD, loopType",
                 "Fetch      : mode, name",
                 "Function   : name, params, body",
                 "If         : condition, thenBranch, elseBranch",
+                "List       : name, elements",
                 "Print      : expression",
                 "Return     : keyword, value",
                 "Var        : name, initializer",

@@ -1,6 +1,7 @@
 from LoxCallable import LoxCallable
 from Environment import Environment
 from Error import RuntimeError
+from List import List
 
 # General class to implement built-in functions.
 '''
@@ -58,9 +59,13 @@ class BuiltinFunction(LoxCallable):
         return float(object)
     
     def b_length(self, object, expr):
-        if type(object) != str: # Will work for strings (other data types to be added).
+        validTypes = (str, List)
+        if type(object) not in validTypes: # Will work for strings (other data types to be added).
             raise RuntimeError(expr.callee.name, "Invalid input to length().")
-        return float(len(object))
+        if type(object) == str:
+            return float(len(object))
+        elif type(object) == List:
+            return float(len(object.array))
     
     def b_strformat(self, object, expr):
         if type(object) != str:

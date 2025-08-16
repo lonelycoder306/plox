@@ -42,6 +42,9 @@ class Parser:
         if self.match(TokenType.VAR):
             return self.varDeclaration()
         
+        if self.match(TokenType.LIST):
+            return self.listDeclaration()
+        
         return self.statement()
             
     def statement(self):
@@ -186,6 +189,28 @@ class Parser:
         
         return Stmt.If(condition, thenBranch, elseBranch)
     
+    def listDeclaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expect list name.")
+
+        elements = None
+        if self.match(TokenType.EQUAL):
+            # No problem in initializing to empty array before checking for [ and ].
+            # If the parser has an error, it won't make a difference.
+            elements = [] 
+            self.consume(TokenType.LEFT_BRACKET, "Expect '[' before list elements.")
+            if not self.check(TokenType.RIGHT_BRACKET):
+                element = self.lambdaExpr()
+                elements.append(element)
+
+                while self.match(TokenType.COMMA):
+                    element = self.lambdaExpr()
+                    elements.append(element)
+            
+            self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
+            self.consume(TokenType.SEMICOLON, "Expect ';' after list declaration.")
+            
+        return Stmt.List(name, elements)
+    
     def printStatement(self):
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
@@ -329,7 +354,7 @@ class Parser:
 
         if self.match(TokenType.EQUAL):
             equals = self.previous()
-            value = self.assignment()
+            value = self.lambdaExpr()
 
             if type(expr) == Expr.Variable:
                 name = expr.name
@@ -463,9 +488,12 @@ class Parser:
                 name = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
                 expr = Expr.Get(expr, name)
             elif self.match(TokenType.LEFT_BRACKET):
-                index = self.assignment()
+                start = self.assignment()
+                end = None
+                if self.match(TokenType.DOTDOT):
+                    end = self.assignment()
                 operator = self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after index.")
-                expr = Expr.Access(expr, operator, index)
+                expr = Expr.Access(expr, operator, start, end)
             else:
                 break
         

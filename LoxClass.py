@@ -10,7 +10,7 @@ class LoxClass(LoxCallable):
         instance = LoxInstance(self)
         initializer = self.findMethod("init")
         if initializer != None:
-            initializer.bind(instance).call(interpreter, arguments)
+            initializer.bind(instance).call(interpreter, expr, arguments)
         return instance
     
     def findMethod(self, name: str):

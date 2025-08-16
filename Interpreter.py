@@ -6,27 +6,33 @@ from LoxCallable import LoxCallable
 from LoxFunction import LoxFunction
 from LoxClass import LoxClass
 from LoxInstance import LoxInstance
+from List import List, initList
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, breakError, continueError, Return
 from Debug import breakpointStop
 
 class Interpreter:
-    globals = Environment()
-    environment = globals
-    # varEnvs is a list of lists, each entry containing the environments currently in scope.
-    # Allows us to have scoped imports, i.e., import a module but only within a particular scope.
-    # Enter a scope -> Append a list with globals and builtins (they are defined in every scope).
-    # Exit a scope -> Pop the last list from the varEnvs stack.
-    # Function (variable) look-up is done over the last list in the varEnvs stack.
-    # After popping, any imports in the scope no longer apply outside it.
-    varEnvs = [[globals]] # List of all the environments we reference for variable/function names.
-    loopLevel = 0
-    locals = dict()
+    def __init__(self):
+        self.globals = Environment()
+        self.environment = self.globals
+        # varEnvs is a list of lists, each entry containing the environments currently in scope.
+        # Allows us to have scoped imports, i.e., import a module but only within a particular scope.
+        # Enter a scope -> Append a list with globals and builtins (they are defined in every scope).
+        # Exit a scope -> Pop the last list from the varEnvs stack.
+        # Function (variable) look-up is done over the last list in the varEnvs stack.
+        # After popping, any imports in the scope no longer apply outside it.
+        self.varEnvs = [[self.globals]] # List of all the environments we reference for variable/function names.
+        self.loopLevel = 0
+        self.locals = dict()
 
-    from BuiltinFunction import builtinSetUp
-    builtinSetUp()
-    from BuiltinFunction import builtins
-    varEnvs[0].append(builtins)
+        # Setting up built-in functions in global scope.
+        from BuiltinFunction import builtinSetUp
+        builtinSetUp()
+        from BuiltinFunction import builtins
+        self.varEnvs[0].append(builtins)
+
+        # Setting up the List() constructor.
+        self.globals.define("List", initList)
 
     def interpret(self, statements):
         try:
@@ -47,7 +53,7 @@ class Interpreter:
     def execute(self, stmt):
         return stmt.accept(self)
     
-    def executeBlock(self, statements, environment):
+    def executeBlock(self, statements, environment: Environment):
         previous = self.environment
         try:
             self.environment = environment
@@ -134,6 +140,13 @@ class Interpreter:
         elif stmt.elseBranch != None:
             self.execute(stmt.elseBranch)
 
+    def visitListStmt(self, stmt: Stmt.List):
+        listInstance = List([])
+        for element in stmt.elements:
+            value = self.evaluate(element)
+            listInstance.array.append(value)
+        self.environment.define(stmt.name.lexeme, listInstance)
+
     def visitPrintStmt(self, stmt: Stmt.Print):
         value = self.evaluate(stmt.expression)
         # Prevent method from printing nil for void functions when they are called in an expression statement.
@@ -205,6 +218,8 @@ class Interpreter:
                     return "function"
             case BuiltinFunction():
                 return "native function"
+            case List():
+                return "list"
             case _ if isinstance(object, time): # Format to check Boolean conditions in match-case structure.
                 return "datetime"
             case _ if isinstance(object, LoxInstance):
@@ -264,24 +279,53 @@ class Interpreter:
             # This addresses that.
             raise RuntimeError(name, f"Undefined variable or function '{name.lexeme}'.")
     
+    def accessElements(self, object, start, end, expr: Expr.Access):
+        if (type(start) != float) or (int(start) != start):
+            raise RuntimeError(expr.operator, "Start index must be an integer.")
+        
+        if end != None:
+            if (type(end) != float) or (int(end) != end):
+                raise RuntimeError(expr.operator, "End index must be an integer.")
+
+        try:
+            length = len(object)
+        except TypeError:
+            object = object.array
+            length = len(object)
+        if end == None: # Only accessing a single element.
+            if (start >= 0) and (start < length):
+                return object[int(start)]
+            else:
+                raise RuntimeError(expr.operator, "Index out of bounds.")
+        else: # Possibly accessing a range.
+            if (end >= 0) and (end < length):
+                if (start >= 0) and (start <= length):
+                    return object[int(start) : int(end) + 1]
+                else:
+                    raise RuntimeError(expr.operator, "Start index out of bounds.")
+            else:
+                raise RuntimeError(expr.operator, "End index out of bounds.")
+    
     def evaluate(self, expr):
         return expr.accept(self)
     
     def visitAccessExpr(self, expr: Expr.Access):
         object = self.evaluate(expr.object)
-        index = self.evaluate(expr.index)
-
-        if (type(index) != float) or (int(index) != index):
-            raise RuntimeError(expr.operator, "Index must be an integer.")
-
-        if type(object) == str:
-            length = len(object)
-            if index < length:
-                return object[int(index)]
+        start = self.evaluate(expr.start)
+        end = None
+        if expr.end != None:
+            end = self.evaluate(expr.end)
+        
+        if (type(object) == str):
+            return self.accessElements(object, start, end, expr)
+        elif (type(object) == List):
+            output = self.accessElements(object, start, end, expr)
+            if type(output) == list:
+                return List(output)
             else:
-                raise RuntimeError(expr.operator, "String index out of bounds.")
+                return output
         else:
-            raise RuntimeError(expr.operator, "Member access only for strings.")
+            raise RuntimeError(expr.operator, "Member access only for strings and lists.")
 
     def visitAssignExpr(self, expr: Expr.Assign):
         value = self.evaluate(expr.value)
@@ -420,7 +464,7 @@ class Interpreter:
     # Lambdas can all be given default name None since they are accessed by index in the parameter/argument list, not by name.
     def visitLambdaExpr(self, expr: Expr.Lambda):
         lambdaDeclaration = Stmt.Function(None, expr.params, expr.body)
-        return LoxFunction(lambdaDeclaration, self.environment)
+        return LoxFunction(lambdaDeclaration, self.environment, False)
 
     def visitLiteralExpr(self, expr):
         return expr.value

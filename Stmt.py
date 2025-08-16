@@ -63,6 +63,14 @@ class Stmt:
 		def accept(self, visitor):
 			return visitor.visitIfStmt(self)
 
+	class List:
+		def __init__(self, name, elements):
+			self.name = name
+			self.elements = elements
+
+		def accept(self, visitor):
+			return visitor.visitListStmt(self)
+
 	class Print:
 		def __init__(self, expression):
 			self.expression = expression

@@ -72,7 +72,10 @@ class Scanner:
             case ',':
                 self.addToken(TokenType.COMMA)
             case '.':
-                self.addToken(TokenType.DOT)
+                if self.match('.'):
+                    self.addToken(TokenType.DOTDOT)
+                else:
+                    self.addToken(TokenType.DOT)
             case '-':
                 self.addToken(TokenType.MINUS)
             case '+':

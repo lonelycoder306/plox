@@ -1,9 +1,10 @@
 class Expr:
 	class Access:
-		def __init__(self, object, operator, index):
+		def __init__(self, object, operator, start, end):
 			self.object = object
 			self.operator = operator
-			self.index = index
+			self.start = start
+			self.end = end
 
 		def accept(self, visitor):
 			return visitor.visitAccessExpr(self)
