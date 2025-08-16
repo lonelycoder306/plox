@@ -177,9 +177,9 @@ def warn(warning):
             sys.stderr.write(f'Warning ["{fileName}", line {line}, {column}-{column + lexemeLen - 1}]: ' + warning.message)
     else:
         if lexemeLen == 1: 
-            sys.stderr.write(f'Warning [line {line}, {column}]: ' + warning.message)
+            sys.stderr.write(f'Warning [{column}]: ' + warning.message)
         else:
-            sys.stderr.write(f'Warning [line {line}, {column}-{column + lexemeLen - 1}]: ' + warning.message)
+            sys.stderr.write(f'Warning [{column}-{column + lexemeLen - 1}]: ' + warning.message)
 
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
