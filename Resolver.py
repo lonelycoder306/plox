@@ -39,7 +39,8 @@ class Resolver:
         
         scope[name] = False
         # Add the token instead of the lexeme in case its fields are required for error-reporting.
-        self.localVars[name] = [name.line, False] # False = has not been used in this scope; using a list since a tuple is immutable.
+        # False = has not been used in this scope; using a list since a tuple is immutable.
+        self.localVars[name] = [name.line, False]
 
     def define(self, name: Token):
         if len(self.scopes) == 0:
@@ -134,6 +135,8 @@ class Resolver:
         dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0, None)
         self.declare(dummyThis)
         self.define(dummyThis)
+        # To avoid getting an "unused local variable" warning when defining a class.
+        self.localVars[dummyThis][1] = True
 
         for method in stmt.methods:
             declaration = self.FunctionType.METHOD
