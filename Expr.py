@@ -89,6 +89,14 @@ class Expr:
 		def accept(self, visitor):
 			return visitor.visitLogicalExpr(self)
 
+	class Modify:
+		def __init__(self, part, value):
+			self.part = part
+			self.value = value
+
+		def accept(self, visitor):
+			return visitor.visitModifyExpr(self)
+
 	class Set:
 		def __init__(self, object, name, value):
 			self.object = object

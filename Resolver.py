@@ -245,6 +245,10 @@ class Resolver:
         self.resolve(expr.left)
         self.resolve(expr.right)
     
+    def visitModifyExpr(self, expr: Expr.Modify):
+        self.resolve(expr.value)
+        self.resolve(expr.part)
+    
     def visitSetExpr(self, expr: Expr.Set):
         self.resolve(expr.value)
         self.resolve(expr.object)

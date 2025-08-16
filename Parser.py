@@ -195,7 +195,7 @@ class Parser:
         initializer = None
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
-            self.consume(TokenType.SEMICOLON, "Expect ';' after list declaration.")
+        self.consume(TokenType.SEMICOLON, "Expect ';' after list declaration.")
             
         return Stmt.List(name, initializer)
     
@@ -359,7 +359,7 @@ class Parser:
 
         if self.match(TokenType.EQUAL):
             equals = self.previous()
-            value = self.lambdaExpr()
+            value = self.listExpr()
 
             if type(expr) == Expr.Variable:
                 name = expr.name
@@ -367,6 +367,9 @@ class Parser:
             
             if type(expr) == Expr.Get:
                 return Expr.Set(expr.object, expr.name, value)
+            
+            if (type(expr) == Expr.Access) and (type(expr.object) == Expr.Variable):
+                return Expr.Modify(expr, value)
             
             raise ParseError(equals, "Invalid assignment target.")
         
