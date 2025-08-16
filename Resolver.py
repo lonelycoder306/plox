@@ -94,7 +94,7 @@ class Resolver:
 
         self.currentFunction = enclosingLambda
 
-    def varWarnings(self, varList: list):
+    def varWarnings(self, varList: dict):
         # Filter out any variables that have been used.
         varList = {x:varList[x] for x in varList if varList[x][1] != True}
 
