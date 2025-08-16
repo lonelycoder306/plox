@@ -462,6 +462,10 @@ class Parser:
             elif self.match(TokenType.DOT):
                 name = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
                 expr = Expr.Get(expr, name)
+            elif self.match(TokenType.LEFT_BRACKET):
+                index = self.assignment()
+                operator = self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after index.")
+                expr = Expr.Access(expr, operator, index)
             else:
                 break
         

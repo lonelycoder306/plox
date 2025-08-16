@@ -266,6 +266,22 @@ class Interpreter:
     
     def evaluate(self, expr):
         return expr.accept(self)
+    
+    def visitAccessExpr(self, expr: Expr.Access):
+        object = self.evaluate(expr.object)
+        index = self.evaluate(expr.index)
+
+        if (type(index) != float) or (int(index) != index):
+            raise RuntimeError(expr.operator, "Index must be an integer.")
+
+        if type(object) == str:
+            length = len(object)
+            if index < length:
+                return object[int(index)]
+            else:
+                raise RuntimeError(expr.operator, "String index out of bounds.")
+        else:
+            raise RuntimeError(expr.operator, "Member access only for strings.")
 
     def visitAssignExpr(self, expr: Expr.Assign):
         value = self.evaluate(expr.value)

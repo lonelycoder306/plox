@@ -21,7 +21,8 @@ def defineAST(directory, classes, file):
         file.write("\t\tdef accept(self, visitor):\n")
         file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
 
-ExprClasses = ["Assign      : name, value",
+ExprClasses = [ "Access     : object, operator, index",
+                "Assign     : name, value",
                 "Binary     : left, operator, right",
                 "Call       : callee, paren, arguments",
                 "Comma      : expressions",

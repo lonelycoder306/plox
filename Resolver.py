@@ -189,6 +189,10 @@ class Resolver:
         self.resolve(stmt.condition)
         self.resolve(stmt.body)
 
+    def visitAccessExpr(self, expr: Expr.Access):
+        self.resolve(expr.index)
+        self.resolve(expr.object)
+
     def visitAssignExpr(self, expr: Expr.Assign):
         self.resolve(expr.value)
 

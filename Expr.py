@@ -1,4 +1,13 @@
 class Expr:
+	class Access:
+		def __init__(self, object, operator, index):
+			self.object = object
+			self.operator = operator
+			self.index = index
+
+		def accept(self, visitor):
+			return visitor.visitAccessExpr(self)
+
 	class Assign:
 		def __init__(self, name, value):
 			self.name = name
@@ -110,3 +119,4 @@ class Expr:
 
 		def accept(self, visitor):
 			return visitor.visitVariableExpr(self)
+
