@@ -1,4 +1,4 @@
-from Token import TokenType, Token
+from Token import Token, TokenType
 from Error import LexError
 
 class Scanner:
