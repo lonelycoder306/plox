@@ -13,6 +13,8 @@ class List:
         string += "]"
         return string
 
+# To have a List() constructor function.
+# Alternative way of creating/declaring a list.
 from LoxCallable import LoxCallable
 class ListInit(LoxCallable):
     def bind(self, instance):
