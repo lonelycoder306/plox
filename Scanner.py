@@ -77,8 +77,12 @@ class Scanner:
                 else:
                     self.addToken(TokenType.DOT)
             case '-':
+                if self.match('-'):
+                    self.addToken(TokenType.PRE_DEC)
                 self.addToken(TokenType.MINUS)
             case '+':
+                if self.match('+'):
+                    self.addToken(TokenType.PRE_INC)
                 self.addToken(TokenType.PLUS)
             case ';':
                 self.addToken(TokenType.SEMICOLON)
