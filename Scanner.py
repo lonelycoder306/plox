@@ -7,7 +7,7 @@ class Scanner:
     fileName = str()
     start = 0
     current = 0
-    column = 0 # First character on line is at column 1 (advance increments column immediately upon the first character.)
+    column = 0 # First character on line is at column 1 (advance increments column immediately upon the first character).
     line = 1
 
     keywords = {
