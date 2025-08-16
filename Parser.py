@@ -192,24 +192,12 @@ class Parser:
     def listDeclaration(self):
         name = self.consume(TokenType.IDENTIFIER, "Expect list name.")
 
-        elements = None
+        initializer = None
         if self.match(TokenType.EQUAL):
-            # No problem in initializing to empty array before checking for [ and ].
-            # If the parser has an error, it won't make a difference.
-            elements = [] 
-            self.consume(TokenType.LEFT_BRACKET, "Expect '[' before list elements.")
-            if not self.check(TokenType.RIGHT_BRACKET):
-                element = self.lambdaExpr()
-                elements.append(element)
-
-                while self.match(TokenType.COMMA):
-                    element = self.lambdaExpr()
-                    elements.append(element)
-            
-            self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
+            initializer = self.expression()
             self.consume(TokenType.SEMICOLON, "Expect ';' after list declaration.")
             
-        return Stmt.List(name, elements)
+        return Stmt.List(name, initializer)
     
     def printStatement(self):
         value = self.expression()
@@ -305,17 +293,34 @@ class Parser:
     def comma(self):
         expressions = list()
 
-        expr = self.lambdaExpr()
+        expr = self.listExpr()
         expressions.append(expr)
 
         while self.match(TokenType.COMMA):
-            expr = self.lambdaExpr()
+            expr = self.listExpr()
             expressions.append(expr)
         
         if len(expressions) > 1:
             return Expr.Comma(expressions)
         
         return expr
+    
+    def listExpr(self):
+        if self.match(TokenType.LEFT_BRACKET):
+            operator = self.previous()
+            elements = []
+            if not self.check(TokenType.RIGHT_BRACKET):
+                element = self.lambdaExpr()
+                elements.append(element)
+
+                while self.match(TokenType.COMMA):
+                    element = self.lambdaExpr()
+                    elements.append(element)
+            
+            self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
+            return Expr.List(elements, operator)
+        
+        return self.lambdaExpr()
     
     # Lambda implementation my own.
     # Lambda expressions create name-less functions.
@@ -467,12 +472,12 @@ class Parser:
         if not self.check(TokenType.RIGHT_PAREN):
             if len(arguments) > 255:
                 raise ParseError(self.peek(), "Can't have more than 255 arguments.")
-            arguments.append(self.lambdaExpr())
+            arguments.append(self.listExpr())
 
             while self.match(TokenType.COMMA):
                 if len(arguments) > 255:
                     raise ParseError(self.peek(), "Can't have more than 255 arguments.")
-                arguments.append(self.lambdaExpr())
+                arguments.append(self.listExpr())
         
         paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
 

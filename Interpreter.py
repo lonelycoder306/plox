@@ -141,10 +141,11 @@ class Interpreter:
             self.execute(stmt.elseBranch)
 
     def visitListStmt(self, stmt: Stmt.List):
-        listInstance = List([])
-        for element in stmt.elements:
-            value = self.evaluate(element)
-            listInstance.array.append(value)
+        listInstance = None
+        if stmt.initializer != None:
+            listInstance = self.evaluate(stmt.initializer)
+            if type(listInstance) != List:
+                raise RuntimeError(stmt.name, "Cannot initialize list to non-list value.")
         self.environment.define(stmt.name.lexeme, listInstance)
 
     def visitPrintStmt(self, stmt: Stmt.Print):
@@ -466,8 +467,14 @@ class Interpreter:
         lambdaDeclaration = Stmt.Function(None, expr.params, expr.body)
         return LoxFunction(lambdaDeclaration, self.environment, False)
 
-    def visitLiteralExpr(self, expr):
+    def visitLiteralExpr(self, expr: Expr.Literal):
         return expr.value
+    
+    def visitListExpr(self, expr: Expr.List):
+        elements = []
+        for element in expr.elements:
+            elements.append(self.evaluate(element))
+        return List(elements)
     
     def visitLogicalExpr(self, expr: Expr.Logical):
         left = self.evaluate(expr.left)

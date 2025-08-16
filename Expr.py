@@ -65,6 +65,14 @@ class Expr:
 		def accept(self, visitor):
 			return visitor.visitLambdaExpr(self)
 
+	class List:
+		def __init__(self, elements, operator):
+			self.elements = elements
+			self.operator = operator
+
+		def accept(self, visitor):
+			return visitor.visitListExpr(self)
+
 	class Literal:
 		def __init__(self, value):
 			self.value = value

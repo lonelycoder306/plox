@@ -168,8 +168,8 @@ class Resolver:
     
     def visitListStmt(self, stmt: Stmt.List):
         self.declare(stmt.name)
-        for element in stmt.elements:
-            self.resolve(element)
+        if stmt.initializer != None:
+            self.resolve(stmt.initializer)
         self.define(stmt.name)
     
     def visitPrintStmt(self, stmt: Stmt.Print):
@@ -230,6 +230,10 @@ class Resolver:
     
     def visitLambdaExpr(self, expr: Expr.Lambda):
         self.resolveLambda(expr, self.FunctionType.LAMBDA)
+
+    def visitListExpr(self, expr: Expr.List):
+        for element in expr.elements:
+            self.resolve(element)
     
     def visitLiteralExpr(self, expr: Expr.Literal):
         pass

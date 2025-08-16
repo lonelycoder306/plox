@@ -64,9 +64,9 @@ class Stmt:
 			return visitor.visitIfStmt(self)
 
 	class List:
-		def __init__(self, name, elements):
+		def __init__(self, name, initializer):
 			self.name = name
-			self.elements = elements
+			self.initializer = initializer
 
 		def accept(self, visitor):
 			return visitor.visitListStmt(self)
