@@ -4,10 +4,18 @@ class List:
     def __init__(self, array: list):
         self.array = array
 
+    def get():
+        pass
+
+    def set():
+        pass
+
     def __str__(self):
+        from Interpreter import Interpreter
+        dummyInterpreter = Interpreter()
         string = "["
         for element in self.array:
-            string += str(element) + ", "
+            string += dummyInterpreter.stringify(element) + ", "
         if string[-2:] == ", ":
             string = string[:-2]
         string += "]"
