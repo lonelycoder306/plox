@@ -14,7 +14,7 @@ class List:
         return string
 
 from LoxCallable import LoxCallable
-class ListInit(LoxCallable):    
+class ListInit(LoxCallable):
     def bind(self, instance):
         self.instance = instance
     
