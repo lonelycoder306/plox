@@ -10,7 +10,7 @@ class Resolver:
     def __init__(self, interpreter: Interpreter):
         self.interpreter = interpreter
         self.scopes = list()
-        self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA, METHOD')
+        self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA, INITIALIZER, METHOD')
         self.classType = Enum('classType', 'NONE, CLASS')
         self.currentFunction = self.FunctionType.NONE
         self.currentClass = self.classType.NONE
@@ -137,6 +137,8 @@ class Resolver:
 
         for method in stmt.methods:
             declaration = self.FunctionType.METHOD
+            if method.name.lexeme == "init":
+                declaration = self.FunctionType.INITIALIZER
             self.resolveFunction(method, declaration)
         
         self.endScope()
@@ -172,6 +174,9 @@ class Resolver:
             raise ResolveError(stmt.keyword, "Can't return from top-level code.")
         
         if stmt.value != None:
+            if self.currentFunction == self.FunctionType.INITIALIZER:
+                raise ResolveError(stmt.keyword, 
+                                   "Can't return a value from an initializer.")
             self.resolve(stmt.value)
     
     def visitVarStmt(self, stmt: Stmt.Var):

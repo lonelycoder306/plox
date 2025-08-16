@@ -80,7 +80,8 @@ class Interpreter:
 
         methods = dict()
         for method in stmt.methods:
-            function = LoxFunction(method, self.environment)
+            function = LoxFunction(method, self.environment, 
+                                   method.name.lexeme == "init")
             methods[method.name.lexeme] = function
 
         klass = LoxClass(stmt.name.lexeme, methods)
@@ -124,7 +125,7 @@ class Interpreter:
     def visitFunctionStmt(self, stmt: Stmt.Function):
         # Check that function is not an unassigned lambda (do nothing if it is).
         if stmt.name != None:
-            function = LoxFunction(stmt, self.environment)
+            function = LoxFunction(stmt, self.environment, False)
             self.environment.define(stmt.name.lexeme, function)
 
     def visitIfStmt(self, stmt: Stmt.If):
