@@ -103,7 +103,8 @@ class Interpreter:
         # is not automatically printed every time an assignment is carried out.
         # Have chosen not to exclude comma expressions. Thus, the value of the 
         # last expression is printed to the screen.
-        if (type(stmt.expression) != Expr.Assign) and (type(stmt.expression) != Expr.Set):
+        types = (Expr.Assign, Expr.Set, Expr.Modify)
+        if type(stmt.expression) not in types:
             self.visitPrintStmt(Stmt.Print(stmt.expression))
         
         else:
@@ -363,6 +364,9 @@ class Interpreter:
                 self.checkNumberOperands(expr.operator, left, right)
                 return (float(left) - float(right))
             case TokenType.PLUS:
+                if (type(left) == List) and (type(right) == List):
+                    return List(left.array + right.array)
+
                 if (type(left) == float) and (type(right) == float):
                     return (float(left) + float(right))
                 
@@ -377,7 +381,7 @@ class Interpreter:
                     return self.stringify(left) + str(right)
                 
                 raise RuntimeError(expr.operator, 
-                                   "Operands must consist of a number or a string.")
+                                   "Cannot add given operands.")
             case TokenType.SLASH:
                 self.checkNumberOperands(expr.operator, left, right)
                 # Comparison with 0 works even for floats.
@@ -487,6 +491,34 @@ class Interpreter:
                 return left
         
         return self.evaluate(expr.right)
+    
+    def visitModifyExpr(self, expr: Expr.Modify):
+        value = self.evaluate(expr.value)
+        mod = self.evaluate(expr.part.object)
+        start = self.evaluate(expr.part.start)
+        end = None
+        if expr.part.end != None:
+            end = self.evaluate(expr.part.end)
+
+        if type(mod) == str:
+            # Strings in Python are immutable.
+            # They, thus, do not support direct item assignment.
+            # Thus, we turn the string into a list of its characters,
+            # make our modifications, and put it back together.
+            tempList = list(mod)
+            if end == None:
+                tempList[int(start)] = value
+            else:
+                tempList[int(start) : int(end) + 1] = value
+            mod = "".join(tempList)
+        elif type(mod) == List:
+            if end == None:
+                mod.array[int(start)] = value
+            else:
+                mod.array[int(start) : int(end) + 1] = value
+        name = expr.part.object.name
+        self.environment.assign(name, mod)
+        return mod
     
     def visitSetExpr(self, expr: Expr.Set):
         object = self.evaluate(expr.object)
