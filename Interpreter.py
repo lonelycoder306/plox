@@ -545,11 +545,9 @@ class Interpreter:
         match expr.operator.type:
             case TokenType.BANG:
                 return not self.isTruthy(right)
-            case MINUS:
+            case TokenType.MINUS:
                 self.checkNumberOperand(expr.operator, right)
                 return -1 * float(right)
-        
-        return None
 
     def visitVariableExpr(self, expr: Expr.Variable):
         return self.lookUpVariable(expr.name, expr)
