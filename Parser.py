@@ -310,11 +310,11 @@ class Parser:
             operator = self.previous()
             elements = []
             if not self.check(TokenType.RIGHT_BRACKET):
-                element = self.lambdaExpr()
+                element = self.listExpr()
                 elements.append(element)
 
                 while self.match(TokenType.COMMA):
-                    element = self.lambdaExpr()
+                    element = self.listExpr()
                     elements.append(element)
             
             self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
