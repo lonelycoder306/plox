@@ -288,9 +288,9 @@ class Interpreter:
             if (type(end) != float) or (int(end) != end):
                 raise RuntimeError(expr.operator, "End index must be an integer.")
 
-        try:
+        if type(object) == str:
             length = len(object)
-        except TypeError:
+        elif type(object) == List:
             object = object.array
             length = len(object)
         if end == None: # Only accessing a single element.
@@ -454,7 +454,7 @@ class Interpreter:
     
     def visitGetExpr(self, expr: Expr.Get):
         object = self.evaluate(expr.object)
-        if isinstance(object, LoxInstance):
+        if (isinstance(object, LoxInstance)) or (type(object) == List):
             return object.get(expr.name)
         
         raise RuntimeError(expr.name, "Only instances have properties.")
@@ -491,7 +491,7 @@ class Interpreter:
     def visitSetExpr(self, expr: Expr.Set):
         object = self.evaluate(expr.object)
 
-        if isinstance(object, LoxInstance):
+        if (isinstance(object, LoxInstance)) or (type(object) == List):
             value = self.evaluate(expr.value)
             object.set(expr.name, value)
             return value
