@@ -22,7 +22,7 @@ class LoxFunction(LoxCallable):
             environment.define(self.declaration.params[i].lexeme, arguments[i])
         
         from Token import Token, TokenType
-        dummyToken = Token(TokenType.THIS, "this", None, 0, 0)
+        dummyToken = Token(TokenType.THIS, "this", 0, 0, None)
 
         try:
             interpreter.executeBlock(self.declaration.body, environment)

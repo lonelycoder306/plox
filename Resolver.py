@@ -131,7 +131,7 @@ class Resolver:
         self.define(stmt.name)
 
         self.beginScope()
-        dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0)
+        dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0, None)
         self.declare(dummyThis)
         self.define(dummyThis)
 

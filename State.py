@@ -5,7 +5,9 @@
 # For error-handling.
 hadError = False # If a lex error, parse error, or resolve error occurred during their respective stages.
 hadRuntimeError = False # If a runtime error occurred during the interpreter stage.
-fileLines = list() # List containing all the lines in the file being executed (to print out lines containing errors).
+# Dictionary containing all the lines in the file being executed (to print out lines containing errors) 
+# with their associated file name.
+fileLines = dict()
 
 # For debug option (files only).
 inAFile = False # Whether or not we are running a file or command-line prompts.

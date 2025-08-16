@@ -4,6 +4,7 @@ from Error import LexError
 class Scanner:
     source = str()
     tokens = list()
+    fileName = str()
     start = 0
     current = 0
     column = 0 # First character on line is at column 1 (advance increments column immediately upon the first character.)
@@ -34,8 +35,9 @@ class Scanner:
         "GetFile": TokenType.GET
     }
 
-    def __init__(self, source):
+    def __init__(self, source, fileName):
         self.source = source
+        self.fileName = fileName
 
     def scanTokens(self):
         # Reset the list to be empty so that it is ready for each new line/file.
@@ -47,7 +49,7 @@ class Scanner:
                 self.scanToken()
             except LexError as error:
                 error.show()
-        self.tokens.append(Token(TokenType.EOF, "", None, self.line, self.column))
+        self.tokens.append(Token(TokenType.EOF, "", None, self.line, self.column, self.fileName))
         return self.tokens
 
     def scanToken(self):
@@ -219,4 +221,4 @@ class Scanner:
     # Used default parameter values instead.
     def addToken(self, type, literal = None):
         text = self.source[self.start:self.current]
-        self.tokens.append(Token(type, text, literal, self.line, self.column))
+        self.tokens.append(Token(type, text, literal, self.line, self.column, self.fileName))

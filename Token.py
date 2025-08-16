@@ -9,12 +9,13 @@ TokenType = Enum('TokenType',
                  'BREAK, CONTINUE, Q_MARK, COLON, MOD, POWER, LIST, GET')
 
 class Token:
-    def __init__(self, type: TokenType, lexeme: str, literal, line: int, column: int):
+    def __init__(self, type: TokenType, lexeme: str, literal, line: int, column: int, fileName: str):
         self.type = type
         self.lexeme = lexeme
         self.literal = literal
         self.line = line
         self.column = column
+        self.fileName = fileName
     
     def toString(self):
         if self.type.name != "EOF":

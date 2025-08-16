@@ -12,10 +12,10 @@ if len(sys.argv) == 2:
 
 interpreter = Interpreter()
 
-def run(source):
+def run(source, fileName = None):
     import State
 
-    scanner = Scanner(source)
+    scanner = Scanner(source, fileName)
     tokens = scanner.scanTokens()
 
     # Stop if there was a syntax (scanning) error.
@@ -52,11 +52,11 @@ def runFile(path):
 
     try:
         with open(path, "r") as file:
-            State.fileLines = file.readlines()
+            State.fileLines[path] = file.readlines()
         with open(path, "r") as file:
             content = file.read()
         State.inAFile = True
-        run(content)
+        run(content, path)
     except FileNotFoundError:
         sys.stderr.write("Could not run. File not found.\n")
         sys.exit(66)
@@ -107,18 +107,19 @@ def report(error, line, column, where, message):
     elif type(error) == ResolveError:
         sys.stderr.write("Resolve ")
     import State
+    file = error.token.fileName
     if type(error) != LexError: # Lex errors are different since there are no tokens whose fields we can use.
-        if (fileName != None) and (not State.debugMode): # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
+        if (file != None) and (not State.debugMode): # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
             if len(error.token.lexeme) == 0:
-                sys.stderr.write(f'error{where} ["{fileName}", line {line}]: {message}\n')
-                printErrorLine(line)
+                sys.stderr.write(f'error{where} ["{file}", line {line}]: {message}\n')
+                printErrorLine(line, file)
             elif len(error.token.lexeme) == 1:
-                sys.stderr.write(f'error{where} ["{fileName}", line {line}, {column}]: {message}\n')
-                printErrorLine(line, column, column)
+                sys.stderr.write(f'error{where} ["{file}", line {line}, {column}]: {message}\n')
+                printErrorLine(line, file, column, column)
             else:
                 lexemeLen = len(error.token.lexeme)
-                sys.stderr.write(f'error{where} ["{fileName}", line {line}, {column}-{column + lexemeLen - 1}]: {message}\n')
-                printErrorLine(line, column, column + lexemeLen - 1)
+                sys.stderr.write(f'error{where} ["{file}", line {line}, {column}-{column + lexemeLen - 1}]: {message}\n')
+                printErrorLine(line, file, column, column + lexemeLen - 1)
         else: # Using REPL.
             offset = State.debugOffset
             if len(error.token.lexeme) == 0:
@@ -129,9 +130,9 @@ def report(error, line, column, where, message):
                 lexemeLen = len(error.token.lexeme)
                 sys.stderr.write(f'error{where} [{column - offset}-{column + lexemeLen - 1 - offset}]: {message}\n')
     else: # Lex Error.
-        if (fileName != None) and (not State.debugMode):
-            sys.stderr.write(f'error{where} ["{fileName}", line {line}, {column}]: {message}\n')
-            printErrorLine(line, column, column)
+        if (file != None) and (not State.debugMode):
+            sys.stderr.write(f'error{where} ["{file}", line {line}, {column}]: {message}\n')
+            printErrorLine(line, file, column, column)
         else:
             offset = State.debugOffset
             sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
@@ -141,17 +142,18 @@ def runtimeError(error: RuntimeError):
     line = error.token.line
     column = error.token.column
     lexemeLen = len(error.token.lexeme)
+    file = error.token.fileName
     import State
-    if (fileName != None) and (not State.debugMode):
+    if (file != None) and (not State.debugMode):
         if lexemeLen == 0:
-            sys.stderr.write(f'Runtime error ["{fileName}", line {line}]: {error.message}\n')
-            printErrorLine(line)
+            sys.stderr.write(f'Runtime error ["{file}", line {line}]: {error.message}\n')
+            printErrorLine(line, file)
         elif lexemeLen == 1:
-            sys.stderr.write(f'Runtime error ["{fileName}", line {line}, {column}]: {error.message}\n')
-            printErrorLine(line, column, column)
+            sys.stderr.write(f'Runtime error ["{file}", line {line}, {column}]: {error.message}\n')
+            printErrorLine(line, file, column, column)
         else:
-            sys.stderr.write(f'Runtime error ["{fileName}", line {line}, {column}-{column + lexemeLen - 1}]: {error.message}\n')
-            printErrorLine(line, column, column + lexemeLen - 1)
+            sys.stderr.write(f'Runtime error ["{file}", line {line}, {column}-{column + lexemeLen - 1}]: {error.message}\n')
+            printErrorLine(line, file, column, column + lexemeLen - 1)
     else: # No point in printing the line since the REPL interpreter will always consider the prompt to be line 1.
         offset = State.debugOffset
         if lexemeLen == 0:
@@ -169,12 +171,13 @@ def warn(warning):
     line = warning.token.line
     column = warning.token.column
     lexemeLen = len(warning.token.lexeme)
+    file = warning.token.fileName
     import State
-    if (fileName != None) and (not State.debugMode):
+    if (file != None) and (not State.debugMode):
         if lexemeLen == 1: 
-            sys.stderr.write(f'Warning ["{fileName}", line {line}, {column}]: ' + warning.message)
+            sys.stderr.write(f'Warning ["{file}", line {line}, {column}]: ' + warning.message)
         else:
-            sys.stderr.write(f'Warning ["{fileName}", line {line}, {column}-{column + lexemeLen - 1}]: ' + warning.message)
+            sys.stderr.write(f'Warning ["{file}", line {line}, {column}-{column + lexemeLen - 1}]: ' + warning.message)
     else:
         if lexemeLen == 1: 
             sys.stderr.write(f'Warning [{column}]: ' + warning.message)
@@ -183,10 +186,10 @@ def warn(warning):
 
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
-def printErrorLine(line: int, start = None, end = None):
+def printErrorLine(line: int, file: str, start = None, end = None):
     import State
     # rstrip used so a potential newline at the end of a line does not impact our error message.
-    printLine = State.fileLines[line - 1].rstrip('\n') # -1 since line is minimum 1.
+    printLine = State.fileLines[file][line - 1].rstrip('\n') # -1 since line is minimum 1.
     # Strip all the whitespace on the left-side of the line, and record how much it is shifted to the left (to move the arrows to the left by the same amount).
     prevLineLen = len(printLine)
     printLine = printLine.lstrip()

@@ -224,7 +224,7 @@ class breakpointStop(Exception):
                     try:
                         from Scanner import Scanner
                         from Parser import Parser
-                        tokens = Scanner(f"print {arguments[1]};").scanTokens()
+                        tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
                         statements = Parser(tokens).parse()
 
                         self.interpreter.environment = self.environment
