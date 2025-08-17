@@ -126,7 +126,7 @@ class fileFunction(LoxCallable):
             content = fd.read()
             return len(content)
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
         finally:
             fd.seek(previous)
 
@@ -139,19 +139,19 @@ class fileFunction(LoxCallable):
             instance.fields["fd"] = open(path, "r+")
             return instance
         except FileExistsError:
-            raise RuntimeError(expr.callee.name, "File already exists.")
+            raise RuntimeError(expr.rightParen, "File already exists.")
         except ValueError:
-            raise RuntimeError(expr.callee.name, "Null byte (\\0) in pathname.")
+            raise RuntimeError(expr.rightParen, "Null byte (\\0) in pathname.")
         except FileNotFoundError:
-            raise RuntimeError(expr.callee.name, 
+            raise RuntimeError(expr.rightParen, 
                                "Incorrect pathname (pathname is empty or inside non-existent directory).")
         except PermissionError:
-            raise RuntimeError(expr.callee.name, 
+            raise RuntimeError(expr.rightParen, 
                                "No permission to create files in given directory.")
         except IsADirectoryError:
-            raise RuntimeError(expr.callee.name, "Directory exists with the same name.")
+            raise RuntimeError(expr.rightParen, "Directory exists with the same name.")
         except OSError as error:
-                raise RuntimeError(expr.callee.name, 
+                raise RuntimeError(expr.rightParen, 
                                    f"Error deleting file '{path}':\n{str(error)}")
 
     def f_fileopen(self, path: str, expr):
@@ -160,7 +160,7 @@ class fileFunction(LoxCallable):
             instance.fields["fd"] = open(path, "r+")
             return instance
         except FileNotFoundError:
-            raise RuntimeError(expr.callee.name, "File does not exist.")
+            raise RuntimeError(expr.rightParen, "File does not exist.")
     
     def f_filehas(self, path: str, expr):
         from pathlib import Path
@@ -173,9 +173,9 @@ class fileFunction(LoxCallable):
                 os.remove(path)
             # In case of any OS errors, like lack of permissions or file being used in another process.
             except OSError as error:
-                raise RuntimeError(expr.callee.name, f"Error deleting file '{path}':\n{str(error)}")
+                raise RuntimeError(expr.rightParen, f"Error deleting file '{path}':\n{str(error)}")
         else:
-            raise RuntimeError(expr.callee.name, "File not found.")
+            raise RuntimeError(expr.rightParen, "File not found.")
     
     def f_filedrop(self):
         self.fd.close()
@@ -192,7 +192,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
             return chars
         except ValueError: # File is closed.
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     def f_filebytes(self, n: int, expr):
         try:
@@ -202,7 +202,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
             return nbytes
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     def f_fileword(self, expr):
         try:
@@ -227,7 +227,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
             return word
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     def f_fileline(self, expr):
         try:
@@ -236,7 +236,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
             return line.strip()
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     def f_filelines(self, n, expr):
         try:
@@ -245,7 +245,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
             return filelines
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     def f_fileall(self, expr):
         try:
@@ -254,7 +254,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
             return file
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     # File output.
     
@@ -267,7 +267,7 @@ class fileFunction(LoxCallable):
             else:
                 self.fd.write(string)
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
         finally:
             self.fd.seek(previous)
     
@@ -283,7 +283,7 @@ class fileFunction(LoxCallable):
                 self.fd.write(string)
             self.fd.seek(previous)
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
         finally:
             self.fd.seek(previous)
 
@@ -291,20 +291,20 @@ class fileFunction(LoxCallable):
 
     def f_filejump(self, pos: int, expr):
         if pos >= self.filesize(self.fd, expr):
-            raise RuntimeError(expr.callee.name, "Jump value is beyond end of file.")
+            raise RuntimeError(expr.rightParen, "Jump value is beyond end of file.")
         try:
             self.fd.seek(pos)
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
 
     def f_fileskip(self, skip: int, expr):
         if (self.f_filepos(expr) + skip) >= self.filesize(self.fd, expr):
-            raise RuntimeError(expr.callee.name, "Position after skip is beyond end of file.")
+            raise RuntimeError(expr.rightParen, "Position after skip is beyond end of file.")
         try:
             position = self.fd.tell()
             self.fd.seek(position + skip)
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
 
     def f_filelimits(self, option: str, expr):
         try:
@@ -314,13 +314,13 @@ class fileFunction(LoxCallable):
                 case "e":
                     self.fd.seek(0,2)
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
     
     def f_filepos(self, expr):
         try:
             return float(self.fd.tell()) # Make sure all our numbers are floats.
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
 
     def f_feof(self, expr) -> bool:
         try:
@@ -330,7 +330,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous) # Only return to original position if not at end.
             return False
         except ValueError:
-            raise RuntimeError(expr.callee.name, "File is closed.")
+            raise RuntimeError(expr.rightParen, "File is closed.")
 
     # ------------------------------------------------------------
 
@@ -385,25 +385,25 @@ class fileFunction(LoxCallable):
     def check_filemake(self, expr, arguments):
         if (type(arguments[0]) == str) and (type(arguments[1] == bool)):
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string, boolean.")
 
     def check_fileopen(self, expr, arguments):
         if type(arguments[0]) == str:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
 
     def check_filehas(self, expr, arguments):
         if type(arguments[0]) == str:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
     
     def check_fileremove(self, expr, arguments):
         if type(arguments[0]) == str:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
 
     def check_filedrop(self, expr, arguments):
@@ -415,13 +415,13 @@ class fileFunction(LoxCallable):
     def check_filechars(self, expr, arguments):
         if type(arguments[0]) == float:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
 
     def check_filebytes(self, expr, arguments):
         if type(arguments[0]) == float:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
 
     def check_fileword(self, expr, arguments):
@@ -433,7 +433,7 @@ class fileFunction(LoxCallable):
     def check_filelines(self, expr, arguments):
         if type(arguments[0]) == float:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
 
     def check_fileall(self, expr, arguments):
@@ -442,35 +442,35 @@ class fileFunction(LoxCallable):
     def check_filewrite(self, expr, arguments):
         if (type(arguments[0]) == str)  and (type(arguments[1]) == bool):
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string, boolean.")
 
     def check_fileput(self, expr, arguments):
         if (type(arguments[0]) == str) and (type(arguments[1]) == float) and (type(arguments[2] == bool)):
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string, number.")
 
     def check_filejump(self, expr, arguments):
         if type(arguments[0]) == float:
             if int(arguments[0]) < 0:
-                raise RuntimeError(expr.callee.name, "Jump value cannot be negative.")
+                raise RuntimeError(expr.rightParen, "Jump value cannot be negative.")
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
 
     def check_fileskip(self, expr, arguments):
         if type(arguments[0]) == float:
             if int(arguments[0]) < 0:
-                raise RuntimeError(expr.callee.name, "Skip value cannot be negative.")
+                raise RuntimeError(expr.rightParen, "Skip value cannot be negative.")
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
 
     def check_filelimits(self, expr, arguments):
         if type(arguments[0]) == str:
             return True
-        raise RuntimeError(expr.callee.name, "Arguments do not match accepted parameter types.\n" \
+        raise RuntimeError(expr.rightParen, "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
 
     def check_filepos(self, expr, arguments):
