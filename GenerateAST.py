@@ -22,7 +22,7 @@ def defineAST(directory, classes, file):
         file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
 
 ExprClasses = [ "Access     : object, operator, start, end",
-                "Assign     : name, value",
+                "Assign     : name, equals, value",
                 "Binary     : left, operator, right",
                 "Call       : callee, leftParen, rightParen, arguments",
                 "Comma      : expressions",

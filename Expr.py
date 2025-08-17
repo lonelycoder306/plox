@@ -10,8 +10,9 @@ class Expr:
 			return visitor.visitAccessExpr(self)
 
 	class Assign:
-		def __init__(self, name, value):
+		def __init__(self, name, equals, value):
 			self.name = name
+			self.equals = equals
 			self.value = value
 
 		def accept(self, visitor):

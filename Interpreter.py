@@ -181,7 +181,7 @@ class Interpreter:
         if (value == None) and (type(stmt.initializer) == Expr.Call):
             # Check if the token passed here needs to be modified if the callee
             # is of a different form (e.g., a[0](x,y)).
-            raise RuntimeError(stmt.initializer.callee.name, "Cannot assign non-returning function call to variable.")
+            raise RuntimeError(stmt.equals, "Cannot assign non-returning function call to variable.")
 
         self.environment.define(stmt.name.lexeme, value)
 
@@ -349,7 +349,7 @@ class Interpreter:
         if (value == None) and (type(expr.value) == Expr.Call):
             # Check if the token passed here needs to be modified if the callee
             # is of a different form (e.g., a[0](x,y)).
-            raise RuntimeError(expr.value.callee.name, "Cannot assign non-returning function call to variable.")
+            raise RuntimeError(expr.equals, "Cannot assign non-returning function call to variable.")
 
         distance = self.locals.get(expr, None)
         if distance != None:

@@ -372,7 +372,7 @@ class Parser:
 
             if type(expr) == Expr.Variable:
                 name = expr.name
-                return Expr.Assign(name, value)
+                return Expr.Assign(name, equals, value)
             
             if type(expr) == Expr.Get:
                 return Expr.Set(expr.object, expr.name, value)
