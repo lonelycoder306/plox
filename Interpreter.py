@@ -320,6 +320,58 @@ class Interpreter:
             else:
                 raise RuntimeError(expr.operator, "End index out of bounds.")
     
+    def plus(self, expr, left, right):
+        if (type(left) == List) and (type(right) == List):
+            return List(left.array + right.array)
+
+        if (type(left) == float) and (type(right) == float):
+            return (float(left) + float(right))
+        
+        if (type(left) == str) and (type(right) == str):
+            return (str(left) + str(right))
+        
+        # Allows for concatenation of a string and a non-numeric variable as well.
+        if type(left) == str:
+            return str(left) + self.stringify(right)
+        
+        if type(right) == str:
+            return self.stringify(left) + str(right)
+        
+        raise RuntimeError(expr.operator, "Cannot add given operands.")
+    
+    def star(self, expr, left, right):
+        if type(left) == str:
+            if type(right) == float:
+                if int(right) == right:
+                    return left * int(right)
+                raise RuntimeError(expr.operator, 
+                                    "Cannot multiply string by non-integer number.")
+            elif type(right) == str:
+                raise RuntimeError(expr.operator, 
+                                    "Cannot multiply string by string.")
+            
+            elif type(right) == bool:
+                return left * right
+        
+        elif type(right) == str:
+            if type(left) == float:
+                if int(left) == left:
+                    return right * int(left)
+                raise RuntimeError(expr.operator, 
+                                    "Cannot multiply string by non-integer number.")
+            elif type(left) == str:
+                raise RuntimeError(expr.operator, 
+                                    "Cannot multiply string by string.")
+
+            elif type(left) == bool:
+                return left * right
+
+        options = [(float, float), (float, bool), (bool, float), (bool, bool)]
+        if (type(left), type(right)) in options:
+            return (float(left) * float(right))
+        
+        raise RuntimeError(expr.operator, "Invalid product.")
+    
     def evaluate(self, expr):
         return expr.accept(self)
     
@@ -383,24 +435,7 @@ class Interpreter:
                 self.checkNumberOperands(expr.operator, left, right)
                 return (float(left) - float(right))
             case TokenType.PLUS:
-                if (type(left) == List) and (type(right) == List):
-                    return List(left.array + right.array)
-
-                if (type(left) == float) and (type(right) == float):
-                    return (float(left) + float(right))
-                
-                if (type(left) == str) and (type(right) == str):
-                    return (str(left) + str(right))
-                
-                # Allows for concatenation of a string and a non-numeric variable as well.
-                if type(left) == str:
-                    return str(left) + self.stringify(right)
-                
-                if type(right) == str:
-                    return self.stringify(left) + str(right)
-                
-                raise RuntimeError(expr.operator, 
-                                   "Cannot add given operands.")
+                return self.plus(expr, left, right)
             case TokenType.SLASH:
                 self.checkNumberOperands(expr.operator, left, right)
                 # Comparison with 0 works even for floats.
@@ -408,39 +443,11 @@ class Interpreter:
                     raise RuntimeError(expr.operator, "Division by zero not allowed.")
                 return (float(left) / float(right))
             case TokenType.STAR:
-                if type(left) == str:
-                    if type(right) == float:
-                        if int(right) == right:
-                            return left * int(right)
-                        raise RuntimeError(expr.operator, 
-                                           "Cannot multiply string by non-integer number.")
-                    elif type(right) == str:
-                        raise RuntimeError(expr.operator, 
-                                           "Cannot multiply string by string.")
-                    
-                    elif type(right) == bool:
-                        return left * right
-                
-                elif type(right) == str:
-                    if type(left) == float:
-                        if int(left) == left:
-                            return right * int(left)
-                        raise RuntimeError(expr.operator, 
-                                           "Cannot multiply string by non-integer number.")
-                    elif type(left) == str:
-                        raise RuntimeError(expr.operator, 
-                                           "Cannot multiply string by string.")
-
-                    elif type(left) == bool:
-                        return left * right
-
-                options = [(float, float), (float, bool), (bool, float), (bool, bool)]
-                if (type(left), type(right)) in options:
-                    return (float(left) * float(right))
-                
-                raise RuntimeError(expr.operator, "Invalid product.")
+                return self.star(expr, left, right)
             case TokenType.MOD:
                 self.checkNumberOperands(expr.operator, left, right)
+                if float(right) == 0:
+                    raise RuntimeError(expr.operator, "Cannot compute value mod 0.")
                 return (float(left) % float(right))
             case TokenType.POWER:
                 self.checkNumberOperands(expr.operator, left, right)
