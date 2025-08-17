@@ -416,17 +416,26 @@ class Interpreter:
 
         match expr.operator.type:
             case TokenType.GREATER:
-                self.checkNumberOperands(expr.operator, left, right)
-                return (float(left) > float(right))
+                # self.checkNumberOperands(expr.operator, left, right)
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left > right)
+                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
             case TokenType.GREATER_EQUAL:
-                self.checkNumberOperands(expr.operator, left, right)
-                return (float(left) >= float(right))
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left >= right)
+                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
             case TokenType.LESS:
-                self.checkNumberOperands(expr.operator, left, right)
-                return (float(left) < float(right))
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left < right)
+                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
             case TokenType.LESS_EQUAL:
-                self.checkNumberOperands(expr.operator, left, right)
-                return (float(left) <= float(right))
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left < right)
+                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
             case TokenType.BANG_EQUAL:
                 return (type(left) != type(right) or (left != right))
             case TokenType.EQUAL_EQUAL:
