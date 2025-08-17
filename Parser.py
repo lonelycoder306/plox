@@ -223,11 +223,17 @@ class Parser:
         name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
 
         initializer = None
+        equals = None
         if self.match(TokenType.EQUAL):
+            equals = self.previous()
             initializer = self.expression()
         
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
-        return Stmt.Var(name, initializer)
+
+        if type(initializer) == Expr.List:
+            raise ParseError(equals, "Cannot assign list to variable with 'var' modifier.")
+
+        return Stmt.Var(name, equals, initializer)
     
     def whileStatement(self):
         self.loopLevel += 1
@@ -372,7 +378,7 @@ class Parser:
                 return Expr.Set(expr.object, expr.name, value)
             
             if (type(expr) == Expr.Access) and (type(expr.object) == Expr.Variable):
-                return Expr.Modify(expr, value)
+                return Expr.Modify(expr, equals, value)
             
             raise ParseError(equals, "Invalid assignment target.")
         

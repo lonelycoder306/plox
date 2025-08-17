@@ -32,7 +32,7 @@ ExprClasses = [ "Access     : object, operator, start, end",
                 "List       : elements, operator",
                 "Literal    : value",
                 "Logical    : left, operator, right",
-                "Modify     : part, value",
+                "Modify     : part, operator, value",
                 "Set        : object, name, value",
                 "Ternary    : condition,  trueBranch,  falseBranch",
                 "This       : keyword",
@@ -50,7 +50,7 @@ StmtClasses = [ "Break      : breakCMD, loopType",
                 "List       : name, initializer",
                 "Print      : expression",
                 "Return     : keyword, value",
-                "Var        : name, initializer",
+                "Var        : name, equals, initializer",
                 "While      : condition, body"]
 
 with open("Expr.py", "w") as f:

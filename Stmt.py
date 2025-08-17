@@ -87,8 +87,9 @@ class Stmt:
 			return visitor.visitReturnStmt(self)
 
 	class Var:
-		def __init__(self, name, initializer):
+		def __init__(self, name, equals, initializer):
 			self.name = name
+			self.equals = equals
 			self.initializer = initializer
 
 		def accept(self, visitor):

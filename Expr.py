@@ -90,8 +90,9 @@ class Expr:
 			return visitor.visitLogicalExpr(self)
 
 	class Modify:
-		def __init__(self, part, value):
+		def __init__(self, part, operator, value):
 			self.part = part
+			self.operator = operator
 			self.value = value
 
 		def accept(self, visitor):
