@@ -62,7 +62,8 @@ class Interpreter:
             # Make a shallow copy so objects defined in the new environment
             # don't stay behind once the scope is exited.
             # Allows imports in an outer scope to still be defined in an inner scope.
-            self.varEnvs.append(lastEnv.copy())
+            import copy
+            self.varEnvs.append(copy.deepcopy(lastEnv))
 
             for statement in statements:
                 self.execute(statement)
