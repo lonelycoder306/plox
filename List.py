@@ -333,7 +333,7 @@ class ListInit(LoxCallable):
     def check(self, arguments, expr):
         if (type(arguments[0]) == List) or (type(arguments[0]) == str):
             return True
-        raise RuntimeError(expr.callee.name, 
+        raise RuntimeError(expr.callee.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: list or string.")
 
