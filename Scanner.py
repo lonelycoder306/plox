@@ -150,6 +150,9 @@ class Scanner:
             case '"':
                 self.string()
             
+            case '`':
+                self.string()
+            
             case _:
                 if c.isdigit():
                     self.number()
@@ -184,13 +187,23 @@ class Scanner:
         self.column += len(self.tokens[-1].lexeme) - 1
     
     def string(self):
-        while (self.peek() != '"') and (not self.isAtEnd()):
-            if self.peek() == '\n':
-                self.line += 1
-                self.column = 0
-            self.advance()
-        if self.isAtEnd():
-            raise LexError(self.line, self.column, self.fileName, "Unterminated string.")
+        previous = self.source[self.current - 1]
+        if previous == '`':
+            while (self.peek() != '`') and (not self.isAtEnd()):
+                if self.peek() == '\n':
+                    self.line += 1
+                    self.column = 0
+                self.advance()
+            if self.isAtEnd():
+                raise LexError(self.line, self.column, self.fileName, "Unterminated string.")
+        elif previous == '"':
+            while (self.peek() != '"') and (not self.isAtEnd()):
+                if self.peek() == '\n':
+                    break
+                self.advance()
+            # Use peek, not match, or otherwise the ; gets skipped.
+            if (self.isAtEnd()) or (self.peek() != '"'):
+                raise LexError(self.line, self.column, self.fileName, "Unterminated string.")
         # The closing ".
         self.advance()
         
