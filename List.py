@@ -28,7 +28,7 @@ class ListFunction(LoxCallable):
                 self.l_remove(expr, arguments[0])
             # Removes argument from list (if found) and returns it.
             case "delete":
-                self.l_delete(expr, arguments[0])
+                self.l_delete(expr, arguments[0], arguments[1])
 
             # Applies some operation to all elements.
             # Operation need not return a value.
@@ -124,9 +124,15 @@ class ListFunction(LoxCallable):
         self.instance.array = array
         return element
 
-    def l_delete(self, expr, element):
-        self.instance.array.remove(element) # Handle ValueError here.
-        return element
+    def l_delete(self, expr, element, all: bool = False):
+        # Handle ValueError here.
+        array = self.instance.array
+        if all:
+            while element in array:
+                array.remove(element)
+        else:
+            if element in array:
+                self.instance.array.remove(element)
 
     def l_forEach(self, expr, operation):
         pass
@@ -228,7 +234,7 @@ class ListFunction(LoxCallable):
             case "remove":
                 return 1
             case "delete":
-                return 1
+                return 2
 
             case "forEach":
                 return 1
