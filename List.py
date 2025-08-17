@@ -59,7 +59,12 @@ class List:
         dummyInterpreter = Interpreter()
         string = "["
         for element in self.array:
-            string += dummyInterpreter.stringify(element) + ", "
+            if type(element) == str:
+                string += "\""
+            string += dummyInterpreter.stringify(element)
+            if type(element) == str:
+                string += "\""
+            string += ", "
         if string[-2:] == ", ":
             string = string[:-2]
         string += "]"
@@ -72,15 +77,18 @@ class ListInit(LoxCallable):
         self.instance = instance
     
     def check(self, arguments, expr):
-        if type(arguments[0]) == List:
+        if (type(arguments[0]) == List) or (type(arguments[0]) == str):
             return True
         raise RuntimeError(expr.callee.name, 
                                        "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: list.")
+                                       "Types are: list or string.")
 
     def call(self, interpreter, expr, arguments):
         if self.check(arguments, expr):
-            return List(arguments[0].array)
+            try:
+                return List(arguments[0].array)
+            except AttributeError:
+                return List(list(arguments[0]))
 
     def arity(self):
         return 1
