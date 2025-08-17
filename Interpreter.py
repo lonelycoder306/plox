@@ -269,12 +269,20 @@ class Interpreter:
 
         distance = self.locals.get(expr, None)
         if distance != None:
-            return self.environment.getAt(distance, name)
+            value = self.environment.getAt(distance, name)
+            if type(value) == List:
+                import copy
+                return copy.deepcopy(value)
+            return value
         else:
             # Check if variable is in the user-defined global scope.
             for env in self.varEnvs[-1]:
                 if name.lexeme in env.values.keys():
-                    return env.get(name)
+                    value = env.get(name)
+                    if type(value) == List:
+                        import copy
+                        return copy.deepcopy(value)
+                    return value
             # We only fetch a variable's value if it is defined in the environment, i.e.,
             # its name is a key in the environment's value dictionary.
             # If the variable is undefined, we never try to fetch it, so no error is raised.
