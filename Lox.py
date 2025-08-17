@@ -7,8 +7,12 @@ from Resolver import Resolver
 from Error import LexError, ParseError, ResolveError, RuntimeError
 
 fileName = None
+testMode = False
 if len(sys.argv) == 2:
-    fileName = sys.argv[1]
+    if sys.argv[1] == "-test":
+        testMode = True
+    else:
+        fileName = sys.argv[1]
 
 interpreter = Interpreter()
 
@@ -49,7 +53,7 @@ def run(source, fileName = None):
         State.inAFile = False
         runPrompt()
 
-def runFile(path):
+def runFile(path, baseName = None):
     import State
 
     try:
@@ -57,17 +61,24 @@ def runFile(path):
             State.fileLines[path] = file.readlines()
         with open(path, "r") as file:
             content = file.read()
+        if testMode:
+            f = open(f"Testing/Tests Output/{baseName}Output.txt", "r+")
+            sys.stdout = f
         State.inAFile = True
         run(content, path)
     except FileNotFoundError:
         sys.stderr.write("Could not run. File not found.\n")
         sys.exit(66)
 
-    if State.hadError:
-        sys.exit(65)
-    
-    if State.hadRuntimeError:
-        sys.exit(70)
+    if not testMode:
+        if State.hadError:
+            sys.exit(65)
+        
+        if State.hadRuntimeError:
+            sys.exit(70)
+    else:
+        State.hadError = False
+        State.hadRuntimeError = False
 
 def runPrompt():
     while True:
@@ -219,15 +230,28 @@ def printErrorLine(line: int, file: str, start = None, end = None):
         sys.stderr.write("^\n")
     sys.stderr.flush()
 
+def fileNameCheck(path):
+    if (len(path) < 4) or (path[-4:] != ".lox"):
+        sys.stderr.write("Invalid lox file.\n")
+        sys.exit(64) # Same issue (bad usage), so same exit code.
+
 def main():
     if len(sys.argv) > 2:
         sys.stderr.write("Usage: plox [script]\n")
         sys.exit(64)
     elif len(sys.argv) == 2:
-        if (len(fileName) < 4) or (fileName[-4:] != ".lox"):
-            sys.stderr.write("Invalid lox file.\n")
-            sys.exit(64) # Same issue (bad usage), so same exit code.
-        runFile(sys.argv[1])
+        if testMode:
+            with open("Testing/testList.txt") as f:
+                lines = f.readlines()
+                for line in lines:
+                    if line[-1] == '\n':
+                        line = line[:-1]
+                    path = "Testing/Tests/"+line
+                    fileNameCheck(path)
+                    runFile(path, line[:-4])
+        else:
+            fileNameCheck(fileName)
+            runFile(fileName)
     else:
         runPrompt()
 
