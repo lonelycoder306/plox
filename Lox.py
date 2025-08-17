@@ -37,8 +37,10 @@ def run(source, fileName = None):
         return
     
     # Print out a warning for each unused variable after resolving is complete.
-    # Must be done after resolving has fully concluded so that warnings can be done only once and in order.
-    # Warnings only issued if no resolve errors (or errors before that) occured; personal design choice to limit warn/error messages.
+    # Must be done after resolving has fully concluded so that warnings 
+    # can be done only once and in order.
+    # Warnings only issued if no resolve errors (or errors before that) occured; 
+    # personal design choice to limit warn/error messages.
     resolver.varWarnings(resolver.localVars)
 
     interpreter.interpret(statements)
@@ -107,9 +109,11 @@ def report(error, line, column, where, message, lexerFile = None):
     elif type(error) == ResolveError:
         sys.stderr.write("Resolve ")
     import State
-    if type(error) != LexError: # Lex errors are different since there are no tokens whose fields we can use.
+    # Lex errors are different since there are no tokens whose fields we can use.
+    if type(error) != LexError:
         file = error.token.fileName
-        if (file != None) and (not State.debugMode): # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
+        # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
+        if (file != None) and (not State.debugMode):
             if len(error.token.lexeme) == 0:
                 sys.stderr.write(f'error{where} ["{file}", line {line}]: {message}\n')
                 printErrorLine(line, file)
@@ -190,7 +194,9 @@ def printErrorLine(line: int, file: str, start = None, end = None):
     import State
     # rstrip used so a potential newline at the end of a line does not impact our error message.
     printLine = State.fileLines[file][line - 1].rstrip('\n') # -1 since line is minimum 1.
-    # Strip all the whitespace on the left-side of the line, and record how much it is shifted to the left (to move the arrows to the left by the same amount).
+    # Strip all the whitespace on the left-side of the line, and record 
+    # how much it is shifted to the left (to move the arrows 
+    # to the left by the same amount).
     prevLineLen = len(printLine)
     printLine = printLine.lstrip()
     newLineLen = len(printLine)
@@ -199,7 +205,8 @@ def printErrorLine(line: int, file: str, start = None, end = None):
         end -= (prevLineLen - newLineLen)
         sys.stderr.write(f"{line} |\t{printLine}\n")
         space = " "
-        sys.stderr.write(space.ljust(len(str(line)) + 1, " ")) # Fill space before second vertical bar to align with above line.
+        # Fill space before second vertical bar to align with above line.
+        sys.stderr.write(space.ljust(len(str(line)) + 1, " "))
         sys.stderr.write("|\t")
         sys.stderr.write(" " * (start - 1))
         sys.stderr.write("^" * (end - start + 1) + '\n')
