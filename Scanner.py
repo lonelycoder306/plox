@@ -189,21 +189,26 @@ class Scanner:
     def string(self):
         previous = self.source[self.current - 1]
         if previous == '`':
+            pos = 0
             while (self.peek() != '`') and (not self.isAtEnd()):
                 if self.peek() == '\n':
                     self.line += 1
                     self.column = 0
+                    pos = 0
                 self.advance()
+                pos += 1
             if self.isAtEnd():
-                raise LexError(self.line, self.column, self.fileName, "Unterminated string.")
+                raise LexError(self.line, pos - 1, self.fileName, "Unterminated string.")
         elif previous == '"':
+            pos = self.column
             while (self.peek() != '"') and (not self.isAtEnd()):
                 if self.peek() == '\n':
                     break
                 self.advance()
+                pos += 1
             # Use peek, not match, or otherwise the ; gets skipped.
             if (self.isAtEnd()) or (self.peek() != '"'):
-                raise LexError(self.line, self.column, self.fileName, "Unterminated string.")
+                raise LexError(self.line, pos, self.fileName, "Unterminated string.")
         # The closing ".
         self.advance()
         
