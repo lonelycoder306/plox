@@ -148,6 +148,8 @@ class Interpreter:
             listInstance = self.evaluate(stmt.initializer)
             if type(listInstance) != List:
                 raise RuntimeError(stmt.name, "Cannot initialize list to non-list value.")
+            import copy
+            listInstance = copy.deepcopy(listInstance)
         self.environment.define(stmt.name.lexeme, listInstance)
 
     def visitPrintStmt(self, stmt: Stmt.Print):
@@ -174,6 +176,9 @@ class Interpreter:
         if stmt.initializer != None:
             value = self.evaluate(stmt.initializer)
         
+        if type(value) == List:
+            raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
+
         self.environment.define(stmt.name.lexeme, value)
 
     def visitWhileStmt(self, stmt: Stmt.While):
@@ -271,18 +276,12 @@ class Interpreter:
         distance = self.locals.get(expr, None)
         if distance != None:
             value = self.environment.getAt(distance, name)
-            if type(value) == List:
-                import copy
-                return copy.deepcopy(value)
             return value
         else:
             # Check if variable is in the user-defined global scope.
             for env in self.varEnvs[-1]:
                 if name.lexeme in env.values.keys():
                     value = env.get(name)
-                    if type(value) == List:
-                        import copy
-                        return copy.deepcopy(value)
                     return value
             # We only fetch a variable's value if it is defined in the environment, i.e.,
             # its name is a key in the environment's value dictionary.
@@ -340,6 +339,9 @@ class Interpreter:
 
     def visitAssignExpr(self, expr: Expr.Assign):
         value = self.evaluate(expr.value)
+        if type(value) == List:
+            import copy
+            value = copy.deepcopy(value)
 
         distance = self.locals.get(expr, None)
         if distance != None:
@@ -510,6 +512,10 @@ class Interpreter:
             end = self.evaluate(expr.part.end)
 
         if type(mod) == str:
+            # Error check.
+            if type(value) != str:
+                raise RuntimeError(expr.operator, "Cannot assign non-string to string part.")
+
             # Strings in Python are immutable.
             # They, thus, do not support direct item assignment.
             # Thus, we turn the string into a list of its characters,
@@ -521,9 +527,17 @@ class Interpreter:
                 tempList[int(start) : int(end) + 1] = value
             mod = "".join(tempList)
         elif type(mod) == List:
+            # Any value can be assigned to an element of a list,
+            # so no type-check needed here.
             if end == None:
                 mod.array[int(start)] = value
             else:
+                # Error check.
+                if type(value) != List:
+                    raise RuntimeError(expr.operator, "Can only assign list to list part.")
+                # We cannot modify an actual (built-in) list object with a custom List object.
+                # We thus turn value into its built-in list field.
+                value = value.array
                 mod.array[int(start) : int(end) + 1] = value
         name = expr.part.object.name
         self.environment.assign(name, mod)
