@@ -455,14 +455,14 @@ class Interpreter:
             arguments.append(self.evaluate(argument))
         
         if not isinstance(callee, LoxCallable):
-            raise RuntimeError(expr.paren, "No such function or class.")
+            raise RuntimeError(expr.leftParen, "No such function or class.")
         
         if len(arguments) != callee.arity():
             if callee.arity() == 1: # To make argument singular rather than plural (plural for 0 as well).
-                raise RuntimeError(expr.paren, 
+                raise RuntimeError(expr.rightParen, 
                                f"Expected {callee.arity()} argument but got {len(arguments)}.")
             else:
-                raise RuntimeError(expr.paren, 
+                raise RuntimeError(expr.rightParen, 
                                f"Expected {callee.arity()} arguments but got {len(arguments)}.")
         
         return callee.call(self, expr, arguments)

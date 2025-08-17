@@ -481,6 +481,8 @@ class Parser:
     def finishCall(self, callee):
         arguments = list()
 
+        leftParen = self.previous()
+
         if not self.check(TokenType.RIGHT_PAREN):
             if len(arguments) > 255:
                 raise ParseError(self.peek(), "Can't have more than 255 arguments.")
@@ -491,9 +493,9 @@ class Parser:
                     raise ParseError(self.peek(), "Can't have more than 255 arguments.")
                 arguments.append(self.listExpr())
         
-        paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+        rightParen = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
 
-        return Expr.Call(callee, paren, arguments)
+        return Expr.Call(callee, leftParen, rightParen, arguments)
     
     def call(self):
         expr = self.primary()
@@ -537,6 +539,11 @@ class Parser:
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Expr.Grouping(expr)
+        
+        if self.match(TokenType.LEFT_BRACKET):
+            expr = self.listExpr()
+            if type(expr) == Expr.List:
+                return Expr.List(expr.elements, expr.operator)
         
         # Could possibly add more operators (comma, ternary, etc.), but these are sufficient as important binary operators.
         # For other operators, the "Expect expression" error message would probably be sufficient.

@@ -2,6 +2,7 @@ from LoxCallable import LoxCallable
 from Environment import Environment
 from Error import RuntimeError
 from List import List
+from Expr import Expr
 
 # General class to implement built-in functions.
 '''
@@ -53,23 +54,38 @@ class BuiltinFunction(LoxCallable):
         return interpreter.stringify(object)
     
     def b_number(self, object, expr):
+        callee = None
+        if type(expr.callee) == Expr.Variable:
+            callee = expr.callee.name
+        elif type(expr.callee) == Expr.Access:
+            callee = expr.leftParen
         for char in object:
             if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
-                raise RuntimeError(expr.callee.name, "Invalid input to number().")
+                raise RuntimeError(callee, "Invalid input to number().")
         return float(object)
     
     def b_length(self, object, expr):
+        callee = None
+        if type(expr.callee) == Expr.Variable:
+            callee = expr.callee.name
+        elif type(expr.callee) == Expr.Access:
+            callee = expr.leftParen
         validTypes = (str, List)
         if type(object) not in validTypes: # Will work for strings (other data types to be added).
-            raise RuntimeError(expr.callee.name, "Invalid input to length().")
+            raise RuntimeError(callee, "Invalid input to length().")
         if type(object) == str:
             return float(len(object))
         elif type(object) == List:
             return float(len(object.array))
     
     def b_strformat(self, object, expr):
+        callee = None
+        if type(expr.callee) == Expr.Variable:
+            callee = expr.callee.name
+        elif type(expr.callee) == Expr.Access:
+            callee = expr.leftParen
         if type(object) != str:
-            raise RuntimeError(expr.callee.name, "strformat() only accepts string arguments.")
+            raise RuntimeError(callee, "strformat() only accepts string arguments.")
         return object.encode("utf-8").decode("unicode_escape")
     
     def b_breakpoint(self, interpreter):

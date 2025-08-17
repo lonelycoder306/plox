@@ -24,7 +24,7 @@ def defineAST(directory, classes, file):
 ExprClasses = [ "Access     : object, operator, start, end",
                 "Assign     : name, value",
                 "Binary     : left, operator, right",
-                "Call       : callee, paren, arguments",
+                "Call       : callee, leftParen, rightParen, arguments",
                 "Comma      : expressions",
                 "Get        : object, name",
                 "Grouping   : expression",

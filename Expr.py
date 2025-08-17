@@ -27,9 +27,10 @@ class Expr:
 			return visitor.visitBinaryExpr(self)
 
 	class Call:
-		def __init__(self, callee, paren, arguments):
+		def __init__(self, callee, leftParen, rightParen, arguments):
 			self.callee = callee
-			self.paren = paren
+			self.leftParen = leftParen
+			self.rightParen = rightParen
 			self.arguments = arguments
 
 		def accept(self, visitor):
