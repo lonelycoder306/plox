@@ -379,6 +379,17 @@ class Interpreter:
         
         raise RuntimeError(expr.operator, "Invalid product.")
     
+    def checkIndices(self, expr, object, start, end):
+        length = len(object)
+        if (start < 0) or (start >= length):
+            if end == None:
+                raise RuntimeError(expr.operator, "Index out of bounds.")
+            else:
+                raise RuntimeError(expr.operator, "Start index out of bounds.")
+        elif (end != None) and ((end < start) or (end >= length)):
+            raise RuntimeError(expr.operator, "End index out of bounds.")
+        return True
+    
     def evaluate(self, expr):
         return expr.accept(self)
     
@@ -551,25 +562,28 @@ class Interpreter:
             # They, thus, do not support direct item assignment.
             # Thus, we turn the string into a list of its characters,
             # make our modifications, and put it back together.
-            tempList = list(mod)
-            if end == None:
-                tempList[int(start)] = value
-            else:
-                tempList[int(start) : int(end) + 1] = value
-            mod = "".join(tempList)
+
+            if self.checkIndices(expr, mod, start, end):
+                tempList = list(mod)
+                if end == None:
+                    tempList[int(start)] = value
+                else:
+                    tempList[int(start) : int(end) + 1] = value
+                mod = "".join(tempList)
         elif type(mod) == List:
             # Any value can be assigned to an element of a list,
             # so no type-check needed here.
-            if end == None:
-                mod.array[int(start)] = value
-            else:
-                # Error check.
-                if type(value) != List:
-                    raise RuntimeError(expr.operator, "Can only assign list to list part.")
-                # We cannot modify an actual (built-in) list object with a custom List object.
-                # We thus turn value into its built-in list field.
-                value = value.array
-                mod.array[int(start) : int(end) + 1] = value
+            if self.checkIndices(expr, mod.array, start, end):
+                if end == None:
+                    mod.array[int(start)] = value
+                else:
+                    # Error check.
+                    if type(value) != List:
+                        raise RuntimeError(expr.operator, "Can only assign list to list part.")
+                    # We cannot modify an actual (built-in) list object with a custom List object.
+                    # We thus turn value into its built-in list field.
+                    value = value.array
+                    mod.array[int(start) : int(end) + 1] = value
         name = expr.part.object.name
         self.environment.assign(name, mod)
         return mod
