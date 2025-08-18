@@ -331,18 +331,30 @@ class ListInit(LoxCallable):
         self.instance = instance
     
     def check(self, arguments, expr):
-        if (type(arguments[0]) == List) or (type(arguments[0]) == str):
+        obj = arguments[0]
+        argType = type(obj)
+        if (argType == List) or (argType == str):
             return True
-        raise RuntimeError(expr.callee.rightParen, 
+        elif argType == float:
+            if int(obj) == obj:
+                return True
+        raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: list or string.")
+                                       "Types are: list/string/integer.")
 
     def call(self, interpreter, expr, arguments):
         if self.check(arguments, expr):
-            try:
+            obj = arguments[0]
+            if type(obj) == List:
                 return List(arguments[0].array)
-            except AttributeError:
+            elif type(obj) == str:
                 return List(list(arguments[0]))
+            elif type(obj) == float:
+                length = int(obj)
+                array = list()
+                for i in range(0, length):
+                    array.append(None)
+                return List(array)
 
     def arity(self):
         return 1
