@@ -199,7 +199,17 @@ class ListFunction(LoxCallable):
         return True
 
     def l_pair(self, expr, secondList):
-        pass
+        array = self.instance.array
+        secondList = secondList.array
+        pair = []
+        len1 = len(array)
+        len2 = len(secondList)
+        i = 0
+        while (i < len1) and (i < len2):
+            # Elements should be List objects, not built-in lists.
+            pair.append(List([array[i], secondList[i]]))
+            i += 1
+        return List(pair)
 
     def l_separate(self, expr):
         pass
