@@ -64,6 +64,7 @@ def runFile(path, baseName = None):
         if testMode:
             f = open(f"Testing/Tests Output/{baseName}Output.txt", "r+")
             sys.stdout = f
+            sys.stderr = f # To re-direct errors to the given file as well.
         State.inAFile = True
         run(content, path)
     except FileNotFoundError:
