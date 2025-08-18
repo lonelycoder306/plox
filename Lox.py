@@ -8,9 +8,11 @@ from Error import LexError, ParseError, ResolveError, RuntimeError
 
 fileName = None
 testMode = False
+linePrint = True
 if len(sys.argv) == 2:
     if sys.argv[1] == "-test":
         testMode = True
+        linePrint = False
     else:
         fileName = sys.argv[1]
 
@@ -62,13 +64,15 @@ def runFile(path, baseName = None):
         with open(path, "r") as file:
             content = file.read()
         if testMode:
-            f = open(f"Testing/Tests Output/{baseName}Output.txt", "r+")
-            sys.stdout = f
-            sys.stderr = f # To re-direct errors to the given file as well.
+            if "Error" in path:
+                # To re-direct errors to the given file as well.
+                sys.stderr = open(f"Testing/Tests Output/{baseName}Error.txt", "r+")
+            else:
+                sys.stdout = open(f"Testing/Tests Output/{baseName}Output.txt", "r+")
         State.inAFile = True
         run(content, path)
-    except FileNotFoundError:
-        sys.stderr.write("Could not run. File not found.\n")
+    except FileNotFoundError as error:
+        sys.stderr.write(f"Could not run. File not found: {error.filename}.\n")
         sys.exit(66)
 
     if not testMode:
@@ -128,14 +132,17 @@ def report(error, line, column, where, message, lexerFile = None):
         if (file != None) and (not State.debugMode):
             if len(error.token.lexeme) == 0:
                 sys.stderr.write(f'error{where} ["{file}", line {line}]: {message}\n')
-                printErrorLine(line, file)
+                if linePrint:
+                    printErrorLine(line, file)
             elif len(error.token.lexeme) == 1:
                 sys.stderr.write(f'error{where} ["{file}", line {line}, {column}]: {message}\n')
-                printErrorLine(line, file, column, column)
+                if linePrint:
+                    printErrorLine(line, file, column, column)
             else:
                 lexemeLen = len(error.token.lexeme)
                 sys.stderr.write(f'error{where} ["{file}", line {line}, {column}-{column + lexemeLen - 1}]: {message}\n')
-                printErrorLine(line, file, column, column + lexemeLen - 1)
+                if linePrint:
+                    printErrorLine(line, file, column, column + lexemeLen - 1)
         else: # Using REPL.
             offset = State.debugOffset
             if len(error.token.lexeme) == 0:
@@ -148,7 +155,8 @@ def report(error, line, column, where, message, lexerFile = None):
     else: # Lex Error.
         if (lexerFile != None) and (not State.debugMode):
             sys.stderr.write(f'error{where} ["{lexerFile}", line {line}, {column}]: {message}\n')
-            printErrorLine(line, lexerFile, column, column)
+            if linePrint:
+                printErrorLine(line, lexerFile, column, column)
         else:
             offset = State.debugOffset
             sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
@@ -163,13 +171,16 @@ def runtimeError(error: RuntimeError):
     if (file != None) and (not State.debugMode):
         if lexemeLen == 0:
             sys.stderr.write(f'Runtime error ["{file}", line {line}]: {error.message}\n')
-            printErrorLine(line, file)
+            if linePrint:
+                printErrorLine(line, file)
         elif lexemeLen == 1:
             sys.stderr.write(f'Runtime error ["{file}", line {line}, {column}]: {error.message}\n')
-            printErrorLine(line, file, column, column)
+            if linePrint:
+                printErrorLine(line, file, column, column)
         else:
             sys.stderr.write(f'Runtime error ["{file}", line {line}, {column}-{column + lexemeLen - 1}]: {error.message}\n')
-            printErrorLine(line, file, column, column + lexemeLen - 1)
+            if linePrint:
+                printErrorLine(line, file, column, column + lexemeLen - 1)
     else: # No point in printing the line since the REPL interpreter will always consider the prompt to be line 1.
         offset = State.debugOffset
         if lexemeLen == 0:
@@ -247,7 +258,10 @@ def main():
                 for line in lines:
                     if line[-1] == '\n':
                         line = line[:-1]
-                    path = "Testing/Tests/"+line
+                    path = "Testing/Tests/" + line
+                    fileNameCheck(path)
+                    runFile(path, line[:-4])
+                    path = "Testing/Tests/" + line[:-4] + "Error.lox"
                     fileNameCheck(path)
                     runFile(path, line[:-4])
         else:
