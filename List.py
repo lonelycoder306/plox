@@ -10,7 +10,9 @@ class ListFunction(LoxCallable):
         self.instance = instance
     
     def check(self, expr, arguments):
-        pass
+        checkFuncString = "check_" + self.mode
+        checkFunc = ListFunction.__dict__[checkFuncString]
+        return checkFunc(self, expr, arguments)
 
     def call(self, interpreter, expr, arguments):
         match self.mode:
