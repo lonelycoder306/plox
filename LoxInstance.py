@@ -2,8 +2,7 @@ from Error import RuntimeError
 from LoxFunction import LoxFunction
 
 class LoxInstance:
-    from LoxClass import LoxClass
-    def __init__(self, klass: LoxClass):
+    def __init__(self, klass):
         self.klass = klass
         self.fields = dict()
 
