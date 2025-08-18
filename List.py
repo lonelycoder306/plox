@@ -200,6 +200,7 @@ class ListFunction(LoxCallable):
 
     def l_pair(self, expr, secondList):
         array = self.instance.array
+        # Argument check before ensures secondList is a List object.
         secondList = secondList.array
         pair = []
         len1 = len(array)
