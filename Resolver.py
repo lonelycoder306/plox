@@ -74,9 +74,10 @@ class Resolver:
         self.currentFunction = type
 
         self.beginScope()
-        for param in function.params:
-            self.declare(param)
-            self.define(param)
+        if function.params != None:
+            for param in function.params:
+                self.declare(param)
+                self.define(param)
         self.resolve(function.body)
         self.endScope()
 

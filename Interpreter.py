@@ -512,7 +512,11 @@ class Interpreter:
     def visitGetExpr(self, expr: Expr.Get):
         object = self.evaluate(expr.object)
         if (isinstance(object, LoxInstance)) or (type(object) == List):
-            return object.get(expr.name)
+            result = object.get(expr.name)
+            if isinstance(result, LoxFunction) and result.isGetter():
+                result = result.call(self, None, None)
+            
+            return result
         
         raise RuntimeError(expr.name, "Only instances have properties.")
 

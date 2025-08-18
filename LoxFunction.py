@@ -18,8 +18,9 @@ class LoxFunction(LoxCallable):
     def call(self, interpreter, expr, arguments):
         environment = Environment(self.closure)
 
-        for i in range(0, len(self.declaration.params)):
-            environment.define(self.declaration.params[i].lexeme, arguments[i])
+        if self.declaration.params != None:
+            for i in range(0, len(self.declaration.params)):
+                environment.define(self.declaration.params[i].lexeme, arguments[i])
         
         from Token import Token, TokenType
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
@@ -37,6 +38,9 @@ class LoxFunction(LoxCallable):
     
     def arity(self):
         return len(self.declaration.params)
+    
+    def isGetter(self):
+        return (self.declaration.params == None)
     
     def toString(self):
         if self.declaration.name == None:

@@ -265,23 +265,26 @@ class Parser:
         # Check that the function is not an unassigned lambda.
         if kind != "lambda":
             name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
-        self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
 
-        parameters = list()
-        if not self.check(TokenType.RIGHT_PAREN):
-            # Implementing do-while logic.
-            if len(parameters) >= 255:
-                raise ParseError(self.peek(), "Can't have more than 255 parameters.")
-            parameters.append(self.consume(TokenType.IDENTIFIER,
-                        "Expect parameter name."))
-            
-            while self.match(TokenType.COMMA):
+        parameters = None
+
+        # Allow omitting the parameter list entirely in method getters.
+        if (kind != "method") or self.check(TokenType.LEFT_PAREN):
+            self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+            parameters = list()
+            if not self.check(TokenType.RIGHT_PAREN):
+                # Implementing do-while logic.
                 if len(parameters) >= 255:
                     raise ParseError(self.peek(), "Can't have more than 255 parameters.")
                 parameters.append(self.consume(TokenType.IDENTIFIER,
                             "Expect parameter name."))
-            
-        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+                
+                while self.match(TokenType.COMMA):
+                    if len(parameters) >= 255:
+                        raise ParseError(self.peek(), "Can't have more than 255 parameters.")
+                    parameters.append(self.consume(TokenType.IDENTIFIER,
+                                "Expect parameter name."))
+            self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
 
         # Cannot use f-strings here due to the presence of the { character.
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.")
