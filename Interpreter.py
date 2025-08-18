@@ -300,6 +300,19 @@ class Interpreter:
             # This addresses that.
             raise RuntimeError(name, f"Undefined variable or function '{name.lexeme}'.")
     
+    def checkIndices(self, expr, object, start, end):
+        length = len(object)
+        if start < (-1*length):
+            raise RuntimeError(expr.operator, "Start index out of bounds.")
+        elif (end == None) and (start >= length):
+            raise RuntimeError(expr.operator, "Index out of bounds.")
+        elif (end != None) and (start < 0):
+            raise RuntimeError(expr.operator, "Start index out of bounds.")
+        elif end != None:
+            if ((end > 0) and (end < start)) or (end < (-1*length)):
+                raise RuntimeError(expr.operator, "End index out of bounds.")
+        return True
+    
     def accessElements(self, object, start, end, expr: Expr.Access):
         if (type(start) != float) or (int(start) != start):
             raise RuntimeError(expr.operator, "Start index must be an integer.")
@@ -313,19 +326,11 @@ class Interpreter:
         elif type(object) == List:
             object = object.array
             length = len(object)
-        if end == None: # Only accessing a single element.
-            if (start >= 0) and (start < length):
+        if self.checkIndices(expr, object, start, end):
+            if end == None: # Only accessing a single element.
                 return object[int(start)]
-            else:
-                raise RuntimeError(expr.operator, "Index out of bounds.")
-        else: # Possibly accessing a range.
-            if (end >= 0) and (end < length):
-                if (start >= 0) and (start <= length):
-                    return object[int(start) : int(end) + 1]
-                else:
-                    raise RuntimeError(expr.operator, "Start index out of bounds.")
-            else:
-                raise RuntimeError(expr.operator, "End index out of bounds.")
+            else: # Possibly accessing a range.
+                return object[int(start) : int(end) + 1]
     
     def plus(self, expr, left, right):
         if (type(left) == List) and (type(right) == List):
@@ -378,17 +383,6 @@ class Interpreter:
             return (float(left) * float(right))
         
         raise RuntimeError(expr.operator, "Invalid product.")
-    
-    def checkIndices(self, expr, object, start, end):
-        length = len(object)
-        if (start < 0) or (start >= length):
-            if end == None:
-                raise RuntimeError(expr.operator, "Index out of bounds.")
-            else:
-                raise RuntimeError(expr.operator, "Start index out of bounds.")
-        elif (end != None) and ((end < start) or (end >= length)):
-            raise RuntimeError(expr.operator, "End index out of bounds.")
-        return True
     
     def evaluate(self, expr):
         return expr.accept(self)
