@@ -85,13 +85,20 @@ class Interpreter:
     def visitClassStmt(self, stmt: Stmt.Class):
         self.environment.define(stmt.name.lexeme, None)
 
+        classMethods = dict()
+        for method in stmt.classMethods:
+            function = LoxFunction(method, self.environment, False)
+            classMethods[method.name.lexeme] = function
+        
+        metaclass = LoxClass(None, f"{stmt.name.lexeme} metaclass", classMethods)
+
         methods = dict()
         for method in stmt.methods:
             function = LoxFunction(method, self.environment, 
                                    method.name.lexeme == "init")
             methods[method.name.lexeme] = function
 
-        klass = LoxClass(stmt.name.lexeme, methods)
+        klass = LoxClass(metaclass, stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, klass)
 
     def visitContinueStmt(self, stmt: Stmt.Continue):

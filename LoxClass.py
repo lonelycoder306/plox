@@ -1,7 +1,9 @@
 from LoxCallable import LoxCallable
+from LoxInstance import LoxInstance
 
-class LoxClass(LoxCallable):
-    def __init__(self, name: str, methods: dict):
+class LoxClass(LoxInstance, LoxCallable):
+    def __init__(self, metaclass, name: str, methods: dict):
+        super().__init__(metaclass)
         self.name = name
         self.methods = methods
     

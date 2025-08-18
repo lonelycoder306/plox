@@ -81,12 +81,16 @@ class Parser:
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
 
         methods = list()
+        classMethods = list()
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
-            methods.append(self.function("method"))
+            if self.match(TokenType.CLASS):
+                classMethods.append(self.function("method"))
+            else:
+                methods.append(self.function("method"))
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 
-        return Stmt.Class(name, methods)
+        return Stmt.Class(name, methods, classMethods)
 
     def continueStatement(self):
         continueToken = self.previous()

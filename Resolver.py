@@ -144,6 +144,14 @@ class Resolver:
                 declaration = self.FunctionType.INITIALIZER
             self.resolveFunction(method, declaration)
         
+        for method in stmt.classMethods:
+            self.beginScope()
+            dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0, None)
+            self.declare(dummyThis)
+            self.define(dummyThis)
+            self.localVars[dummyThis][1] = True
+            self.resolveFunction(method, self.FunctionType.METHOD)
+        
         self.endScope()
 
         self.currentClass = enclosingClass

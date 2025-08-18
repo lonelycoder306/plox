@@ -41,7 +41,7 @@ ExprClasses = [ "Access     : object, operator, start, end",
 
 StmtClasses = [ "Break      : breakCMD, loopType",
                 "Block      : statements",
-                "Class      : name, methods",
+                "Class      : name, methods, classMethods",
                 "Continue   : continueCMD, loopType",
                 "Expression : expression",
                 "Fetch      : mode, name",
