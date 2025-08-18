@@ -150,7 +150,11 @@ class Interpreter:
             self.execute(stmt.elseBranch)
 
     def visitListStmt(self, stmt: Stmt.List):
-        listInstance = None
+        # We could make uninitialized lists remain undefined,
+        # but it seems more fitting to simply initialize them by default
+        # to an empty list, particularly since list variables cannot
+        # possibly hold values of any type but list (or List, technically).
+        listInstance = List([])
         if stmt.initializer != None:
             listInstance = self.evaluate(stmt.initializer)
             if type(listInstance) != List:
