@@ -302,13 +302,19 @@ class Interpreter:
     
     def checkIndices(self, expr, object, start, end):
         length = len(object)
+        # Start index is too negative (goes beyond the beginning).
         if start < (-1*length):
             raise RuntimeError(expr.operator, "Start index out of bounds.")
+        # Single index is too high (goes beyond the end).
         elif (end == None) and (start >= length):
             raise RuntimeError(expr.operator, "Index out of bounds.")
+        # Start index is negative despite there being another index, i.e.,
+        # accessing a part of a list/string.
         elif (end != None) and (start < 0):
             raise RuntimeError(expr.operator, "Start index out of bounds.")
         elif end != None:
+            # If end is positive, it cannot be larger than the start.
+            # If it is negative, it cannot go backwards beyond the beginning.
             if ((end > 0) and (end < start)) or (end < (-1*length)):
                 raise RuntimeError(expr.operator, "End index out of bounds.")
         return True
