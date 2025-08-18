@@ -234,7 +234,7 @@ def printErrorLine(line: int, file: str, start = None, end = None):
         sys.stderr.write(" " * (start - 1))
         sys.stderr.write("^" * (end - start + 1) + '\n')
     else:
-        sys.stderr.write(f"|\t{printLine}\n")
+        sys.stderr.write(f"{line} |\t{printLine}\n")
         space = " "
         sys.stderr.write(space.ljust(len(str(line)) + 1, " "))
         sys.stderr.write("|\t")
