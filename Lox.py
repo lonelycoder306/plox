@@ -170,7 +170,7 @@ def report(error, line, column, where, message, lexerFile = None):
                 sys.stderr.write(f'error{where} [{column}]: {message}\n')
             else:
                 lexemeLen = len(error.token.lexeme)
-                sys.stderr.write(f'error{where} [{column - offset}-{column + lexemeLen - 1}]: {message}\n')
+                sys.stderr.write(f'error{where} [{column}-{column + lexemeLen - 1}]: {message}\n')
     else: # Lex Error.
         if (lexerFile != None) and (not State.debugMode):
             sys.stderr.write(f'error{where} ["{lexerFile}", line {line}, {column}]: {message}\n')
