@@ -337,48 +337,9 @@ class fileFunction(LoxCallable):
     # Error checking.
 
     def check(self, expr, arguments):
-        match self.mode:
-            case "filemake":
-                return self.check_filemake(expr, arguments)
-            case "fileopen":
-                return self.check_fileopen(expr, arguments)
-            case "filehas":
-                return self.check_filehas(expr, arguments)
-            case "fileremove":
-                return self.check_fileremove(expr, arguments)
-            case "filedrop":
-                return self.check_filedrop(expr, arguments)
-            case "fileflush":
-                return self.check_fileflush(expr, arguments)
-
-            case "filechars":
-                return self.check_filechars(expr, arguments)
-            case "filebytes":
-                return self.check_filebytes(expr, arguments)
-            case "fileword":
-                return self.check_fileword(expr, arguments)
-            case "fileline":
-                return self.check_fileline(expr, arguments)
-            case "filelines":
-                return self.check_filelines(expr, arguments)
-            case "fileall":
-                return self.check_fileall(expr, arguments)
-            
-            case "filewrite":
-                return self.check_filewrite(expr, arguments)
-            case "fileput":
-                return self.check_fileput(expr, arguments)
-            
-            case "filejump":
-                return self.check_filejump(expr, arguments)
-            case "fileskip":
-                return self.check_fileskip(expr, arguments)
-            case "filelimits":
-                return self.check_filelimits(expr, arguments)
-            case "filepos":
-                return self.check_filepos(expr, arguments)
-            case "feof":
-                return self.check_feof(expr, arguments)
+        funcString = "check_" + self.mode
+        func = fileFunction.__dict__[funcString]
+        return func(self, expr, arguments)
 
     # ------------------------------------------------------------
 
@@ -527,7 +488,7 @@ class fileFunction(LoxCallable):
     def toString(self):
         return "<fileIO function>"
 
-fileRef = LoxClass("file", {})
+fileRef = LoxClass(None, "file", {})
 def fileIOSetUp():
     for function in functions[:4]:
         fileIO.define(function, fileFunction(function))
