@@ -57,7 +57,9 @@ class Interpreter:
         import copy
         # Keep a copy of the list of environments prior to any
         # possible imports in the block.
-        currentEnvs = copy.deepcopy(self.varEnvs)
+        # We don't use deepcopy, since that fundamentally changes
+        # the environments themselves.
+        currentEnvs = copy.copy(self.varEnvs)
         try:
             self.environment = environment
 
@@ -289,7 +291,6 @@ class Interpreter:
             value = self.environment.getAt(distance, name)
             return value
         else:
-            # Check if variable is in the user-defined global scope.
             for env in self.varEnvs:
                 if name.lexeme in env.values.keys():
                     value = env.get(name)
@@ -417,8 +418,6 @@ class Interpreter:
             import copy
             value = copy.deepcopy(value)
         if (value == None) and (type(expr.value) == Expr.Call):
-            # Check if the token passed here needs to be modified if the callee
-            # is of a different form (e.g., a[0](x,y)).
             raise RuntimeError(expr.equals, "Cannot assign non-returning function call to variable.")
 
         distance = self.locals.get(expr, None)
