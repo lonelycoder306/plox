@@ -164,22 +164,20 @@ def report(error, line, column, where, message, lexerFile = None):
                 if linePrint:
                     printErrorLine(line, file, column, column + lexemeLen - 1)
         else: # Using REPL.
-            offset = State.debugOffset
             if len(error.token.lexeme) == 0:
                 sys.stderr.write(f'error{where}: {message}\n')
             elif len(error.token.lexeme) == 1:
-                sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
+                sys.stderr.write(f'error{where} [{column}]: {message}\n')
             else:
                 lexemeLen = len(error.token.lexeme)
-                sys.stderr.write(f'error{where} [{column - offset}-{column + lexemeLen - 1 - offset}]: {message}\n')
+                sys.stderr.write(f'error{where} [{column - offset}-{column + lexemeLen - 1}]: {message}\n')
     else: # Lex Error.
         if (lexerFile != None) and (not State.debugMode):
             sys.stderr.write(f'error{where} ["{lexerFile}", line {line}, {column}]: {message}\n')
             if linePrint:
                 printErrorLine(line, lexerFile, column, column)
         else:
-            offset = State.debugOffset
-            sys.stderr.write(f'error{where} [{column - offset}]: {message}\n')
+            sys.stderr.write(f'error{where} [{column}]: {message}\n')
     State.hadError = True
 
 def runtimeError(error: RuntimeError):
@@ -209,13 +207,12 @@ def runtimeError(error: RuntimeError):
             if linePrint:
                 printErrorLine(line, file, column, column + lexemeLen - 1)
     else: # No point in printing the line since the REPL interpreter will always consider the prompt to be line 1.
-        offset = State.debugOffset
         if lexemeLen == 0:
             sys.stderr.write(f'Runtime error: {error.message}\n')
         elif lexemeLen == 1:
-            sys.stderr.write(f'Runtime error [{column - offset}]: {error.message}\n')
+            sys.stderr.write(f'Runtime error [{column}]: {error.message}\n')
         else:
-            sys.stderr.write(f'Runtime error [{column - offset}-{column + lexemeLen - 1 - offset}]: {error.message}\n')
+            sys.stderr.write(f'Runtime error [{column}-{column + lexemeLen - 1}]: {error.message}\n')
     # We don't want the debugger to quit if it hits an error,
     # like the REPL.
     if State.debugMode:
