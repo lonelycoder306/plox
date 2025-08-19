@@ -170,8 +170,9 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         # Prevent method from printing nil for void functions when they are called in an expression statement.
         # No return value -> implicitly return None -> prints "nil".
-        if not self.ExprStmt:
-            print(self.stringify(value))
+        if (self.ExprStmt) and (value == None):
+            return
+        print(self.stringify(value))
 
     def visitReturnStmt(self, stmt: Stmt.Return):
         value = None
