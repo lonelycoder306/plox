@@ -165,8 +165,6 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         # Prevent method from printing nil for void functions when they are called in an expression statement.
         # No return value -> implicitly return None -> prints "nil".
-        if (type(stmt.expression) == Expr.Call) and (value == None):
-            return
         print(self.stringify(value))
 
     def visitReturnStmt(self, stmt: Stmt.Return):
@@ -188,8 +186,6 @@ class Interpreter:
         if type(value) == List:
             raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
         if (value == None) and (type(stmt.initializer) == Expr.Call):
-            # Check if the token passed here needs to be modified if the callee
-            # is of a different form (e.g., a[0](x,y)).
             raise RuntimeError(stmt.equals, "Cannot assign non-returning function call to variable.")
 
         self.environment.define(stmt.name.lexeme, value)
