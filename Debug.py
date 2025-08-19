@@ -167,6 +167,7 @@ class breakpointStop(Exception):
                     self.debugCommand(choice, arguments)
                 else:
                     print("Not a valid command/instruction.")
+        State.debugMode = False
 
     def debugInstruction(self, choice):
         match choice:
@@ -198,7 +199,7 @@ class breakpointStop(Exception):
             case "value": # Can evaluate expressions, but they must contain NO spaces.
                 options = ["l", "local", "g", "global"]
                 if len(arguments) == 0:
-                    print("No argument provided.")
+                    print("No arguments provided.")
                     return
                 
                 elif len(arguments) == 1:
@@ -211,13 +212,19 @@ class breakpointStop(Exception):
                 elif len(arguments) > 2:
                     print("Too many arguments.")
                     return
-                
-                import State
-                State.debugOffset = 4 # FIX: Does not match all prompt combinations.
 
                 if (arguments[0] == "g") or (arguments[0] == "global"):
-                    from Lox import run
-                    run(f"print {arguments[1]};")
+                    prevEnv = self.interpreter.environment
+                    try:
+                        from Scanner import Scanner
+                        from Parser import Parser
+                        tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
+                        statements = Parser(tokens).parse()
+
+                        self.interpreter.environment = self.interpreter.varEnvs[0]
+                        value = self.interpreter.interpret(statements)
+                    finally:
+                        self.interpreter.environment = prevEnv
 
                 elif (arguments[0] == "l") or (arguments[0] == "local"):
                     prevEnv = self.interpreter.environment
@@ -231,9 +238,8 @@ class breakpointStop(Exception):
                         value = self.interpreter.interpret(statements)
                     finally:
                         self.interpreter.environment = prevEnv
-                    
-                State.debugOffset = 0
                 return
+
             case "vars":
                 if len(arguments) == 0:
                     print("No arguments provided.")
