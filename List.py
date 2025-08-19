@@ -154,16 +154,16 @@ class ListFunction(LoxCallable):
 
     def l_index(self, expr, element):
         if element in self.instance.array:
-            return self.instance.array.index(element)
+            return float(self.instance.array.index(element))
         else:
-            return -1
+            return float(-1)
 
     def l_indexLast(self, expr, element):
         import copy
         array = copy.deepcopy(self.instance.array)
         array.reverse()
         if element in array:
-            return len(array) - array.index(element) - 1
+            return float(len(array) - array.index(element) - 1)
         else:
             return -1
 
@@ -220,19 +220,19 @@ class ListFunction(LoxCallable):
 
     def l_sum(self, expr):
         array = self.instance.array
-        return sum(array)
+        return float(sum(array))
 
     def l_min(self, expr):
         array = self.instance.array
-        return min(array)
+        return float(min(array))
 
     def l_max(self, expr):
         array = self.instance.array
-        return max(array)
+        return float(max(array))
 
     def l_average(self, expr):
         array = self.instance.array
-        return sum(array) / len(array)
+        return float(sum(array) / len(array))
 
     # ------------------------------------------------------------
 
