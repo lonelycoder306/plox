@@ -21,7 +21,7 @@ class Interpreter:
         # Exit a scope -> Pop the last list from the varEnvs stack.
         # Function (variable) look-up is done over the last list in the varEnvs stack.
         # After popping, any imports in the scope no longer apply outside it.
-        self.varEnvs = [[self.globals]] # List of all the environments we reference for variable/function names.
+        self.varEnvs = [self.globals] # List of all the environments we reference for variable/function names.
         self.loopLevel = 0
         self.locals = dict()
 
@@ -31,7 +31,7 @@ class Interpreter:
         from BuiltinFunction import builtins
         # Setting up the List() constructor.
         builtins.define("List", initList)
-        self.varEnvs[0].append(builtins)
+        self.varEnvs.append(builtins)
 
     def interpret(self, statements):
         try:
@@ -54,20 +54,17 @@ class Interpreter:
     
     def executeBlock(self, statements, environment: Environment):
         previous = self.environment
+        import copy
+        # Keep a copy of the list of environments prior to any
+        # possible imports in the block.
+        currentEnvs = copy.deepcopy(self.varEnvs)
         try:
             self.environment = environment
-            lastEnv = self.varEnvs[-1]
-            # Copy everything in the last environment into the new environment.
-            # Make a shallow copy so objects defined in the new environment
-            # don't stay behind once the scope is exited.
-            # Allows imports in an outer scope to still be defined in an inner scope.
-            import copy
-            self.varEnvs.append(copy.deepcopy(lastEnv))
 
             for statement in statements:
                 self.execute(statement)
         finally:
-            self.varEnvs.pop()
+            self.varEnvs = currentEnvs
             self.environment = previous
 
     # No need to check that 'break' or 'continue' are inside a loop, since their presence outside one 
@@ -128,7 +125,7 @@ class Interpreter:
                     setUp = getattr(module, f"{name}SetUp")
                     setUp()
                     env = getattr(module, name)
-                    self.varEnvs[-1].append(env)
+                    self.varEnvs.append(env)
                 except ModuleNotFoundError:
                     raise RuntimeError(stmt.name, "Module not found.")
             case "Lib":
@@ -293,7 +290,7 @@ class Interpreter:
             return value
         else:
             # Check if variable is in the user-defined global scope.
-            for env in self.varEnvs[-1]:
+            for env in self.varEnvs:
                 if name.lexeme in env.values.keys():
                     value = env.get(name)
                     return value
