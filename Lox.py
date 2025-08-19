@@ -57,6 +57,7 @@ def run(source, fileName = None):
 
 def runFile(path, baseName = None):
     import State
+    State.inAFile = True
 
     try:
         with open(path, "r") as file:
@@ -66,11 +67,19 @@ def runFile(path, baseName = None):
         if testMode:
             if "Error" in path:
                 # To re-direct errors to the given file as well.
-                sys.stderr = open(f"Testing/Tests Output/{baseName}Error.txt", "r+")
+                sys.stderr = open(f"Testing/Output/{baseName}Error.txt", "r+")
             else:
-                sys.stdout = open(f"Testing/Tests Output/{baseName}Output.txt", "r+")
-        State.inAFile = True
-        run(content, path)
+                sys.stdout = open(f"Testing/Output/{baseName}Output.txt", "r+")
+        if testMode and ("Error" in path):
+            for line in State.fileLines[path]:
+                # We run each line separately so errors for each line
+                # do not affect the next line running.
+                # We reset the errors each time so they still execute separately.
+                run(line, path)
+                State.hadError = False
+                State.hadRuntimeError = False
+        else:
+            run(content, path)
     except FileNotFoundError as error:
         sys.stderr.write(f"Could not run. File not found: {error.filename}.\n")
         sys.exit(66)
@@ -81,6 +90,8 @@ def runFile(path, baseName = None):
         
         if State.hadRuntimeError:
             sys.exit(70)
+    # Must reset error flags here so that each test file
+    # can run with freshly reset flags, allowing it to execute successfully.
     else:
         State.hadError = False
         State.hadRuntimeError = False
@@ -168,6 +179,8 @@ def runtimeError(error: RuntimeError):
     lexemeLen = len(error.token.lexeme)
     file = error.token.fileName
     import State
+    # We only print a file name if there is one
+    # and we aren't in the debugger.
     if (file != None) and (not State.debugMode):
         if lexemeLen == 0:
             sys.stderr.write(f'Runtime error ["{file}", line {line}]: {error.message}\n')
@@ -189,6 +202,8 @@ def runtimeError(error: RuntimeError):
             sys.stderr.write(f'Runtime error [{column - offset}]: {error.message}\n')
         else:
             sys.stderr.write(f'Runtime error [{column - offset}-{column + lexemeLen - 1 - offset}]: {error.message}\n')
+    # We don't want the debugger to quit if it hits an error,
+    # like the REPL.
     if State.debugMode:
         State.debugError = True
     else:
