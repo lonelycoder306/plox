@@ -140,6 +140,11 @@ def report(error, line, column, where, message, lexerFile = None):
     elif type(error) == ResolveError:
         sys.stderr.write("Resolve ")
     import State
+
+    if State.debugMode:
+        sys.stderr.write(f'error{where}: {message}\n')
+        return
+
     # Lex errors are different since there are no tokens whose fields we can use.
     if type(error) != LexError:
         file = error.token.fileName
@@ -183,6 +188,11 @@ def runtimeError(error: RuntimeError):
     lexemeLen = len(error.token.lexeme)
     file = error.token.fileName
     import State
+
+    if State.debugMode:
+        sys.stderr.write(f'Runtime error: {error.message}\n')
+        return
+
     # We only print a file name if there is one
     # and we aren't in the debugger.
     if (file != None) and (not State.debugMode):
