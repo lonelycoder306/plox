@@ -451,7 +451,7 @@ class Interpreter:
             case TokenType.LESS_EQUAL:
                 if ((type(left) == type(right) == float) or 
                 (type(left) == type(right) == str)):
-                    return (left < right)
+                    return (left <= right)
                 raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
             case TokenType.BANG_EQUAL:
                 return (type(left) != type(right) or (left != right))
