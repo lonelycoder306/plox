@@ -15,15 +15,15 @@ class Interpreter:
     def __init__(self):
         self.globals = Environment()
         self.environment = self.globals
-        # varEnvs is a list of lists, each entry containing the environments currently in scope.
-        # Allows us to have scoped imports, i.e., import a module but only within a particular scope.
-        # Enter a scope -> Append a list with globals and builtins (they are defined in every scope).
-        # Exit a scope -> Pop the last list from the varEnvs stack.
-        # Function (variable) look-up is done over the last list in the varEnvs stack.
-        # After popping, any imports in the scope no longer apply outside it.
-        self.varEnvs = [self.globals] # List of all the environments we reference for variable/function names.
+        # varEnvs is a list of environments for objects in scope other
+        # than local variables.
+        # When entering a scope, we make a copy of it that we can change, e.g.,
+        # adding environments from imports in it.
+        # When exiting the scope, we discard the copy to get the original back.
+        self.varEnvs = [self.globals]
         self.loopLevel = 0
         self.locals = dict()
+        self.ExprStmt = False
 
         # Setting up built-in functions in global scope.
         from BuiltinFunction import builtinSetUp
@@ -103,6 +103,8 @@ class Interpreter:
         raise continueError(stmt.continueCMD, stmt.loopType)
 
     def visitExpressionStmt(self, stmt: Stmt.Expression):
+        self.ExprStmt = True
+
         # Print out the return value of any expression statement 
         # (except assignments, function calls, and comma-combined expressions).
         # Assignments/field assignments are excluded so that the RHS of an assignment 
@@ -165,7 +167,8 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         # Prevent method from printing nil for void functions when they are called in an expression statement.
         # No return value -> implicitly return None -> prints "nil".
-        print(self.stringify(value))
+        if not self.ExprStmt:
+            print(self.stringify(value))
 
     def visitReturnStmt(self, stmt: Stmt.Return):
         value = None
