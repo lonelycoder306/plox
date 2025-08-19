@@ -29,10 +29,9 @@ class Interpreter:
         from BuiltinFunction import builtinSetUp
         builtinSetUp()
         from BuiltinFunction import builtins
-        self.varEnvs[0].append(builtins)
-
         # Setting up the List() constructor.
-        self.globals.define("List", initList)
+        builtins.define("List", initList)
+        self.varEnvs[0].append(builtins)
 
     def interpret(self, statements):
         try:
