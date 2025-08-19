@@ -103,6 +103,7 @@ class Interpreter:
         raise continueError(stmt.continueCMD, stmt.loopType)
 
     def visitExpressionStmt(self, stmt: Stmt.Expression):
+        prevState = self.ExprStmt
         self.ExprStmt = True
 
         # Print out the return value of any expression statement 
@@ -117,6 +118,8 @@ class Interpreter:
         
         else:
             self.evaluate(stmt.expression)
+        
+        self.ExprStmt = prevState
     
     def visitFetchStmt(self, stmt: Stmt.Fetch):
         import importlib
