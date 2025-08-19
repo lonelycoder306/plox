@@ -384,7 +384,7 @@ class Parser:
             if type(expr) == Expr.Get:
                 return Expr.Set(expr.object, expr.name, value)
             
-            if (type(expr) == Expr.Access) and (type(expr.object) == Expr.Variable):
+            if (type(expr) == Expr.Access):
                 return Expr.Modify(expr, equals, value)
             
             raise ParseError(equals, "Invalid assignment target.")
