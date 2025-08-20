@@ -79,13 +79,13 @@ class Scanner:
             case '-':
                 if self.match('-'):
                     self.addToken(TokenType.PRE_DEC)
-                    break
-                self.addToken(TokenType.MINUS)
+                else:
+                    self.addToken(TokenType.MINUS)
             case '+':
                 if self.match('+'):
                     self.addToken(TokenType.PRE_INC)
-                    break
-                self.addToken(TokenType.PLUS)
+                else:
+                    self.addToken(TokenType.PLUS)
             case ';':
                 self.addToken(TokenType.SEMICOLON)
             case '*':
