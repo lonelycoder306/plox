@@ -36,6 +36,9 @@ class ListFunction(LoxCallable):
             # Raises an error if any of them aren't strings.
             case "join":
                 return self.l_join(expr)
+            # Returns a new list with any duplicates in the original removed.
+            case "unique":
+                return self.l_unique(expr)
             # Applies some operation to all elements.
             # Operation need not return a value.
             case "forEach":
@@ -55,6 +58,9 @@ class ListFunction(LoxCallable):
             # Returns whether or not the given element is in the list.
             case "contains":
                 return self.l_contains(expr, arguments[0])
+            # Returns whether or not the list contains any duplicates.
+            case "duplicate":
+                return self.l_duplicate(expr)
             # Returns index of first occurrence of argument (-1 if not found).
             case "index":
                 return self.l_index(expr, arguments[0])
@@ -145,6 +151,11 @@ class ListFunction(LoxCallable):
         for part in self.instance.array:
             string += part
         return string
+    
+    def l_unique(self, expr):
+        array = self.instance.array
+        uniqueArray = list(set(array))
+        return List(uniqueArray)
 
     def l_forEach(self, expr, operation):
         pass
@@ -161,6 +172,10 @@ class ListFunction(LoxCallable):
 
     def l_contains(self, expr, element):
         return (element in self.instance.array)
+    
+    def l_duplicate(self, expr):
+        array = self.instance.array
+        return (len(array) != len(set(array)))
 
     def l_index(self, expr, element):
         if element in self.instance.array:
@@ -261,6 +276,8 @@ class ListFunction(LoxCallable):
 
             case "join":
                 return 0
+            case "unique":
+                return 0
             case "forEach":
                 return 1
             case "transform":
@@ -272,6 +289,8 @@ class ListFunction(LoxCallable):
 
             case "contains":
                 return 1
+            case "duplicate":
+                return 0
             case "index":
                 return 1
             case "indexLast":
@@ -308,8 +327,8 @@ class ListFunction(LoxCallable):
         return "<list method>"
 
 functions = ["add", "insert", "pop", "remove", "delete",
-             "join", "forEach", "transform", "filter", "flat",
-             "contains", "index", "indexLast", "any", "all", "collect",
+             "join", "unique", "forEach", "transform", "filter", "flat",
+             "contains", "duplicate", "index", "indexLast", "any", "all", "collect",
              "reverse", "sort", "sorted", "pair", "separate",
              "sum", "min", "max", "average"]
 
