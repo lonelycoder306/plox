@@ -25,5 +25,8 @@ class LoxInstance:
     def set(self, name, value):
         self.fields[name.lexeme] = value
     
-    def toString(self):
+    def toString(self, interpreter, expr = None, arguments = None):
+        method = self.klass.findMethod("str")
+        if method != None:
+            return method.bind(self).call(interpreter, expr, arguments)
         return f"<{self.klass.name} instance>"
