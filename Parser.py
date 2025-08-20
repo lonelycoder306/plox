@@ -107,7 +107,7 @@ class Parser:
             self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
             from Scanner import Scanner
-            file = "Libraries/" + name.lexeme[1:-1]
+            file = "Libraries/" + name.lexeme[1:-1] + ".lox"
             try:
                 with open(file, "r") as f:
                     text = f.read()
@@ -131,7 +131,7 @@ class Parser:
                 text = open(file, "r").read()
             except FileNotFoundError:
                 raise ParseError(name, "File not found.")
-            scanner = Scanner(text)
+            scanner = Scanner(text, file)
             newTokens = scanner.scanTokens()[:-1]
             self.tokens[self.current:self.current] = newTokens
 
@@ -306,34 +306,17 @@ class Parser:
     def comma(self):
         expressions = list()
 
-        expr = self.listExpr()
+        expr = self.lambdaExpr()
         expressions.append(expr)
 
         while self.match(TokenType.COMMA):
-            expr = self.listExpr()
+            expr = self.lambdaExpr()
             expressions.append(expr)
         
         if len(expressions) > 1:
             return Expr.Comma(expressions)
         
         return expr
-    
-    def listExpr(self):
-        if self.match(TokenType.LEFT_BRACKET):
-            operator = self.previous()
-            elements = []
-            if not self.check(TokenType.RIGHT_BRACKET):
-                element = self.listExpr()
-                elements.append(element)
-
-                while self.match(TokenType.COMMA):
-                    element = self.listExpr()
-                    elements.append(element)
-            
-            self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
-            return Expr.List(elements, operator)
-        
-        return self.lambdaExpr()
     
     # Lambda implementation my own.
     # Lambda expressions create name-less functions.
@@ -375,7 +358,7 @@ class Parser:
 
         if self.match(TokenType.EQUAL):
             equals = self.previous()
-            value = self.listExpr()
+            value = self.lambdaExpr()
 
             if type(expr) == Expr.Variable:
                 name = expr.name
@@ -467,7 +450,8 @@ class Parser:
         return expr
     
     def unary(self):
-        if self.match(TokenType.BANG, TokenType.MINUS):
+        if self.match(TokenType.BANG, TokenType.MINUS,
+                      TokenType.PRE_INC, TokenType.PRE_DEC):
             operator = self.previous()
             right = self.unary()
             return Expr.Unary(operator, right)
@@ -493,12 +477,12 @@ class Parser:
         if not self.check(TokenType.RIGHT_PAREN):
             if len(arguments) > 255:
                 raise ParseError(self.peek(), "Can't have more than 255 arguments.")
-            arguments.append(self.listExpr())
+            arguments.append(self.lambdaExpr())
 
             while self.match(TokenType.COMMA):
                 if len(arguments) > 255:
                     raise ParseError(self.peek(), "Can't have more than 255 arguments.")
-                arguments.append(self.listExpr())
+                arguments.append(self.lambdaExpr())
         
         rightParen = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
 
@@ -514,16 +498,33 @@ class Parser:
                 name = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
                 expr = Expr.Get(expr, name)
             elif self.match(TokenType.LEFT_BRACKET):
-                start = self.assignment()
+                start = self.expression()
                 end = None
                 if self.match(TokenType.DOTDOT):
-                    end = self.assignment()
+                    end = self.expression()
                 operator = self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after index.")
                 expr = Expr.Access(expr, operator, start, end)
             else:
                 break
         
         return expr
+    
+    def listExpr(self):
+        if self.match(TokenType.LEFT_BRACKET):
+            operator = self.previous()
+            elements = []
+            if not self.check(TokenType.RIGHT_BRACKET):
+                #element = self.listExpr()
+                element = self.lambdaExpr()
+                elements.append(element)
+
+                while self.match(TokenType.COMMA):
+                    #element = self.listExpr()
+                    element = self.lambdaExpr()
+                    elements.append(element)
+            
+            self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
+            return Expr.List(elements, operator)
     
     def primary(self):
         if self.match(TokenType.FALSE):
@@ -547,7 +548,7 @@ class Parser:
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Expr.Grouping(expr)
         
-        if self.match(TokenType.LEFT_BRACKET):
+        if self.check(TokenType.LEFT_BRACKET):
             expr = self.listExpr()
             if type(expr) == Expr.List:
                 return Expr.List(expr.elements, expr.operator)
