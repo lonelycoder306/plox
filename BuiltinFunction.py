@@ -21,7 +21,7 @@ You then assign the appropriate name to the object in the variable environment.
 # 7. breakpoint() - Starts a debug prompt when run from a file.
 
 builtins = Environment()
-functions = ["clock", "type", "string", "number", "length", "strformat", "perror", "breakpoint"]
+functions = ["clock", "type", "string", "number", "length", "strformat", "perror", "arity", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -42,6 +42,8 @@ class BuiltinFunction(LoxCallable):
             return self.b_strformat(arguments[0], expr)
         if self.mode == "perror":
             self.b_perror(arguments[0], expr)
+        if self.mode == "arity":
+            return self.b_arity(arguments[0], expr)
         if self.mode == "breakpoint":
             self.b_breakpoint(interpreter)
     
@@ -96,6 +98,11 @@ class BuiltinFunction(LoxCallable):
         import sys
         sys.stderr.write(message + '\n')
     
+    def b_arity(self, function, expr):
+        if not isinstance(function, LoxCallable):
+            raise RuntimeError(expr.rightParen, "arity() only accepts function arguments.")
+        return float(function.arity())
+    
     def b_breakpoint(self, interpreter):
         from Debug import breakpointStop
         raise breakpointStop(interpreter, interpreter.environment)
@@ -114,6 +121,8 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "strformat":
             return 1
         if self.mode == "perror":
+            return 1
+        if self.mode == "arity":
             return 1
         if self.mode == "breakpoint":
             return 0 # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
