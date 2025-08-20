@@ -136,6 +136,7 @@ class ListFunction(LoxCallable):
             if element in array:
                 self.instance.array.remove(element)
 
+
     def l_forEach(self, expr, operation):
         pass
 
