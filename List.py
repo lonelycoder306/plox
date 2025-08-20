@@ -32,6 +32,10 @@ class ListFunction(LoxCallable):
             case "delete":
                 self.l_delete(expr, arguments[0], arguments[1])
 
+            # Combines elements of the list into a single string.
+            # Raises an error if any of them aren't strings.
+            case "join":
+                return self.l_join(expr)
             # Applies some operation to all elements.
             # Operation need not return a value.
             case "forEach":
@@ -136,6 +140,11 @@ class ListFunction(LoxCallable):
             if element in array:
                 self.instance.array.remove(element)
 
+    def l_join(self, expr):
+        string = ""
+        for part in self.instance.array:
+            string += part
+        return string
 
     def l_forEach(self, expr, operation):
         pass
@@ -250,6 +259,8 @@ class ListFunction(LoxCallable):
             case "delete":
                 return 2
 
+            case "join":
+                return 0
             case "forEach":
                 return 1
             case "transform":
@@ -297,7 +308,7 @@ class ListFunction(LoxCallable):
         return "<list method>"
 
 functions = ["add", "insert", "pop", "remove", "delete",
-             "forEach", "transform", "filter", "flat",
+             "join", "forEach", "transform", "filter", "flat",
              "contains", "index", "indexLast", "any", "all", "collect",
              "reverse", "sort", "sorted", "pair", "separate",
              "sum", "min", "max", "average"]
