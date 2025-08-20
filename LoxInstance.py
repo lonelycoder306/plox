@@ -30,3 +30,6 @@ class LoxInstance:
         if method != None:
             return method.bind(self).call(interpreter, expr, arguments)
         return f"<{self.klass.name} instance>"
+
+    def varType(self):
+        return self.klass.name
