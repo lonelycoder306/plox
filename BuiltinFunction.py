@@ -3,6 +3,7 @@ from Environment import Environment
 from Error import RuntimeError
 from List import List
 from Expr import Expr
+from LoxInstance import LoxInstance
 
 # General class to implement built-in functions.
 '''
@@ -17,8 +18,11 @@ You then assign the appropriate name to the object in the variable environment.
 # 3. str(x) - Returns a string form of x.
 # 4. number(x) - Returns a number (float) form of x.
 # 5. length(x) - Returns the length of a string (other iterable data types to be added).
-# 6. strformat(x) - Returns an ASCII-encoded/formatted version of its argument string.
-# 7. breakpoint() - Starts a debug prompt when run from a file.
+# 6. copy(x) - Returns an isolated copy of X (will use the constructor if X is a class instance).
+# 7. strformat(x) - Returns an ASCII-encoded/formatted version of its argument string.
+# 8. perror(x) - Prints message X to stderr.
+# 9. arity(x) - Returns the arity of function X.
+# 10. breakpoint() - Starts a debug prompt when run from a file.
 
 builtins = Environment()
 functions = ["clock", "type", "string", "number", "length", "copy",
@@ -40,7 +44,7 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "length":
             return self.b_length(arguments[0], expr)
         if self.mode == "copy":
-            return self.b_copy(arguments[0], expr)
+            return self.b_copy(interpreter, expr, arguments)
         if self.mode == "strformat":
             return self.b_strformat(arguments[0], expr)
         if self.mode == "perror":
@@ -85,7 +89,10 @@ class BuiltinFunction(LoxCallable):
         elif type(object) == List:
             return float(len(object.array))
     
-    def b_copy(self, object, expr):
+    def b_copy(self, interpreter, expr, arguments):
+        object = arguments[0]
+        if isinstance(object, LoxInstance):
+            return object.klass.call(interpreter, expr, arguments)
         import copy
         newObj = copy.deepcopy(object)
         return newObj
