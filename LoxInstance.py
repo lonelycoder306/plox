@@ -38,7 +38,7 @@ class LoxInstance:
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
         tempMethod = self.klass.findMethod(name.lexeme)
         if tempMethod != None:
-            raise RuntimeError(name, f"Method cannot be re-assigned once class is defined.")
+            raise RuntimeError(name, f"Method in class definition cannot be re-assigned.")
         self.fields[name.lexeme] = value
     
     def toString(self, interpreter, expr = None, arguments = None):
