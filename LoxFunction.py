@@ -57,5 +57,5 @@ class LoxFunction(LoxCallable):
         if self.declaration.name == None:
             return "<lambda>"
         elif self.isMethod:
-            return f"<method {self.declaration.name.lexeme}"
+            return f"<method {self.declaration.name.lexeme}>"
         return f"<fn {self.declaration.name.lexeme}>"
