@@ -85,14 +85,14 @@ class Interpreter:
 
         classMethods = dict()
         for method in stmt.classMethods:
-            function = LoxFunction(method, self.environment, False)
+            function = LoxFunction(method, self.environment, True, False)
             classMethods[method.name.lexeme] = function
         
         metaclass = LoxClass(None, f"{stmt.name.lexeme} metaclass", classMethods)
 
         methods = dict()
         for method in stmt.methods:
-            function = LoxFunction(method, self.environment, 
+            function = LoxFunction(method, self.environment, True,
                                    method.name.lexeme == "init")
             methods[method.name.lexeme] = function
 
@@ -143,7 +143,7 @@ class Interpreter:
     def visitFunctionStmt(self, stmt: Stmt.Function):
         # Check that function is not an unassigned lambda (do nothing if it is).
         if stmt.name != None:
-            function = LoxFunction(stmt, self.environment, False)
+            function = LoxFunction(stmt, self.environment, False, False)
             self.environment.define(stmt.name.lexeme, function)
 
     def visitIfStmt(self, stmt: Stmt.If):
@@ -170,7 +170,7 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         # Prevent method from printing nil for void functions when they are called in an expression statement.
         # No return value -> implicitly return None -> prints "nil".
-        if (self.ExprStmt) and (value == None):
+        if (self.ExprStmt) and (type(value) == tuple):
             return
         print(self.stringify(value))
 
@@ -192,8 +192,6 @@ class Interpreter:
         
         if type(value) == List:
             raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
-        if (value == None) and (type(stmt.initializer) == Expr.Call):
-            raise RuntimeError(stmt.equals, "Cannot assign non-returning function call to variable.")
 
         self.environment.define(stmt.name.lexeme, value)
 
@@ -247,7 +245,7 @@ class Interpreter:
             case _ if isinstance(object, time): # Format to check Boolean conditions in match-case structure.
                 return "datetime"
             case _ if isinstance(object, LoxInstance):
-                return object.toString()[1:-1] # To avoid writing the <> twice.
+                return object.varType()
             case _:
                 return "unknown type"
     
@@ -264,8 +262,12 @@ class Interpreter:
         if object == None:
             return "nil"
         
-        if (isinstance(object, LoxCallable)) or (type(object) == LoxInstance):
+        if (isinstance(object, LoxCallable)):
             return object.toString()
+        if type(object) == LoxInstance:
+            return object.toString(self)
+        if type(object) == list:
+            return str(List(object))
         
         # Booleans in Lox are all-lowercase, unlike in Python.
         if type(object) == bool:
@@ -343,8 +345,8 @@ class Interpreter:
                 return object[int(start) : int(end) + 1]
     
     def plus(self, expr, left, right):
-        if (type(left) == List) and (type(right) == List):
-            return List(left.array + right.array)
+        if (type(left) == list) and (type(right) == list):
+            return List(left + right)
 
         if (type(left) == float) and (type(right) == float):
             return (float(left) + float(right))
@@ -420,8 +422,6 @@ class Interpreter:
         if type(value) == List:
             import copy
             value = copy.deepcopy(value)
-        if (value == None) and (type(expr.value) == Expr.Call):
-            raise RuntimeError(expr.equals, "Cannot assign non-returning function call to variable.")
 
         distance = self.locals.get(expr, None)
         if distance != None:
@@ -433,10 +433,13 @@ class Interpreter:
     def visitBinaryExpr(self, expr: Expr.Binary):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
+        if type(left) == List:
+            left = left.array
+        if type(right) == List:
+            right = right.array
 
         match expr.operator.type:
             case TokenType.GREATER:
-                # self.checkNumberOperands(expr.operator, left, right)
                 if ((type(left) == type(right) == float) or 
                 (type(left) == type(right) == str)):
                     return (left > right)
@@ -488,7 +491,11 @@ class Interpreter:
 
         arguments = list()
         for argument in expr.arguments:
-            arguments.append(self.evaluate(argument))
+            value = self.evaluate(argument)
+            if type(value) == List:
+                import copy
+                value = copy.deepcopy(value)
+            arguments.append(value)
         
         if not isinstance(callee, LoxCallable):
             raise RuntimeError(expr.leftParen, "No such function or class.")
@@ -528,7 +535,7 @@ class Interpreter:
     # Lambdas can all be given default name None since they are accessed by index in the parameter/argument list, not by name.
     def visitLambdaExpr(self, expr: Expr.Lambda):
         lambdaDeclaration = Stmt.Function(None, expr.params, expr.body)
-        return LoxFunction(lambdaDeclaration, self.environment, False)
+        return LoxFunction(lambdaDeclaration, self.environment, False, False)
 
     def visitLiteralExpr(self, expr: Expr.Literal):
         return expr.value
@@ -553,16 +560,23 @@ class Interpreter:
     
     def visitModifyExpr(self, expr: Expr.Modify):
         value = self.evaluate(expr.value)
+
+        validObjTypes = (Expr.Variable, Expr.Get, Expr.Access)
+        objType = type(expr.part.object)
+        if objType not in validObjTypes:
+            raise RuntimeError(expr.operator, "Left-hand value not modifiable.")
         mod = self.evaluate(expr.part.object)
+
         start = self.evaluate(expr.part.start)
         end = None
         if expr.part.end != None:
             end = self.evaluate(expr.part.end)
 
         if type(mod) == str:
+            raise RuntimeError(expr.operator, "Strings are not mutable.")
             # Error check.
             if type(value) != str:
-                raise RuntimeError(expr.operator, "Cannot assign non-string to string part.")
+                raise RuntimeError(expr.operator, "Can only assign string to string part.")
 
             # Strings in Python are immutable.
             # They, thus, do not support direct item assignment.
@@ -576,8 +590,9 @@ class Interpreter:
                 else:
                     tempList[int(start) : int(end) + 1] = value
                 mod = "".join(tempList)
+
         elif type(mod) == List:
-            # Any value can be assigned to an element of a list,
+            # Any value can be assigned to an *element* of a list,
             # so no type-check needed here.
             if self.checkIndices(expr, mod.array, start, end):
                 if end == None:
@@ -590,19 +605,37 @@ class Interpreter:
                     # We thus turn value into its built-in list field.
                     value = value.array
                     mod.array[int(start) : int(end) + 1] = value
-        name = expr.part.object.name
-        self.environment.assign(name, mod)
+                    
+        match objType:
+            case Expr.Variable:
+                name = expr.part.object.name
+                self.environment.assign(name, mod)
+            case Expr.Access:
+                pass
+            # case Expr.Get:
+            #     object = expr.part.object
+            #     name = ""
+            #     # try:
+            #     while (type(object) != Expr.Variable) and (type(object) != Expr.This):
+            #         object = object.object
+            #     name = object.name
+            #     # except:
+            #     #     raise RuntimeError(expr.operator, f"Cannot access field of object.")
+            #     mod.set(name, value)
         return mod
     
     def visitSetExpr(self, expr: Expr.Set):
         object = self.evaluate(expr.object)
 
-        if (isinstance(object, LoxInstance)) or (type(object) == List):
+        if (isinstance(object, LoxInstance)):
             value = self.evaluate(expr.value)
+            if type(value) == List:
+                import copy
+                value = copy.deepcopy(value)
             object.set(expr.name, value)
             return value
         
-        raise RuntimeError(expr.name, "Only instances have fields.")
+        raise RuntimeError(expr.name, "Only instances have modifiable fields.")
     
     # Ternary implementation my own.
     def visitTernaryExpr(self, expr: Expr.Ternary):
@@ -622,6 +655,18 @@ class Interpreter:
             case TokenType.MINUS:
                 self.checkNumberOperand(expr.operator, right)
                 return -1 * float(right)
+            case TokenType.PRE_INC:
+                if type(expr.right) == Expr.Variable:
+                    name = expr.right.name
+                    right += 1
+                    self.environment.assign(name, right)
+                    return right
+            case TokenType.PRE_DEC:
+                if type(expr.right) == Expr.Variable:
+                    name = expr.right.name
+                    right -= 1
+                    self.environment.assign(name, right)
+                    return right
 
     def visitVariableExpr(self, expr: Expr.Variable):
         return self.lookUpVariable(expr.name, expr)
