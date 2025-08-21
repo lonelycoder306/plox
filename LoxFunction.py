@@ -34,10 +34,10 @@ class LoxFunction(LoxCallable):
         try:
             interpreter.executeBlock(self.declaration.body, environment)
             if self.isMethod:
-                self.instance.inMethod = False
+                self.instance.inMethod = True
         except Return as r:
             if self.isMethod:
-                self.instance.inMethod = False
+                self.instance.inMethod = True
 
             if self.isInitializer:
                 return self.closure.getAt(0, dummyToken)
