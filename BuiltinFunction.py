@@ -21,7 +21,8 @@ You then assign the appropriate name to the object in the variable environment.
 # 7. breakpoint() - Starts a debug prompt when run from a file.
 
 builtins = Environment()
-functions = ["clock", "type", "string", "number", "length", "strformat", "perror", "arity", "breakpoint"]
+functions = ["clock", "type", "string", "number", "length", "copy",
+            "strformat", "perror", "arity", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -38,6 +39,8 @@ class BuiltinFunction(LoxCallable):
             return self.b_number(arguments[0], expr)
         if self.mode == "length":
             return self.b_length(arguments[0], expr)
+        if self.mode == "copy":
+            return self.b_copy(arguments[0], expr)
         if self.mode == "strformat":
             return self.b_strformat(arguments[0], expr)
         if self.mode == "perror":
@@ -82,6 +85,11 @@ class BuiltinFunction(LoxCallable):
         elif type(object) == List:
             return float(len(object.array))
     
+    def b_copy(self, object, expr):
+        import copy
+        newObj = copy.deepcopy(object)
+        return newObj
+    
     def b_strformat(self, object, expr):
         callee = None
         if type(expr.callee) == Expr.Variable:
@@ -97,6 +105,7 @@ class BuiltinFunction(LoxCallable):
             raise RuntimeError(expr.rightParen, "perror() only accepts string arguments.")
         import sys
         sys.stderr.write(message + '\n')
+        return ()
     
     def b_arity(self, function, expr):
         if not isinstance(function, LoxCallable):
@@ -117,6 +126,8 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "number":
             return 1
         if self.mode == "length":
+            return 1
+        if self.mode == "copy":
             return 1
         if self.mode == "strformat":
             return 1
