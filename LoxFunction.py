@@ -46,6 +46,8 @@ class LoxFunction(LoxCallable):
         
         if self.isInitializer:
             return self.closure.getAt(0, dummyToken)
+        
+        return ()
     
     def arity(self):
         return len(self.declaration.params)
