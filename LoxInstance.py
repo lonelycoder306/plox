@@ -4,11 +4,16 @@ from LoxFunction import LoxFunction
 class LoxInstance:
     def __init__(self, klass):
         self.klass = klass
-        self.fields = dict()
+        self.private = dict()
+        self.public = dict()
+        self.fields = self.private
 
     def get(self, name):
-        if name.lexeme in self.fields.keys():
-            return self.fields[name.lexeme]
+        if name.lexeme in self.private.keys():
+            raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
+
+        if name.lexeme in self.public.keys():
+            return self.public[name.lexeme]
         
         method = self.klass.findMethod(name.lexeme)
         if method != None:
@@ -23,6 +28,8 @@ class LoxInstance:
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
     def set(self, name, value):
+        if name.lexeme in self.private.keys():
+            raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
         self.fields[name.lexeme] = value
     
     def toString(self, interpreter, expr = None, arguments = None):
