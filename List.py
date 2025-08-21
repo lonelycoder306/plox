@@ -19,6 +19,7 @@ class ListFunction(LoxCallable):
             # Adds element to the end of the list.
             case "add":
                 self.l_add(expr, arguments[0])
+                return ()
             # Adds element to specified position X.
             case "insert":
                 return self.l_insert(expr, arguments[0], arguments[1])
@@ -27,10 +28,11 @@ class ListFunction(LoxCallable):
                 return self.l_pop(expr)
             # Removes element at position X and returns it.
             case "remove":
-                self.l_remove(expr, arguments[0])
+                return self.l_remove(expr, arguments[0])
             # Removes argument from list (if found) and returns it.
             case "delete":
                 self.l_delete(expr, arguments[0], arguments[1])
+                return ()
 
             # Combines elements of the list into a single string.
             # Raises an error if any of them aren't strings.
@@ -43,6 +45,7 @@ class ListFunction(LoxCallable):
             # Operation need not return a value.
             case "forEach":
                 self.l_forEach(expr, arguments[0])
+                return ()
             # Applies some operation to each element, returning a new list.
             # Operation must return a value (corresponding element in the new list).
             case "transform":

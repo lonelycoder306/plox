@@ -47,6 +47,7 @@ class IOFunction(LoxCallable):
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
                 self.io_echo(arguments[0])
+                return ()
     
     def arity(self):
         match self.mode:

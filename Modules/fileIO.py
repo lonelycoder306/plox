@@ -81,8 +81,10 @@ class fileFunction(LoxCallable):
                 return self.f_fileremove(arguments[0], expr)
             case "filedrop":
                 self.f_filedrop()
+                return ()
             case "fileflush":
                 self.f_fileflush()
+                return ()
 
             case "filechars":
                 return self.f_filechars(int(arguments[0]), expr)
@@ -99,15 +101,20 @@ class fileFunction(LoxCallable):
             
             case "filewrite":
                 self.f_filewrite(arguments[0], arguments[1], expr)
+                return ()
             case "fileput":
                 self.f_fileput(arguments[0], arguments[1], arguments[2], expr)
+                return ()
             
             case "filejump":
                 self.f_filejump(arguments[0], expr)
+                return ()
             case "fileskip":
                 self.f_fileskip(arguments[0], expr)
+                return ()
             case "filelimits":
                 self.f_filelimits(arguments[0], expr)
+                return ()
             case "filepos":
                 return self.f_filepos(expr)
             case "feof":
