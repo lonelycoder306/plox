@@ -5,15 +5,21 @@ from Error import Return
 
 class LoxFunction(LoxCallable):
     def __init__(self, declaration: Stmt.Function, closure: Environment, 
-                 isInitializer: bool):
+                 isMethod: bool, isInitializer: bool):
         self.declaration = declaration
         self.closure = closure
+        self.isMethod = isMethod
         self.isInitializer = isInitializer
+        self.instance = None
     
     def bind(self, instance):
+        if self.isMethod:
+            instance.inMethod = True
         environment = Environment(self.closure)
         environment.define("this", instance)
-        return LoxFunction(self.declaration, environment, self.isInitializer)
+        method = LoxFunction(self.declaration, environment, self.isMethod, self.isInitializer)
+        method.instance = instance
+        return method
     
     def call(self, interpreter, expr, arguments):
         environment = Environment(self.closure)
@@ -27,7 +33,12 @@ class LoxFunction(LoxCallable):
 
         try:
             interpreter.executeBlock(self.declaration.body, environment)
+            if self.isMethod:
+                self.instance.inMethod = False
         except Return as r:
+            if self.isMethod:
+                self.instance.inMethod = False
+
             if self.isInitializer:
                 return self.closure.getAt(0, dummyToken)
 
@@ -45,4 +56,6 @@ class LoxFunction(LoxCallable):
     def toString(self):
         if self.declaration.name == None:
             return "<lambda>"
+        elif self.isMethod:
+            return f"<method {self.declaration.name.lexeme}"
         return f"<fn {self.declaration.name.lexeme}>"

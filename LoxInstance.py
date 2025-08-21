@@ -7,9 +7,12 @@ class LoxInstance:
         self.private = dict()
         self.public = dict()
         self.fields = self.private
+        self.inMethod = False
 
     def get(self, name):
         if name.lexeme in self.private.keys():
+            if self.inMethod:
+                return self.private[name.lexeme]
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
 
         if name.lexeme in self.public.keys():
@@ -29,6 +32,9 @@ class LoxInstance:
     
     def set(self, name, value):
         if name.lexeme in self.private.keys():
+            if self.inMethod:
+                self.private[name.lexeme] = value
+                return
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
         self.fields[name.lexeme] = value
     
