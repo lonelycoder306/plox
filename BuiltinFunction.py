@@ -49,10 +49,12 @@ class BuiltinFunction(LoxCallable):
             return self.b_strformat(arguments[0], expr)
         if self.mode == "perror":
             self.b_perror(arguments[0], expr)
+            return ()
         if self.mode == "arity":
             return self.b_arity(arguments[0], expr)
         if self.mode == "breakpoint":
             self.b_breakpoint(interpreter)
+            return ()
     
     def b_clock(self):
         from datetime import datetime
@@ -112,7 +114,6 @@ class BuiltinFunction(LoxCallable):
             raise RuntimeError(expr.rightParen, "perror() only accepts string arguments.")
         import sys
         sys.stderr.write(message + '\n')
-        return ()
     
     def b_arity(self, function, expr):
         if not isinstance(function, LoxCallable):
