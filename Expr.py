@@ -109,6 +109,14 @@ class Expr:
 		def accept(self, visitor):
 			return visitor.visitSetExpr(self)
 
+	class Super:
+		def __init__(self, keyword, method):
+			self.keyword = keyword
+			self.method = method
+
+		def accept(self, visitor):
+			return visitor.visitSuperExpr(self)
+
 	class Ternary:
 		def __init__(self, condition, trueBranch, falseBranch):
 			self.condition = condition

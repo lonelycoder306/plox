@@ -78,6 +78,12 @@ class Parser:
     
     def classDeclaration(self):
         name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+
+        superclass = None
+        if self.match(TokenType.LESS):
+            self.consume(TokenType.IDENTIFIER, "Expect superclass name.")
+            superclass = Expr.Variable(self.previous())
+        
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
 
         methods = list()
@@ -90,7 +96,7 @@ class Parser:
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 
-        return Stmt.Class(name, methods, classMethods)
+        return Stmt.Class(name, superclass, methods, classMethods)
 
     def continueStatement(self):
         continueToken = self.previous()
@@ -367,7 +373,7 @@ class Parser:
             if type(expr) == Expr.Get:
                 return Expr.Set(expr.object, expr.name, value)
             
-            if (type(expr) == Expr.Access):
+            if type(expr) == Expr.Access:
                 return Expr.Modify(expr, equals, value)
             
             raise ParseError(equals, "Invalid assignment target.")
@@ -537,6 +543,14 @@ class Parser:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Expr.Literal(self.previous().literal)
         
+        if self.match(TokenType.SUPER):
+            keyword = self.previous()
+            self.consume(TokenType.DOT, 
+                         "Expect '.' after 'super'.")
+            method = self.consume(TokenType.IDENTIFIER, 
+                                  "Expect superclass method name.")
+            return Expr.Super(keyword, method)
+        
         if self.match(TokenType.THIS):
             return Expr.This(self.previous())
         
@@ -564,7 +578,7 @@ class Parser:
         
         raise ParseError(self.peek(), "Expect expression.")
 
-    def match(self, *args): # *args: variable number of non-keyword arguments
+    def match(self, *args): # *args: variable number of non-keyword arguments.
         for type in args:
             if self.check(type):
                 self.advance()

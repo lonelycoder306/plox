@@ -15,8 +15,9 @@ class Stmt:
 			return visitor.visitBlockStmt(self)
 
 	class Class:
-		def __init__(self, name, methods, classMethods):
+		def __init__(self, name, superclass, methods, classMethods):
 			self.name = name
+			self.superclass = superclass
 			self.methods = methods
 			self.classMethods = classMethods
 

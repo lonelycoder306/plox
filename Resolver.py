@@ -11,7 +11,7 @@ class Resolver:
         self.interpreter = interpreter
         self.scopes = list()
         self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA, INITIALIZER, METHOD')
-        self.classType = Enum('classType', 'NONE, CLASS')
+        self.classType = Enum('classType', 'NONE, CLASS, SUBCLASS')
         self.currentFunction = self.FunctionType.NONE
         self.currentClass = self.classType.NONE
         # Will record all the defined variables (until they are used) and their line of declaration.
@@ -132,19 +132,32 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        if ((stmt.superclass != None) and 
+            (stmt.name.lexeme == stmt.superclass.name.lexeme)):
+            raise RuntimeError(stmt.superclass.name, "A class cannot inherit from itself.")
+
+        if stmt.superclass != None:
+            self.currentClass = self.classType.SUBCLASS
+            self.resolve(stmt.superclass)
+        
+        if stmt.superclass != None:
+            self.beginScope()
+            dummySuper = Token(TokenType.SUPER, "super", 
+                                str("super"), 0, 0, None)
+            self.declare(dummySuper)
+            self.define(dummySuper)
+            # To avoid getting an "unused local variable" warning 
+            # when adding a superclass.
+            self.localVars[dummySuper][1] = True
+
         self.beginScope()
         dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0, None)
         self.declare(dummyThis)
         self.define(dummyThis)
-        # To avoid getting an "unused local variable" warning when defining a class.
+        # To avoid getting an "unused local variable" warning 
+        # when defining a class.
         self.localVars[dummyThis][1] = True
 
-        for method in stmt.methods:
-            declaration = self.FunctionType.METHOD
-            if method.name.lexeme == "init":
-                declaration = self.FunctionType.INITIALIZER
-            self.resolveFunction(method, declaration)
-        
         for method in stmt.classMethods:
             self.beginScope()
             dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0, None)
@@ -152,8 +165,18 @@ class Resolver:
             self.define(dummyThis)
             self.localVars[dummyThis][1] = True
             self.resolveFunction(method, self.FunctionType.METHOD)
+            self.endScope()
+
+        for method in stmt.methods:
+            declaration = self.FunctionType.METHOD
+            if method.name.lexeme == "init":
+                declaration = self.FunctionType.INITIALIZER
+            self.resolveFunction(method, declaration)
         
         self.endScope()
+
+        if stmt.superclass != None:
+            self.endScope()
 
         self.currentClass = enclosingClass
     
@@ -189,12 +212,12 @@ class Resolver:
     
     def visitReturnStmt(self, stmt: Stmt.Return):
         if self.currentFunction == self.FunctionType.NONE:
-            raise ResolveError(stmt.keyword, "Can't return from top-level code.")
+            raise ResolveError(stmt.keyword, "Cannot return from top-level code.")
         
         if stmt.value != None:
             if self.currentFunction == self.FunctionType.INITIALIZER:
                 raise ResolveError(stmt.keyword, 
-                                   "Can't return a value from an initializer.")
+                                   "Cannot return a value from an initializer.")
             self.resolve(stmt.value)
     
     def visitVarStmt(self, stmt: Stmt.Var):
@@ -262,6 +285,16 @@ class Resolver:
         self.resolve(expr.value)
         self.resolve(expr.object)
     
+    def visitSuperExpr(self, expr: Expr.Super):
+        if self.currentClass == self.classType.NONE:
+            raise ResolveError(expr.keyword, 
+                               "Can't use 'super' outside of a class.")
+        elif self.currentClass == self.classType.CLASS:
+            raise ResolveError(expr.keyword,
+                               "Can't use 'super' in a class with no superclass.")
+        
+        self.resolveLocal(expr, expr.keyword)
+    
     def visitTernaryExpr(self, expr: Expr.Ternary):
         self.resolve(expr.condition)
         self.resolve(expr.trueBranch)
@@ -269,7 +302,7 @@ class Resolver:
     
     def visitThisExpr(self, expr: Expr.This):
         if self.currentClass == self.classType.NONE:
-            raise ResolveError(expr.keyword, "Can't use 'this' outside of a class.")
+            raise ResolveError(expr.keyword, "Cannot use 'this' outside of a class.")
 
         self.resolveLocal(expr, expr.keyword)
     
@@ -282,6 +315,6 @@ class Resolver:
             scope = self.scopes[-1]
             for key in scope.keys():
                 if (key.lexeme == expr.name.lexeme) and (scope.get(key, None) == False):
-                    raise ResolveError(expr.name, "Can't read local variable in its own initializer.")
+                    raise ResolveError(expr.name, "Cannot read local variable in its own initializer.")
         
         self.resolveLocal(expr, expr.name)

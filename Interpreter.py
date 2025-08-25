@@ -83,12 +83,23 @@ class Interpreter:
     def visitClassStmt(self, stmt: Stmt.Class):
         self.environment.define(stmt.name.lexeme, None)
 
+        superclass = None
+        if stmt.superclass != None:
+            superclass = self.evaluate(stmt.superclass)
+            if not (isinstance(superclass, LoxClass)):
+                raise RuntimeError(stmt.superclass.name, 
+                            "Superclass must be a class.")
+        
+        if stmt.superclass != None:
+            self.environment = Environment(self.environment)
+            self.environment.define("super", superclass)
+
         classMethods = dict()
         for method in stmt.classMethods:
             function = LoxFunction(method, self.environment, True, False)
             classMethods[method.name.lexeme] = function
         
-        metaclass = LoxClass(None, f"{stmt.name.lexeme} metaclass", classMethods)
+        metaclass = LoxClass(None, superclass, f"{stmt.name.lexeme} metaclass", classMethods)
 
         methods = dict()
         for method in stmt.methods:
@@ -96,7 +107,11 @@ class Interpreter:
                                    method.name.lexeme == "init")
             methods[method.name.lexeme] = function
 
-        klass = LoxClass(metaclass, stmt.name.lexeme, methods)
+        klass = LoxClass(metaclass, superclass, stmt.name.lexeme, methods)
+
+        if stmt.superclass != None:
+            self.environment = self.environment.enclosing
+
         self.environment.assign(stmt.name, klass)
 
     def visitContinueStmt(self, stmt: Stmt.Continue):
@@ -106,8 +121,7 @@ class Interpreter:
         prevState = self.ExprStmt
         self.ExprStmt = True
 
-        # Print out the return value of any expression statement 
-        # (except assignments, function calls, and comma-combined expressions).
+        # Print out the return value of any expression statement.
         # Assignments/field assignments are excluded so that the RHS of an assignment 
         # is not automatically printed every time an assignment is carried out.
         # Have chosen not to exclude comma expressions. Thus, the value of the 
@@ -175,7 +189,7 @@ class Interpreter:
         print(self.stringify(value))
 
     def visitReturnStmt(self, stmt: Stmt.Return):
-        value = None
+        value = ()
         if stmt.value != None:
             value = self.evaluate(stmt.value)
         
@@ -223,7 +237,9 @@ class Interpreter:
         raise RuntimeError(operator, "Operands must be numbers.")
     
     def varType(self, object):
-        from datetime import time # To check if variable holds a datetime.time object (return value of clock()).
+        # To check if variable holds a datetime.time 
+        # object (return value of clock()).
+        from datetime import time
         match object:
             case float(): # No check for int() since all values in Lox are saved as floats/doubles.
                 return "number"
@@ -636,6 +652,22 @@ class Interpreter:
             return value
         
         raise RuntimeError(expr.name, "Only instances have modifiable fields.")
+
+    def visitSuperExpr(self, expr: Expr.Super):
+        distance = self.locals.get(expr, None)
+        dummySuper = Token(TokenType.SUPER, "super", "super",
+                           0, 0, None)
+        dummyThis = Token(TokenType.THIS, "this", "this",
+                          0, 0, None)
+        superclass = self.environment.getAt(distance, dummySuper)
+        object = self.environment.getAt(distance - 1, dummyThis)
+        method = superclass.findMethod(expr.method.lexeme)
+
+        if method == None:
+            raise RuntimeError(expr.method, 
+                               f"Undefined property '{expr.method.lexeme}'.")
+
+        return method.bind(object)
     
     # Ternary implementation my own.
     def visitTernaryExpr(self, expr: Expr.Ternary):
@@ -661,12 +693,16 @@ class Interpreter:
                     right += 1
                     self.environment.assign(name, right)
                     return right
+                # Other cases here, like ++a[0].
+                raise RuntimeError(expr.operator, "Operand is not mutable.")
             case TokenType.PRE_DEC:
                 if type(expr.right) == Expr.Variable:
                     name = expr.right.name
                     right -= 1
                     self.environment.assign(name, right)
                     return right
+                # Other cases here, like ++a[0].
+                raise RuntimeError(expr.operator, "Operand is not mutable.")
 
     def visitVariableExpr(self, expr: Expr.Variable):
         return self.lookUpVariable(expr.name, expr)
