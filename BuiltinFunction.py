@@ -53,7 +53,7 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "arity":
             return self.b_arity(arguments[0], expr)
         if self.mode == "breakpoint":
-            self.b_breakpoint(interpreter)
+            self.b_breakpoint(interpreter, expr)
             return ()
     
     def b_clock(self):
@@ -120,9 +120,9 @@ class BuiltinFunction(LoxCallable):
             raise RuntimeError(expr.rightParen, "arity() only accepts function arguments.")
         return float(function.arity())
     
-    def b_breakpoint(self, interpreter):
+    def b_breakpoint(self, interpreter, expr):
         from Debug import breakpointStop
-        raise breakpointStop(interpreter, interpreter.environment)
+        raise breakpointStop(interpreter, interpreter.environment, expr)
 
     def arity(self):
         if self.mode == "clock":

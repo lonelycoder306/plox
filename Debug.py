@@ -122,7 +122,7 @@ Possibly:
 
 from Error import RuntimeError
 class breakpointStop(Exception):
-    def __init__(self, interpreter, environment):
+    def __init__(self, interpreter, environment, expr):
         self.breakpoints = []
         self.interpreter = interpreter
         self.environment = environment
@@ -138,6 +138,7 @@ class breakpointStop(Exception):
         # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
                          "vars": "vars"}
+        self.token = expr.callee.name
         self.quit = False # Continue debug prompt so long as this is false.
 
     def debugStart(self):
@@ -148,6 +149,10 @@ class breakpointStop(Exception):
             return
 
         while not self.quit:
+            fileName = self.token.fileName
+            file = State.fileLines.get(fileName)
+            line = self.token.line - 1
+            print(f"({fileName}, {line}) -> {file[line - 1]}", end = "")
             print("(debug)", end = " ")
             prompt = input("")
             if prompt == "":
