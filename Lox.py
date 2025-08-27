@@ -308,10 +308,14 @@ def main():
                         line = line[:-1]
             for line in lines:
                 path = f"Testing/Python Files/test_{line[:-4]}.py"
-                try:
-                    os.remove(path)
-                except OSError as error:
-                        sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
+                if os.path.exists(path):
+                    try:
+                        os.remove(path)
+                    except OSError as error:
+                            sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
+                else:
+                    print("No test files to clean.")
+                    exit(0)
         else:
             fileNameCheck(fileName)
             runFile(fileName)
