@@ -279,6 +279,10 @@ def main():
         sys.exit(64)
     elif len(sys.argv) == 2:
         if testMode:
+            import importlib
+            module = importlib.import_module("Testing.Python Files.generateTests")
+            generateFunc = getattr(module, "generateTestFiles")
+            generateFunc()
             with open("Testing/testList.txt") as f:
                 lines = f.readlines()
                 for line in lines:
