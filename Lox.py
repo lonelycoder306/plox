@@ -71,9 +71,19 @@ def runFile(path, baseName = None):
         if testMode:
             if "Error" in path:
                 # To re-direct errors to the given file as well.
-                sys.stderr = open(f"Testing/Output/{baseName}Error.txt", "r+")
+                fd = None # For scope purposes.
+                try:
+                    fd = open(f"Testing/Output/{baseName}Error.txt", "r+")
+                except FileNotFoundError:
+                    fd = open(f"Testing/Output/{baseName}Error.txt", "a+")
+                sys.stderr = fd
             else:
-                sys.stdout = open(f"Testing/Output/{baseName}Output.txt", "r+")
+                fd = None
+                try:
+                    fd = open(f"Testing/Output/{baseName}Output.txt", "r+")
+                except FileNotFoundError:
+                    fd = open(f"Testing/Output/{baseName}Output.txt", "a+")
+                sys.stdout = fd
         if testMode and ("Error" in path):
             for line in State.fileLines[path]:
                 # We run each line separately so errors for each line
@@ -306,16 +316,20 @@ def main():
                 for line in lines:
                     if line[-1] == '\n':
                         line = line[:-1]
+            if len(lines) == 0:
+                print("No test files to clean.")
+                exit(0)
             for line in lines:
-                path = f"Testing/Python Files/test_{line[:-4]}.py"
-                if os.path.exists(path):
-                    try:
-                        os.remove(path)
-                    except OSError as error:
-                            sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
-                else:
-                    print("No test files to clean.")
-                    exit(0)
+                paths = []
+                paths.append(f"Testing/Python Files/test_{line[:-4]}.py")
+                paths.append(f"Testing/Output/{line[:-4]}Output.txt")
+                paths.append(f"Testing/Output/{line[:-4]}Error.txt")
+                for path in paths:
+                    if os.path.exists(path):
+                        try:
+                            os.remove(path)
+                        except OSError as error:
+                                sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
         else:
             fileNameCheck(fileName)
             runFile(fileName)
