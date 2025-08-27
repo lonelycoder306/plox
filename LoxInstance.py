@@ -6,12 +6,12 @@ class LoxInstance:
         self.klass = klass
         self.private = dict()
         self.public = dict()
-        self.fields = self.private
-        self.inMethod = False
 
     def get(self, name):
+        import State
+
         if name.lexeme in self.private.keys():
-            if self.inMethod:
+            if State.inMethod:
                 return self.private[name.lexeme]
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
 
@@ -31,18 +31,20 @@ class LoxInstance:
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
     def set(self, name, value):
+        import State
+
         if name.lexeme in self.private.keys():
-            if self.inMethod:
+            if State.inMethod:
                 self.private[name.lexeme] = value
                 return
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
         tempMethod = self.klass.findMethod(name.lexeme)
         if tempMethod != None:
             raise RuntimeError(name, f"Method in class definition cannot be re-assigned.")
-        self.fields[name.lexeme] = value
+        self.public[name.lexeme] = value
     
     def toString(self, interpreter, expr = None, arguments = None):
-        method = self.klass.findMethod("str")
+        method = self.klass.findMethod("_str")
         if method != None:
             return method.bind(self).call(interpreter, expr, arguments)
         return f"<{self.klass.name} instance>"

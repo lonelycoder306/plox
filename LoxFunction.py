@@ -10,11 +10,10 @@ class LoxFunction(LoxCallable):
         self.closure = closure
         self.isMethod = isMethod
         self.isInitializer = isInitializer
-        self.instance = None
     
     def bind(self, instance):
-        if self.isMethod:
-            instance.inMethod = True
+        import State
+        State.inMethod = True
         environment = Environment(self.closure)
         environment.define("this", instance)
         method = LoxFunction(self.declaration, environment, self.isMethod, self.isInitializer)
@@ -31,14 +30,16 @@ class LoxFunction(LoxCallable):
         from Token import Token, TokenType
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
+        import State
+
         try:
             interpreter.executeBlock(self.declaration.body, environment)
             if self.isMethod:
-                self.instance.inMethod = True
+                State.inMethod = True
         except Return as r:
             # Reset inMethod.
             if self.isMethod:
-                self.instance.inMethod = False
+                State.inMethod = False
 
             if self.isInitializer:
                 return self.closure.getAt(0, dummyToken)
@@ -47,7 +48,7 @@ class LoxFunction(LoxCallable):
         
         # Reset inMethod.
         if self.isMethod == True:
-            self.instance.inMethod = False
+            State.inMethod = False
 
         if self.isInitializer:
             return self.closure.getAt(0, dummyToken)
