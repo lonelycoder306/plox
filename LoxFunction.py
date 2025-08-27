@@ -36,14 +36,19 @@ class LoxFunction(LoxCallable):
             if self.isMethod:
                 self.instance.inMethod = True
         except Return as r:
+            # Reset inMethod.
             if self.isMethod:
-                self.instance.inMethod = True
+                self.instance.inMethod = False
 
             if self.isInitializer:
                 return self.closure.getAt(0, dummyToken)
 
             return r.value
         
+        # Reset inMethod.
+        if self.isMethod == True:
+            self.instance.inMethod = False
+
         if self.isInitializer:
             return self.closure.getAt(0, dummyToken)
         
