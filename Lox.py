@@ -8,10 +8,14 @@ from Error import LexError, ParseError, ResolveError, RuntimeError
 
 fileName = None
 testMode = False
+cleanMode = False
 linePrint = True
 if len(sys.argv) == 2:
     if sys.argv[1] == "-test":
         testMode = True
+        linePrint = False
+    if sys.argv[1] == "-clean":
+        cleanMode = True
         linePrint = False
     else:
         fileName = sys.argv[1]
@@ -294,6 +298,20 @@ def main():
                     path = "Testing/Tests/" + line[:-4] + "Error.lox"
                     fileNameCheck(path)
                     runFile(path, line[:-4])
+        elif cleanMode:
+            import os
+            lines = list()
+            with open("Testing/testList.txt") as f:
+                lines = f.readlines()
+                for line in lines:
+                    if line[-1] == '\n':
+                        line = line[:-1]
+            for line in lines:
+                path = f"Testing/Python Files/test_{line[:-4]}.py"
+                try:
+                    os.remove(path)
+                except OSError as error:
+                        sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
         else:
             fileNameCheck(fileName)
             runFile(fileName)
