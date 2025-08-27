@@ -75,14 +75,14 @@ def runFile(path, baseName = None):
                 try:
                     fd = open(f"Testing/Output/{baseName}Error.txt", "r+")
                 except FileNotFoundError:
-                    fd = open(f"Testing/Output/{baseName}Error.txt", "a+")
+                    fd = open(f"Testing/Output/{baseName}Error.txt", "w+")
                 sys.stderr = fd
             else:
                 fd = None
                 try:
                     fd = open(f"Testing/Output/{baseName}Output.txt", "r+")
                 except FileNotFoundError:
-                    fd = open(f"Testing/Output/{baseName}Output.txt", "a+")
+                    fd = open(f"Testing/Output/{baseName}Output.txt", "w+")
                 sys.stdout = fd
         if testMode and ("Error" in path):
             for line in State.fileLines[path]:
