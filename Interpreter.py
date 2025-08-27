@@ -5,7 +5,7 @@ from Environment import Environment
 from LoxCallable import LoxCallable
 from LoxFunction import LoxFunction
 from LoxClass import LoxClass
-from LoxInstance import LoxInstance
+from LoxInstance import LoxInstance, InstanceFunction
 from List import List, initList
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, breakError, continueError, Return
@@ -106,6 +106,11 @@ class Interpreter:
             function = LoxFunction(method, self.environment, True,
                                    method.name.lexeme == "init")
             methods[method.name.lexeme] = function
+        
+        methods["_fieldList"] = InstanceFunction("_fieldList")
+        methods["_methodList"] = InstanceFunction("_methodList")
+        methods["_fields"] = InstanceFunction("_fields")
+        methods["_methods"] = InstanceFunction("_methods")
 
         klass = LoxClass(metaclass, superclass, stmt.name.lexeme, methods)
 
@@ -258,6 +263,8 @@ class Interpreter:
                 return "native function"
             case List():
                 return "list"
+            case InstanceFunction():
+                return "native method"
             case _ if isinstance(object, time): # Format to check Boolean conditions in match-case structure.
                 return "datetime"
             case _ if isinstance(object, LoxInstance):
