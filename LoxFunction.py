@@ -31,6 +31,7 @@ class LoxFunction(LoxCallable):
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
         import State
+        currentState = State.inMethod
 
         try:
             interpreter.executeBlock(self.declaration.body, environment)
@@ -39,7 +40,7 @@ class LoxFunction(LoxCallable):
         except Return as r:
             # Reset inMethod.
             if self.isMethod:
-                State.inMethod = False
+                State.inMethod = currentState
 
             if self.isInitializer:
                 return self.closure.getAt(0, dummyToken)
@@ -48,7 +49,7 @@ class LoxFunction(LoxCallable):
         
         # Reset inMethod.
         if self.isMethod == True:
-            State.inMethod = False
+            State.inMethod = currentState
 
         if self.isInitializer:
             return self.closure.getAt(0, dummyToken)
