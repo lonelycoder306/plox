@@ -42,7 +42,7 @@ class Interpreter:
                     import State
                     if State.switchCLI:
                         return
-                    bp.debugStart() # Run first before checking switchCLI since it is only changed by the debugger.
+                    bp.debugStart()
         except RuntimeError as error: # Stops all execution.
             error.show()
     
