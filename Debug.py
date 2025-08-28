@@ -148,11 +148,12 @@ class breakpointStop(Exception):
             print("No debug breakpoint option for command-line interpreter.")
             return
 
+        fileName = self.token.fileName
+        file = State.fileLines.get(fileName)
+        line = self.token.line - 1
+        print(f'("{fileName}", {line}) ->\t{file[line - 1].lstrip()}', end = "")
+
         while not self.quit:
-            fileName = self.token.fileName
-            file = State.fileLines.get(fileName)
-            line = self.token.line - 1
-            print(f"({fileName}, {line}) -> {file[line - 1]}", end = "")
             print("(debug)", end = " ")
             prompt = input("")
             if prompt == "":
