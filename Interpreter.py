@@ -92,7 +92,7 @@ class Interpreter:
         superclass = None
         if stmt.superclass != None:
             superclass = self.evaluate(stmt.superclass)
-            if not (isinstance(superclass, LoxClass)):
+            if not isinstance(superclass, LoxClass):
                 raise RuntimeError(stmt.superclass.name, 
                             "Superclass must be a class.")
         
