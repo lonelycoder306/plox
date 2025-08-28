@@ -299,6 +299,9 @@ def main():
             generateFunc()
             with open("Testing/testList.txt") as f:
                 lines = f.readlines()
+                if len(lines) == 0:
+                    print("No test files available.")
+                    exit(0)
                 for line in lines:
                     if line[-1] == '\n':
                         line = line[:-1]
