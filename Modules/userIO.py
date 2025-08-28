@@ -21,29 +21,29 @@ class IOFunction(LoxCallable):
                 return self.io_inchars(int(arguments[0]), arguments[1])
             case "inbytes":
                 if not self.check_inbytes(arguments):
-                    raise RuntimeError(expr.expr.rightParen, 
+                    raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
                 return self.io_inbytes(int(arguments[0]))
             case "inline":
                 if not self.check_inline(arguments):
-                    raise RuntimeError(expr.expr.rightParen, 
+                    raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.")
                 return self.io_inline()
             case "inlines":
                 if not self.check_inlines(arguments):
-                    raise RuntimeError(expr.expr.rightParen, 
+                    raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
                 return self.io_inlines(int(arguments[0]))
             case "inpeek":
                 if not self.check_inpeek(arguments):
-                    raise RuntimeError(expr.expr.rightParen, 
+                    raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.")
                 return self.io_inpeek()
             case "echo":
                 if not self.check_echo(arguments):
-                    raise RuntimeError(expr.expr.rightParen, 
+                    raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
                 self.io_echo(arguments[0])
