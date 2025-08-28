@@ -291,7 +291,7 @@ class Interpreter:
         if object == None:
             return "nil"
         
-        if (isinstance(object, LoxCallable)):
+        if isinstance(object, LoxCallable):
             return object.toString()
         if type(object) == LoxInstance:
             return object.toString(self)
