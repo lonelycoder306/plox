@@ -39,10 +39,10 @@ class Interpreter:
                 try:
                     self.execute(statement)
                 except breakpointStop as bp: # Only stops current line execution.
-                    bp.debugStart() # Run first before checking switchCLI since it is only changed by the debugger.
                     import State
                     if State.switchCLI:
                         return
+                    bp.debugStart() # Run first before checking switchCLI since it is only changed by the debugger.
         except RuntimeError as error: # Stops all execution.
             error.show()
     
@@ -64,7 +64,13 @@ class Interpreter:
             self.environment = environment
 
             for statement in statements:
-                self.execute(statement)
+                try:
+                    self.execute(statement)
+                except breakpointStop as bp:
+                    bp.debugStart()
+                    import State
+                    if State.switchCLI:
+                        raise bp
         finally:
             self.varEnvs = currentEnvs
             self.environment = previous
