@@ -78,7 +78,8 @@ class fileFunction(LoxCallable):
             case "filehas":
                 return self.f_filehas(arguments[0], expr)
             case "fileremove":
-                return self.f_fileremove(arguments[0], expr)
+                self.f_fileremove(arguments[0], expr)
+                return ()
             case "filedrop":
                 self.f_filedrop()
                 return ()
@@ -495,7 +496,7 @@ class fileFunction(LoxCallable):
     def toString(self):
         return "<fileIO function>"
 
-fileRef = LoxClass(None, "file", {})
+fileRef = LoxClass(None, None, "file", {})
 def fileIOSetUp():
     for function in functions[:4]:
         fileIO.define(function, fileFunction(function))
