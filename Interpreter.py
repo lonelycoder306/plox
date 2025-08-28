@@ -15,12 +15,6 @@ class Interpreter:
     def __init__(self):
         self.globals = Environment()
         self.environment = self.globals
-        # varEnvs is a list of environments for objects in scope other
-        # than local variables.
-        # When entering a scope, we make a copy of it that we can change, e.g.,
-        # adding environments from imports in it.
-        # When exiting the scope, we discard the copy to get the original back.
-        self.varEnvs = [self.globals]
         self.loopLevel = 0
         self.locals = dict()
         self.ExprStmt = False
@@ -31,7 +25,7 @@ class Interpreter:
         from BuiltinFunction import builtins
         # Setting up the List() constructor.
         builtins.define("List", initList)
-        self.varEnvs.append(builtins)
+        self.builtins = builtins
 
     def interpret(self, statements):
         try:
@@ -54,12 +48,6 @@ class Interpreter:
     
     def executeBlock(self, statements, environment: Environment):
         previous = self.environment
-        import copy
-        # Keep a copy of the list of environments prior to any
-        # possible imports in the block.
-        # We don't use deepcopy, since that fundamentally changes
-        # the environments themselves.
-        currentEnvs = copy.copy(self.varEnvs)
         try:
             self.environment = environment
 
@@ -72,7 +60,6 @@ class Interpreter:
                     if State.switchCLI:
                         raise bp
         finally:
-            self.varEnvs = currentEnvs
             self.environment = previous
 
     # No need to check that 'break' or 'continue' are inside a loop, since their presence outside one 
@@ -157,7 +144,7 @@ class Interpreter:
                     setUp = getattr(module, f"{name}SetUp")
                     setUp()
                     env = getattr(module, name)
-                    self.varEnvs.append(env)
+                    self.environment.values.update(env.values)
                 except ModuleNotFoundError:
                     raise RuntimeError(stmt.name, "Module not found.")
             case "Lib":
@@ -325,15 +312,11 @@ class Interpreter:
             value = self.environment.getAt(distance, name)
             return value
         else:
-            for env in self.varEnvs:
-                if name.lexeme in env.values.keys():
-                    value = env.get(name)
-                    return value
-            # We only fetch a variable's value if it is defined in the environment, i.e.,
-            # its name is a key in the environment's value dictionary.
-            # If the variable is undefined, we never try to fetch it, so no error is raised.
-            # This addresses that.
-            raise RuntimeError(name, f"Undefined variable or function '{name.lexeme}'.")
+            if name.lexeme in self.globals.values.keys():
+                return self.globals.get(name)
+            elif name.lexeme in self.builtins.values.keys():
+                return self.builtins.get(name)
+            return self.environment.get(name)
     
     def checkIndices(self, expr, object, start, end):
         length = len(object)
