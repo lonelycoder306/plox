@@ -8,7 +8,7 @@ from LoxClass import LoxClass
 from LoxInstance import LoxInstance, InstanceFunction
 from List import List, initList
 from BuiltinFunction import BuiltinFunction
-from Error import RuntimeError, breakError, continueError, Return
+from Error import RuntimeError, breakError, continueError, Return, StopError
 from Debug import breakpointStop
 
 class Interpreter:
@@ -39,6 +39,8 @@ class Interpreter:
                     bp.debugStart()
         except RuntimeError as error: # Stops all execution.
             error.show()
+        except StopError:
+            return
     
     def resolve(self, expr: Expr.Variable, depth: int):
         self.locals[expr] = depth

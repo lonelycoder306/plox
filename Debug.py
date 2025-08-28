@@ -120,7 +120,7 @@ Possibly:
 #             # Clear the line.
 #             sys.stdout.write('\x1b[2K')
 
-from Error import RuntimeError
+from Error import RuntimeError, StopError
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment, expr):
         self.breakpoints = []
@@ -134,7 +134,8 @@ class breakpointStop(Exception):
                              "n": "next", 
                              "q": "quit",
                              "t": "term",
-                             "sh": "shell"}
+                             "sh": "shell",
+                             "e": "end"}
         # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
                          "vars": "vars"}
@@ -189,7 +190,9 @@ class breakpointStop(Exception):
             case "term":
                 import State
                 State.switchCLI = True
-                self.quit = True # It is never re-set to true during the session, so user cannot return to file execution or debugging.
+                # It is never re-set to true during the session, 
+                # so user cannot return to file execution or debugging.
+                self.quit = True
                 return
             case "shell":
                 import State
@@ -199,69 +202,77 @@ class breakpointStop(Exception):
             case "quit":
                 self.quit = True
                 return
+            case "end":
+                raise StopError()
 
     def debugCommand(self, command, arguments):
         match command:
             case "value": # Can evaluate expressions, but they must contain NO spaces.
-                options = ["l", "local", "g", "global"]
-                if len(arguments) == 0:
-                    print("No arguments provided.")
-                    return
-                
-                elif len(arguments) == 1:
-                    if arguments[0] in options:
-                        print("No value argument.")
-                    else:
-                        print("No proper modifier (l/local, g/global).")
-                    return
-                
-                elif len(arguments) > 2:
-                    print("Too many arguments.")
-                    return
-
-                if (arguments[0] == "g") or (arguments[0] == "global"):
-                    prevEnv = self.interpreter.environment
-                    try:
-                        from Scanner import Scanner
-                        from Parser import Parser
-                        tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
-                        statements = Parser(tokens).parse()
-
-                        self.interpreter.environment = self.interpreter.varEnvs[0]
-                        value = self.interpreter.interpret(statements)
-                    finally:
-                        self.interpreter.environment = prevEnv
-
-                elif (arguments[0] == "l") or (arguments[0] == "local"):
-                    prevEnv = self.interpreter.environment
-                    try:
-                        from Scanner import Scanner
-                        from Parser import Parser
-                        tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
-                        statements = Parser(tokens).parse()
-
-                        self.interpreter.environment = self.environment
-                        value = self.interpreter.interpret(statements)
-                    finally:
-                        self.interpreter.environment = prevEnv
-                return
-
+                self.comm_value(arguments)
             case "vars":
-                if len(arguments) == 0:
-                    print("No arguments provided.")
-                    return
-                elif len(arguments) > 1:
-                    print("Too many arguments.")
-                    return
-                if arguments[0] == "local":
-                    variables = self.environment.values
-                    print("Objects in current scope:")
-                    for var in variables:
-                        value = self.interpreter.stringify(variables[var])
-                        print(f"{var}: {value}")
-                elif arguments[0] == "global":
-                    variables = self.interpreter.globals.values
-                    print("Objects in global scope:")
-                    for var in variables:
-                        value = self.interpreter.stringify(variables[var])
-                        print(f"{var}: {value}")
+                self.comm_vars(arguments)
+    
+    def comm_value(self, arguments):
+        options = ["l", "local", "g", "global"]
+        if len(arguments) == 0:
+            print("No arguments provided.")
+            return
+        
+        elif len(arguments) == 1:
+            if arguments[0] in options:
+                print("No value argument.")
+            else:
+                print("No proper modifier (l/local, g/global).")
+            return
+        
+        elif len(arguments) > 2:
+            print("Too many arguments.")
+            return
+
+        if (arguments[0] == "g") or (arguments[0] == "global"):
+            prevEnv = self.interpreter.environment
+            try:
+                from Scanner import Scanner
+                from Parser import Parser
+                tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
+                statements = Parser(tokens).parse()
+
+                self.interpreter.environment = self.interpreter.globals
+                value = self.interpreter.interpret(statements)
+            finally:
+                self.interpreter.environment = prevEnv
+
+        elif (arguments[0] == "l") or (arguments[0] == "local"):
+            prevEnv = self.interpreter.environment
+            try:
+                from Scanner import Scanner
+                from Parser import Parser
+                tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
+                statements = Parser(tokens).parse()
+
+                self.interpreter.environment = self.environment
+                value = self.interpreter.interpret(statements)
+            finally:
+                self.interpreter.environment = prevEnv
+    
+    def comm_vars(self, arguments):
+        if len(arguments) == 0:
+            print("No arguments provided.")
+            return
+        elif len(arguments) > 1:
+            print("Too many arguments.")
+            return
+        if arguments[0] == "local":
+            variables = self.environment.values
+            print("Objects in current scope:")
+            for var in variables:
+                value = self.interpreter.stringify(variables[var])
+                print(f"{var}: {value}")
+        elif arguments[0] == "global":
+            variables = self.interpreter.globals.values
+            print("Objects in global scope:")
+            for var in variables:
+                value = self.interpreter.stringify(variables[var])
+                print(f"{var}: {value}")
+        else:
+            print("Invalid argument.")
