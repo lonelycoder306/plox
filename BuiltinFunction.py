@@ -118,7 +118,7 @@ class BuiltinFunction(LoxCallable):
     def b_arity(self, function, expr):
         if not isinstance(function, LoxCallable):
             raise RuntimeError(expr.rightParen, "arity() only accepts function arguments.")
-        return float(function.arity())
+        return List(function.arity())
     
     def b_breakpoint(self, interpreter, expr):
         from Debug import breakpointStop
@@ -126,25 +126,25 @@ class BuiltinFunction(LoxCallable):
 
     def arity(self):
         if self.mode == "clock":
-            return 0
+            return [0,0]
         if self.mode == "type":
-            return 1
+            return [1,1]
         if self.mode == "string":
-            return 1
+            return [1,1]
         if self.mode == "number":
-            return 1
+            return [1,1]
         if self.mode == "length":
-            return 1
+            return [1,1]
         if self.mode == "copy":
-            return 1
+            return [1,1]
         if self.mode == "strformat":
-            return 1
+            return [1,1]
         if self.mode == "perror":
-            return 1
+            return [1,1]
         if self.mode == "arity":
-            return 1
+            return [1,1]
         if self.mode == "breakpoint":
-            return 0 # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
+            return [0,0] # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
 
     def toString(self):
         return "<native fn>"
