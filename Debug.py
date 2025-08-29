@@ -238,7 +238,7 @@ class breakpointStop(Exception):
                 statements = Parser(tokens).parse()
 
                 self.interpreter.environment = self.interpreter.globals
-                value = self.interpreter.interpret(statements)
+                self.interpreter.interpret(statements)
             finally:
                 self.interpreter.environment = prevEnv
 
@@ -251,7 +251,7 @@ class breakpointStop(Exception):
                 statements = Parser(tokens).parse()
 
                 self.interpreter.environment = self.environment
-                value = self.interpreter.interpret(statements)
+                self.interpreter.interpret(statements)
             finally:
                 self.interpreter.environment = prevEnv
     
