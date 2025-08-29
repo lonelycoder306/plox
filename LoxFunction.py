@@ -28,9 +28,9 @@ class LoxFunction(LoxCallable):
             for i in range(0, argLen):
                 param = self.declaration.params[i]
                 if type(param) == Token:
-                    environment.define(self.declaration.params[i].lexeme, arguments[i])
+                    environment.define(param.lexeme, arguments[i])
                 elif type(param) == Expr.Assign:
-                    name = self.declaration.params[i].name
+                    name = param.name
                     value = arguments[i]
                     environment.define(name.lexeme, value)
             for i in range(argLen, paramLen):
