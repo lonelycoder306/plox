@@ -126,7 +126,7 @@ class fileFunction(LoxCallable):
     # Helper methods.
 
     def filesize(self, fd, expr): # expr is the expression of the main function, not filesize.
-        # If we fun the function multiple times, our file cursor will shift forward each time.
+        # If we run the function multiple times, our file cursor will shift forward each time.
         # Thus, we must return to our original position in the file each time.
         previous = fd.tell()
         try:
