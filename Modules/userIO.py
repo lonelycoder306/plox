@@ -52,17 +52,17 @@ class IOFunction(LoxCallable):
     def arity(self):
         match self.mode:
             case "inchars":
-                return 2
+                return [1,2]
             case "inbytes":
-                return 1
+                return [1,1]
             case "inline":
-                return 0
+                return [0,0]
             case "inlines":
-                return 1
+                return [0,1]
             case "inpeek":
-                return 0
+                return [0,0]
             case "echo":
-                return 1
+                return [1,1]
     
     # Input.
 
@@ -88,7 +88,7 @@ class IOFunction(LoxCallable):
             return string[:-1]
         return string
     
-    def io_inlines(self, n: int):
+    def io_inlines(self, n: int = -1):
         return sys.stdin.readlines(n)
 
     def io_inpeek(self):
@@ -104,8 +104,9 @@ class IOFunction(LoxCallable):
 
     def check_inchars(self, arguments):
         # No need for argument number checks since that is already a part of the interpreter.
-        if (type(arguments[0]) == float) and (type(arguments[1]) == bool):
-            return True
+        if (type(arguments[0]) == float):
+            if (len(arguments) == 1) or (type(arguments[1]) == bool):
+                return True
         return False
     
     def check_inbytes(self, arguments):
@@ -117,7 +118,9 @@ class IOFunction(LoxCallable):
         return True
 
     def check_inlines(self, arguments):
-        if type(arguments[0]) == float:
+        if len(arguments) == 0:
+            return True
+        elif type(arguments[0]) == float:
             return True
         return False
     
