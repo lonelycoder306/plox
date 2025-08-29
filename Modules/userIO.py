@@ -1,6 +1,8 @@
 from Environment import Environment
 from LoxCallable import LoxCallable
 from Error import RuntimeError
+from List import List
+from String import String
 import sys
 
 userIO = Environment()
@@ -18,13 +20,19 @@ class IOFunction(LoxCallable):
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number, boolean.")
                 # Our numbers are all saved as floats, but read() only accepts integers.
-                return self.io_inchars(int(arguments[0]), arguments[1])
+                if len(arguments) == 2:
+                    return self.io_inchars(int(arguments[0]), arguments[1])
+                elif len(arguments) == 1:
+                    return self.io_inchars(int(arguments[0]))
             case "inbytes":
                 if not self.check_inbytes(arguments):
                     raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: number.")
-                return self.io_inbytes(int(arguments[0]))
+                if len(arguments) == 2:
+                    return self.io_inbytes(int(arguments[0]), arguments[1])
+                elif len(arguments) == 1:
+                    return self.io_inbytes(int(arguments[0]))
             case "inline":
                 if not self.check_inline(arguments):
                     raise RuntimeError(expr.rightParen, 
@@ -54,7 +62,7 @@ class IOFunction(LoxCallable):
             case "inchars":
                 return [1,2]
             case "inbytes":
-                return [1,1]
+                return [1,2]
             case "inline":
                 return [0,0]
             case "inlines":
@@ -66,7 +74,7 @@ class IOFunction(LoxCallable):
     
     # Input.
 
-    def io_inchars(self, n: int, delim = False):
+    def io_inchars(self, n: int, delim: bool = False):
         if delim:
             string = ""
             char = ""
@@ -75,29 +83,46 @@ class IOFunction(LoxCallable):
                 if char == '\n':
                     break
                 string += char
+            return String(string)
+        else:
+            return String(sys.stdin.read(n))
+
+    def io_inbytes(self, n: int, delim: bool = False):
+        if delim:
+            string = b""
+            char = b""
+            while True:
+                char = sys.stdin.buffer.read(1)
+                if (char == b'\n') or (char == b'\r'):
+                    break
+                string += char
             return string
         else:
-            return sys.stdin.read(n)
-
-    def io_inbytes(self, n: int):
-        return sys.stdin.buffer.read(n)
+            return sys.stdin.buffer.read(n)
     
     def io_inline(self):
         string = sys.stdin.readline()
         if string[-1] == '\n':
-            return string[:-1]
-        return string
+            return String(string[:-1])
+        return String(string)
     
     def io_inlines(self, n: int = -1):
-        return sys.stdin.readlines(n)
+        if n != -1:
+            lineList = []
+            for i in range(0, n):
+                lineList.append(sys.stdin.readline())
+        else:
+            lineList = sys.stdin.readlines()
+        lineList = [String(line.rstrip('\n')) for line in lineList]
+        return List(lineList)
 
     def io_inpeek(self):
-        return sys.stdin.read(1)
+        return String(sys.stdin.read(1))
     
     # Output.
 
-    def io_echo(self, text: str):
-        printText = text.encode("utf-8").decode("unicode_escape")
+    def io_echo(self, arg: String):
+        printText = arg.text.encode("utf-8").decode("unicode_escape")
         print(printText)
     
     # Error checking.
@@ -118,9 +143,7 @@ class IOFunction(LoxCallable):
         return True
 
     def check_inlines(self, arguments):
-        if len(arguments) == 0:
-            return True
-        elif type(arguments[0]) == float:
+        if len(arguments) or type(arguments[0]) == float:
             return True
         return False
     
