@@ -14,12 +14,9 @@ class LoxFunction(LoxCallable):
         self.isInitializer = isInitializer
     
     def bind(self, instance):
-        import State
-        State.inMethod = True
         environment = Environment(self.closure)
         environment.define("this", instance)
         method = LoxFunction(self.declaration, environment, self.isMethod, self.isInitializer)
-        method.instance = instance
         return method
     
     def call(self, interpreter, expr, arguments):
@@ -47,9 +44,9 @@ class LoxFunction(LoxCallable):
         currentState = State.inMethod
 
         try:
-            interpreter.executeBlock(self.declaration.body, environment)
             if self.isMethod:
                 State.inMethod = True
+            interpreter.executeBlock(self.declaration.body, environment)
         except Return as r:
             # Reset inMethod.
             if self.isMethod:
