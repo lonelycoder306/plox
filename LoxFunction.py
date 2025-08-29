@@ -51,16 +51,13 @@ class LoxFunction(LoxCallable):
             # Reset inMethod.
             if self.isMethod:
                 State.inMethod = currentState
-
             if self.isInitializer:
                 return self.closure.getAt(0, dummyToken)
-
             return r.value
         
         # Reset inMethod.
         if self.isMethod == True:
             State.inMethod = currentState
-
         if self.isInitializer:
             return self.closure.getAt(0, dummyToken)
         
