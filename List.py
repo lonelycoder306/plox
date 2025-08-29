@@ -1,5 +1,6 @@
 from LoxCallable import LoxCallable
 from Error import RuntimeError
+from String import String
 
 class ListFunction(LoxCallable):
     def __init__(self, mode):
@@ -159,7 +160,7 @@ class ListFunction(LoxCallable):
         string = ""
         for part in self.instance.array:
             string += part
-        return string
+        return String(string)
     
     def l_unique(self, expr):
         array = self.instance.array
@@ -227,7 +228,7 @@ class ListFunction(LoxCallable):
         if element in array:
             return float(len(array) - array.index(element) - 1)
         else:
-            return -1
+            return float(-1)
 
     def l_any(self, expr, interpreter, condition):
         array = self.instance.array
@@ -248,7 +249,6 @@ class ListFunction(LoxCallable):
             elif type(predicate) != bool:
                 raise RuntimeError(expr.leftParen, "Function argument must return a Boolean value.")
         return True
-
 
     def l_reverse(self, expr):
         import copy
@@ -410,10 +410,10 @@ class List:
         dummyInterpreter = Interpreter()
         string = "["
         for element in self.array:
-            if type(element) == str:
+            if type(element) == String:
                 string += "\""
             string += dummyInterpreter.stringify(element)
-            if type(element) == str:
+            if type(element) == String:
                 string += "\""
             string += ", "
         if string[-2:] == ", ":
@@ -432,7 +432,7 @@ class ListInit(LoxCallable):
             return True
         obj = arguments[0]
         argType = type(obj)
-        if (argType == List) or (argType == str):
+        if (argType == List) or (argType == String):
             return True
         elif argType == float:
             if int(obj) == obj:
@@ -446,9 +446,13 @@ class ListInit(LoxCallable):
             if len(arguments) > 0:
                 obj = arguments[0]
                 if type(obj) == List:
-                    return List(arguments[0].array)
-                elif type(obj) == str:
-                    return List(list(arguments[0]))
+                    return List(obj.array)
+                elif type(obj) == String:
+                    array = list()
+                    string = obj.text
+                    for char in string:
+                        array.append(String(char))
+                    return List(array)
                 elif type(obj) == float:
                     length = int(obj)
                     array = list()
@@ -460,5 +464,8 @@ class ListInit(LoxCallable):
 
     def arity(self):
         return [0,1]
+    
+    def toString(self):
+        return "<List constructor>"
 
 initList = ListInit()
