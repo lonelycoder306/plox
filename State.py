@@ -17,3 +17,4 @@ debugError = False # Different error variable for any errors that occur during a
 
 # For access to private fields within methods.
 inMethod = False
+currentClass = None
