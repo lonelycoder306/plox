@@ -44,7 +44,7 @@ class LoxInstance:
             raise RuntimeError(name, f"Method in class definition cannot be re-assigned.")
         self.fields[name.lexeme] = value
     
-    def toString(self, interpreter, expr = None, arguments = None):
+    def toString(self, interpreter, expr = None, arguments = []):
         method = self.klass.findMethod("_str")
         if method != None:
             return method.bind(self).call(interpreter, expr, arguments)
