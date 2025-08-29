@@ -30,7 +30,7 @@ class LoxClass(LoxInstance, LoxCallable):
     def arity(self):
         initializer = self.findMethod("init")
         if initializer == None:
-            return 0
+            return [0,0]
         return initializer.arity()
     
     def toString(self):
