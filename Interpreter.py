@@ -92,23 +92,46 @@ class Interpreter:
 
         classMethods = dict()
         for method in stmt.classMethods:
-            function = LoxFunction(method, self.environment, True, False)
+            context = {"isMethod": True, 
+                       "isInitializer": False, 
+                       "class": None, # Temporarily.
+                       "safe": False}
+            function = LoxFunction(method, self.environment, context)
             classMethods[method.name.lexeme] = function
         
-        metaclass = LoxClass(None, superclass, f"{stmt.name.lexeme} metaclass", classMethods)
+        metaclass = LoxClass(None, superclass, f"{stmt.name.lexeme} metaclass", {}, classMethods)
+        for method in metaclass.public.values():
+            method.context["class"] = metaclass
 
-        methods = dict()
-        for method in stmt.methods:
-            function = LoxFunction(method, self.environment, True,
-                                   method.name.lexeme == "init")
-            methods[method.name.lexeme] = function
+        private = dict()
+        public = dict()
+
+        for method in stmt.private:
+            context = {"isMethod": True,
+                       "isInitializer": False,
+                       "class": None, # Temporarily.
+                       "safe": True}
+            function = LoxFunction(method, self.environment, context)
+            private[method.name.lexeme] = function
         
-        methods["_fieldList"] = InstanceFunction("_fieldList")
-        methods["_methodList"] = InstanceFunction("_methodList")
-        methods["_fields"] = InstanceFunction("_fields")
-        methods["_methods"] = InstanceFunction("_methods")
+        for method in stmt.public:
+            context = {"isMethod": True,
+                       "isInitializer": (method.name.lexeme == "init"),
+                       "class": None, # Temporarily.
+                       "safe": False}
+            function = LoxFunction(method, self.environment, context)
+            public[method.name.lexeme] = function
 
-        klass = LoxClass(metaclass, superclass, stmt.name.lexeme, methods)
+        klass = LoxClass(metaclass, superclass, stmt.name.lexeme, private, public)
+        for method in klass.private.values():
+            method.context["class"] = klass
+        for method in klass.public.values():
+            method.context["class"] = klass
+        
+        public["_fieldList"] = InstanceFunction("_fieldList")
+        public["_methodList"] = InstanceFunction("_methodList")
+        public["_fields"] = InstanceFunction("_fields")
+        public["_methods"] = InstanceFunction("_methods")
 
         if stmt.superclass != None:
             self.environment = self.environment.enclosing
@@ -663,7 +686,7 @@ class Interpreter:
                           0, 0, None)
         superclass = self.environment.getAt(distance, dummySuper)
         object = self.environment.getAt(distance - 1, dummyThis)
-        method = superclass.findMethod(expr.method.lexeme)
+        method = superclass.findMethod(expr.method.lexeme, expr.method)
 
         if method == None:
             raise RuntimeError(expr.method, 

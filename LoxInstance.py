@@ -12,14 +12,14 @@ class LoxInstance:
         import State
 
         if name.lexeme in self.private.keys():
-            if State.inMethod:
+            if State.inMethod and (State.currentClass == self.klass):
                 return self.private[name.lexeme]
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
 
         if name.lexeme in self.public.keys():
             return self.public[name.lexeme]
         
-        method = self.klass.findMethod(name.lexeme)
+        method = self.klass.findMethod(name.lexeme, name)
         if method != None:
             if type(method) == LoxFunction:
                 return method.bind(self)
@@ -82,7 +82,9 @@ class InstanceFunction(LoxCallable):
         return List(array)
 
     def i_methodList(self, interpreter, expr, arguments):
-        array = list(self.instance.klass.methods.keys())
+        private = self.instance.klass.private.keys()
+        public = self.instance.klass.public.keys()
+        array = list(private + public)
         from List import List
         return List(array)
 
@@ -98,21 +100,25 @@ class InstanceFunction(LoxCallable):
             print(f"{field}: {value}")
     
     def i_methods(self, interpreter, expr, arguments):
-        methods = self.instance.klass.methods
-        for method in methods.keys():
-            value = interpreter.stringify(methods[method])
+        private = self.instance.klass.private
+        for method in private.keys():
+            value = interpreter.stringify(private[method])
+            print(f"{method}: {value}")
+        public = self.instance.klass.public
+        for method in public.keys():
+            value = interpreter.stringify(public[method])
             print(f"{method}: {value}")
     
     def arity(self):
         match self.mode:
             case "_fieldList":
-                return 0
+                return [0,0]
             case "_methodList":
-                return 0
+                return [0,0]
             case "_fields":
-                return 0
+                return [0,0]
             case "_methods":
-                return 0
+                return [0,0]
     
     def toString(self):
         return f"<native method {self.mode}>"

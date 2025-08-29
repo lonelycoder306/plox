@@ -1,12 +1,14 @@
 from LoxCallable import LoxCallable
 from LoxInstance import LoxInstance
+from Error import RuntimeError
 
 class LoxClass(LoxInstance, LoxCallable):
-    def __init__(self, metaclass, superclass, name: str, methods: dict):
+    def __init__(self, metaclass, superclass, name: str, private: dict, public: dict):
         super().__init__(metaclass)
         self.superclass = superclass
         self.name = name
-        self.methods = methods
+        self.private = private
+        self.public = public
     
     def call(self, interpreter, expr, arguments):
         from LoxInstance import LoxInstance
@@ -18,12 +20,20 @@ class LoxClass(LoxInstance, LoxCallable):
         instance.fields = instance.public
         return instance
     
-    def findMethod(self, name: str):
-        if name in self.methods.keys():
-            return self.methods.get(name)
+    def findMethod(self, nameString, nameToken = None):
+        if nameString in self.private.keys():
+            import State
+            if State.inMethod:
+                method = self.private.get(nameString)
+                if method.context["class"].name == self.name:
+                    return method
+            raise RuntimeError(nameToken, f"Private method '{nameString}' is inaccessible.")
         
-        if self.superclass != None:
-            return self.superclass.findMethod(name)
+        elif nameString in self.public.keys():
+            return self.public.get(nameString)
+        
+        elif self.superclass != None:
+            return self.superclass.findMethod(nameString, nameToken)
         
         return None
     

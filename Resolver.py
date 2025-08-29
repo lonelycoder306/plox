@@ -175,7 +175,13 @@ class Resolver:
             self.resolveFunction(method, self.FunctionType.METHOD)
             self.endScope()
 
-        for method in stmt.methods:
+        for method in stmt.private:
+            declaration = self.FunctionType.METHOD
+            if method.name.lexeme == "init":
+                raise ResolveError(method.name, "Cannot make constructor private.")
+            self.resolveFunction(method, declaration)
+        
+        for method in stmt.public:
             declaration = self.FunctionType.METHOD
             if method.name.lexeme == "init":
                 declaration = self.FunctionType.INITIALIZER

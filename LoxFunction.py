@@ -7,16 +7,15 @@ from Token import Token, TokenType
 
 class LoxFunction(LoxCallable):
     def __init__(self, declaration: Stmt.Function, closure: Environment, 
-                 isMethod: bool, isInitializer: bool):
+                 context: dict):
         self.declaration = declaration
         self.closure = closure
-        self.isMethod = isMethod
-        self.isInitializer = isInitializer
+        self.context = context
     
     def bind(self, instance):
         environment = Environment(self.closure)
         environment.define("this", instance)
-        method = LoxFunction(self.declaration, environment, self.isMethod, self.isInitializer)
+        method = LoxFunction(self.declaration, environment, self.context)
         return method
     
     def call(self, interpreter, expr, arguments):
@@ -42,23 +41,27 @@ class LoxFunction(LoxCallable):
 
         import State
         currentState = State.inMethod
+        currentClass = State.currentClass
 
         try:
-            if self.isMethod:
+            if self.context["isMethod"]:
                 State.inMethod = True
+                State.currentClass = self.context["class"]
             interpreter.executeBlock(self.declaration.body, environment)
         except Return as r:
             # Reset inMethod.
-            if self.isMethod:
+            if self.context["isMethod"]:
                 State.inMethod = currentState
-            if self.isInitializer:
+                State.currentClass = currentClass
+            if self.context["isInitializer"]:
                 return self.closure.getAt(0, dummyToken)
             return r.value
         
         # Reset inMethod.
-        if self.isMethod == True:
+        if self.context["isMethod"]:
             State.inMethod = currentState
-        if self.isInitializer:
+            State.currentClass = currentClass
+        if self.context["isInitializer"]:
             return self.closure.getAt(0, dummyToken)
         
         return ()
@@ -74,6 +77,6 @@ class LoxFunction(LoxCallable):
     def toString(self):
         if self.declaration.name == None:
             return "<lambda>"
-        elif self.isMethod:
+        elif self.context["isMethod"]:
             return f"<method {self.declaration.name.lexeme}>"
         return f"<fn {self.declaration.name.lexeme}>"
