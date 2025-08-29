@@ -4,6 +4,7 @@ from Error import RuntimeError
 from List import List
 from Expr import Expr
 from LoxInstance import LoxInstance
+from String import String
 
 # General class to implement built-in functions.
 '''
@@ -83,11 +84,11 @@ class BuiltinFunction(LoxCallable):
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
             callee = expr.leftParen
-        validTypes = (str, List)
+        validTypes = (String, List)
         if type(object) not in validTypes: # Will work for strings (other data types to be added).
             raise RuntimeError(callee, "Invalid input to length().")
-        if type(object) == str:
-            return float(len(object))
+        if type(object) == String:
+            return float(len(object.text))
         elif type(object) == List:
             return float(len(object.array))
     
@@ -105,15 +106,15 @@ class BuiltinFunction(LoxCallable):
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
             callee = expr.leftParen
-        if type(object) != str:
+        if type(object) != String:
             raise RuntimeError(callee, "strformat() only accepts string arguments.")
-        return object.encode("utf-8").decode("unicode_escape")
+        return object.text.encode("utf-8").decode("unicode_escape")
      
     def b_perror(self, message, expr):
-        if type(message) != str:
+        if type(message) != String:
             raise RuntimeError(expr.rightParen, "perror() only accepts string arguments.")
         import sys
-        sys.stderr.write(message + '\n')
+        sys.stderr.write(message.text + '\n')
     
     def b_arity(self, function, expr):
         if not isinstance(function, LoxCallable):

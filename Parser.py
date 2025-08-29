@@ -3,6 +3,7 @@ from Expr import Expr
 from Stmt import Stmt
 from Error import ParseError
 from Warning import returnWarning
+from String import String
 
 class Parser:
     tokens = list()
@@ -585,8 +586,11 @@ class Parser:
         if self.match(TokenType.NIL):
             return Expr.Literal(None)
         
-        if self.match(TokenType.NUMBER, TokenType.STRING):
+        if self.match(TokenType.NUMBER):
             return Expr.Literal(self.previous().literal)
+        
+        if self.match(TokenType.STRING):
+            return Expr.Literal(String(self.previous().literal))
         
         if self.match(TokenType.SUPER):
             keyword = self.previous()

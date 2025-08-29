@@ -10,6 +10,7 @@ from List import List, initList
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, breakError, continueError, Return, StopError
 from Debug import breakpointStop
+from String import String
 
 class Interpreter:
     def __init__(self):
@@ -243,7 +244,7 @@ class Interpreter:
         match object:
             case float(): # No check for int() since all values in Lox are saved as floats/doubles.
                 return "number"
-            case str():
+            case String():
                 return "string"
             case bool(): # Fun fact: Bool is a subclass of int.
                 return "boolean"
@@ -347,7 +348,8 @@ class Interpreter:
             if (type(end) != float) or (int(end) != end):
                 raise RuntimeError(expr.operator, "End index must be an integer.")
 
-        if type(object) == str:
+        if type(object) == String:
+            object = object.text
             length = len(object)
         elif type(object) == List:
             object = object.array
@@ -366,14 +368,14 @@ class Interpreter:
             return (float(left) + float(right))
         
         if (type(left) == str) and (type(right) == str):
-            return (str(left) + str(right))
+            return String(str(left) + str(right))
         
         # Allows for concatenation of a string and a non-numeric variable as well.
         if type(left) == str:
-            return str(left) + self.stringify(right)
+            return String(str(left) + self.stringify(right))
         
         if type(right) == str:
-            return self.stringify(left) + str(right)
+            return String(self.stringify(left) + str(right))
         
         raise RuntimeError(expr.operator, "Cannot add given operands.")
     
@@ -381,7 +383,7 @@ class Interpreter:
         if type(left) == str:
             if type(right) == float:
                 if int(right) == right:
-                    return left * int(right)
+                    return String(left * int(right))
                 raise RuntimeError(expr.operator, 
                                     "Cannot multiply string by non-integer number.")
             elif type(right) == str:
@@ -394,7 +396,7 @@ class Interpreter:
         elif type(right) == str:
             if type(left) == float:
                 if int(left) == left:
-                    return right * int(left)
+                    return String(right * int(left))
                 raise RuntimeError(expr.operator, 
                                     "Cannot multiply string by non-integer number.")
             elif type(left) == str:
@@ -420,14 +422,18 @@ class Interpreter:
         if expr.end != None:
             end = self.evaluate(expr.end)
         
-        if (type(object) == str):
-            return self.accessElements(object, start, end, expr)
-        elif (type(object) == List):
+        if type(object) == String:
+            output = self.accessElements(object, start, end, expr)
+            if type(output) == str:
+                return String(output)
+            elif type(output) == list:
+                return List(output)
+            return output
+        elif type(object) == List:
             output = self.accessElements(object, start, end, expr)
             if type(output) == list:
                 return List(output)
-            else:
-                return output
+            return output
         else:
             raise RuntimeError(expr.operator, "Member access only for strings and lists.")
 
@@ -449,8 +455,12 @@ class Interpreter:
         right = self.evaluate(expr.right)
         if type(left) == List:
             left = left.array
+        elif type(left) == String:
+            left = left.text
         if type(right) == List:
             right = right.array
+        elif type(right) == String:
+            right = right.text
 
         match expr.operator.type:
             case TokenType.GREATER:
@@ -588,16 +598,17 @@ class Interpreter:
         if objType not in validObjTypes:
             raise RuntimeError(expr.operator, "Left-hand value not modifiable.")
         mod = self.evaluate(expr.part.object)
+        if (type(mod) != String) and (type(mod) != List):
+            raise RuntimeError(expr.operator, "Left-hand value not modifiable.")
 
         start = self.evaluate(expr.part.start)
         end = None
         if expr.part.end != None:
             end = self.evaluate(expr.part.end)
 
-        if type(mod) == str:
-            raise RuntimeError(expr.operator, "Strings are not mutable.")
+        if type(mod) == String:
             # Error check.
-            if type(value) != str:
+            if type(value) != String:
                 raise RuntimeError(expr.operator, "Can only assign string to string part.")
 
             # Strings in Python are immutable.
@@ -605,13 +616,15 @@ class Interpreter:
             # Thus, we turn the string into a list of its characters,
             # make our modifications, and put it back together.
 
-            if self.checkIndices(expr, mod, start, end):
-                tempList = list(mod)
+            string = mod.text
+            if self.checkIndices(expr, string, start, end):
+                tempList = list(string)
                 if end == None:
-                    tempList[int(start)] = value
+                    tempList[int(start)] = value.text
                 else:
-                    tempList[int(start) : int(end) + 1] = value
-                mod = "".join(tempList)
+                    tempList[int(start) : int(end) + 1] = value.text
+                string = "".join(tempList)
+            mod.text = string
 
         elif type(mod) == List:
             # Any value can be assigned to an *element* of a list,
@@ -627,24 +640,7 @@ class Interpreter:
                     # We thus turn value into its built-in list field.
                     value = value.array
                     mod.array[int(start) : int(end) + 1] = value
-                    
-        match objType:
-            case Expr.Variable:
-                name = expr.part.object.name
-                self.environment.assign(name, mod)
-            case Expr.Access:
-                pass
-            # case Expr.Get:
-            #     object = expr.part.object
-            #     name = ""
-            #     # try:
-            #     while (type(object) != Expr.Variable) and (type(object) != Expr.This):
-            #         object = object.object
-            #     name = object.name
-            #     # except:
-            #     #     raise RuntimeError(expr.operator, f"Cannot access field of object.")
-            #     mod.set(name, value)
-        return mod
+        return value
     
     def visitSetExpr(self, expr: Expr.Set):
         object = self.evaluate(expr.object)
