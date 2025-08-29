@@ -48,10 +48,11 @@ class Stmt:
 			return visitor.visitFetchStmt(self)
 
 	class Function:
-		def __init__(self, name, params, body):
+		def __init__(self, name, params, body, defaults):
 			self.name = name
 			self.params = params
 			self.body = body
+			self.defaults = defaults
 
 		def accept(self, visitor):
 			return visitor.visitFunctionStmt(self)

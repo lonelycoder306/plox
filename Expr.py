@@ -60,9 +60,10 @@ class Expr:
 			return visitor.visitGroupingExpr(self)
 
 	class Lambda:
-		def __init__(self, params, body):
+		def __init__(self, params, body, defaults):
 			self.params = params
 			self.body = body
+			self.defaults = defaults
 
 		def accept(self, visitor):
 			return visitor.visitLambdaExpr(self)

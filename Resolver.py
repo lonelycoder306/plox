@@ -69,28 +69,36 @@ class Resolver:
                         self.localVars[key][1] = True # True = has been used in this scope (in other than an assignment).
                     return
     
-    def resolveFunction(self, function: Stmt.Function, type):
+    def resolveFunction(self, function: Stmt.Function, funcType):
         enclosingFunction = self.currentFunction
-        self.currentFunction = type
+        self.currentFunction = funcType
 
         self.beginScope()
         if function.params != None:
             for param in function.params:
-                self.declare(param)
-                self.define(param)
+                if type(param) == Token:
+                    self.declare(param)
+                    self.define(param)
+                elif type(param) == Expr.Assign:
+                    self.declare(param.name)
+                    self.define(param.name)
         self.resolve(function.body)
         self.endScope()
 
         self.currentFunction = enclosingFunction
     
-    def resolveLambda(self, expr: Expr.Lambda, type):
+    def resolveLambda(self, expr: Expr.Lambda, lambdaType):
         enclosingLambda = self.currentFunction
-        self.currentFunction = type
+        self.currentFunction = lambdaType
 
         self.beginScope()
         for param in expr.params:
-            self.declare(param)
-            self.define(param)
+            if type(param) == Token:
+                self.declare(param)
+                self.define(param)
+            elif type(param) == Expr.Assign:
+                self.declare(param.name)
+                self.define(param.name)
         self.resolve(expr.body)
         self.endScope()
 

@@ -266,14 +266,16 @@ class Parser:
     
     def function(self, kind):
         # Default in case of unassigned lambda.
-        name = None
+        funcName = None
 
         # Check that the function is not an unassigned lambda.
         if kind != "lambda":
-            name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
+            funcName = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
 
         parameters = None
 
+        defaultFound = False
+        defaults = 0
         # Allow omitting the parameter list entirely in method getters.
         if (kind != "method") or self.check(TokenType.LEFT_PAREN):
             self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
@@ -282,20 +284,40 @@ class Parser:
                 # Implementing do-while logic.
                 if len(parameters) >= 255:
                     raise ParseError(self.peek(), "Can't have more than 255 parameters.")
-                parameters.append(self.consume(TokenType.IDENTIFIER,
-                            "Expect parameter name."))
+                name = self.consume(TokenType.IDENTIFIER, "Expect parameter name.")
+                if self.match(TokenType.EQUAL):
+                    equals = self.previous()
+                    value = self.lambdaExpr()
+                    parameters.append(Expr.Assign(name, equals, value))
+                    defaultFound = True
+                    defaults += 1
+                else:
+                    if defaultFound:
+                        raise ParseError(name, 
+                            "Cannot have regular parameter following default parameter.")
+                    parameters.append(name)
                 
                 while self.match(TokenType.COMMA):
                     if len(parameters) >= 255:
                         raise ParseError(self.peek(), "Can't have more than 255 parameters.")
-                    parameters.append(self.consume(TokenType.IDENTIFIER,
-                                "Expect parameter name."))
+                    name = self.consume(TokenType.IDENTIFIER, "Expect parameter name.")
+                    if self.match(TokenType.EQUAL):
+                        equals = self.previous()
+                        value = self.lambdaExpr()
+                        parameters.append(Expr.Assign(name, equals, value))
+                        defaultFound = True
+                        defaults += 1
+                    else:
+                        if defaultFound:
+                            raise ParseError(name, 
+                                "Cannot have regular parameter following default parameter.")
+                        parameters.append(name)
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
 
         # Cannot use f-strings here due to the presence of the { character.
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.")
         body = self.block()
-        return Stmt.Function(name, parameters, body)
+        return Stmt.Function(funcName, parameters, body, defaults)
     
     def block(self):
         statements = list()
@@ -338,24 +360,47 @@ class Parser:
             self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'fun' keyword.")
 
             parameters = list()
+            defaultFound = False
+            defaults = 0
             if not self.check(TokenType.RIGHT_PAREN):
+                # Implementing do-while logic.
                 if len(parameters) >= 255:
                     raise ParseError(self.peek(), "Can't have more than 255 parameters.")
-                parameters.append(self.consume(TokenType.IDENTIFIER,
-                            "Expect parameter name."))
+                name = self.consume(TokenType.IDENTIFIER, "Expect parameter name.")
+                if self.match(TokenType.EQUAL):
+                    equals = self.previous()
+                    value = self.lambdaExpr()
+                    parameters.append(Expr.Assign(name, equals, value))
+                    defaultFound = True
+                    defaults += 1
+                else:
+                    if defaultFound:
+                        raise ParseError(name, 
+                            "Cannot have regular parameter following default parameter.")
+                    parameters.append(name)
                 
                 while self.match(TokenType.COMMA):
                     if len(parameters) >= 255:
                         raise ParseError(self.peek(), "Can't have more than 255 parameters.")
-                    parameters.append(self.consume(TokenType.IDENTIFIER,
-                                "Expect parameter name."))
+                    name = self.consume(TokenType.IDENTIFIER, "Expect parameter name.")
+                    if self.match(TokenType.EQUAL):
+                        equals = self.previous()
+                        value = self.lambdaExpr()
+                        parameters.append(Expr.Assign(name, equals, value))
+                        defaultFound = True
+                        defaults += 1
+                    else:
+                        if defaultFound:
+                            raise ParseError(name, 
+                                "Cannot have regular parameter following default parameter.")
+                        parameters.append(name)
             
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
 
             self.consume(TokenType.LEFT_BRACE, "Expect '{' before lambda body.")
             body = self.block()
 
-            return Expr.Lambda(parameters, body)
+            return Expr.Lambda(parameters, body, defaults)
         
         return self.assignment()
     

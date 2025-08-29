@@ -514,13 +514,21 @@ class Interpreter:
         if not isinstance(callee, LoxCallable):
             raise RuntimeError(expr.leftParen, "No such function or class.")
         
-        if len(arguments) != callee.arity():
-            if callee.arity() == 1: # To make argument singular rather than plural (plural for 0 as well).
+        arity = callee.arity()
+        if (len(arguments) < arity[0]):
+            if arity[0] == 1: # To make argument singular rather than plural (plural for 0 as well).
                 raise RuntimeError(expr.rightParen, 
-                               f"Expected {callee.arity()} argument but got {len(arguments)}.")
+                               f"Expected minimum {arity[0]} argument but got {len(arguments)}.")
             else:
                 raise RuntimeError(expr.rightParen, 
-                               f"Expected {callee.arity()} arguments but got {len(arguments)}.")
+                               f"Expected minimum {arity[0]} arguments but got {len(arguments)}.")
+        if len(arguments) > arity[1]:
+            if arity[1] == 1: # To make argument singular rather than plural (plural for 0 as well).
+                raise RuntimeError(expr.rightParen, 
+                               f"Expected maximum {arity[1]} argument but got {len(arguments)}.")
+            else:
+                raise RuntimeError(expr.rightParen, 
+                               f"Expected maximum {arity[1]} arguments but got {len(arguments)}.")
         
         return callee.call(self, expr, arguments)
 
@@ -548,7 +556,7 @@ class Interpreter:
 
     # Lambdas can all be given default name None since they are accessed by index in the parameter/argument list, not by name.
     def visitLambdaExpr(self, expr: Expr.Lambda):
-        lambdaDeclaration = Stmt.Function(None, expr.params, expr.body)
+        lambdaDeclaration = Stmt.Function(None, expr.params, expr.body, expr.defaults)
         return LoxFunction(lambdaDeclaration, self.environment, False, False)
 
     def visitLiteralExpr(self, expr: Expr.Literal):

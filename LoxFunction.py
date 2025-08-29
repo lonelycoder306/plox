@@ -1,7 +1,9 @@
 from LoxCallable import LoxCallable
+from Expr import Expr
 from Stmt import Stmt
 from Environment import Environment
 from Error import Return
+from Token import Token, TokenType
 
 class LoxFunction(LoxCallable):
     def __init__(self, declaration: Stmt.Function, closure: Environment, 
@@ -24,10 +26,21 @@ class LoxFunction(LoxCallable):
         environment = Environment(self.closure)
 
         if self.declaration.params != None:
-            for i in range(0, len(self.declaration.params)):
-                environment.define(self.declaration.params[i].lexeme, arguments[i])
+            argLen = len(arguments)
+            paramLen = len(self.declaration.params)
+            for i in range(0, argLen):
+                param = self.declaration.params[i]
+                if type(param) == Token:
+                    environment.define(self.declaration.params[i].lexeme, arguments[i])
+                elif type(param) == Expr.Assign:
+                    name = self.declaration.params[i].name
+                    value = arguments[i]
+                    environment.define(name.lexeme, value)
+            for i in range(argLen, paramLen):
+                name = self.declaration.params[i].name
+                value = interpreter.evaluate(self.declaration.params[i].value)
+                environment.define(name.lexeme, value)
         
-        from Token import Token, TokenType
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
         import State
@@ -57,7 +70,9 @@ class LoxFunction(LoxCallable):
         return ()
     
     def arity(self):
-        return len(self.declaration.params)
+        max = len(self.declaration.params)
+        min = max - self.declaration.defaults
+        return [min, max]
     
     def isGetter(self):
         return (self.declaration.params == None)
