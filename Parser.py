@@ -266,6 +266,8 @@ class Parser:
         return Stmt.Expression(expr)
     
     def addParameter(self, parameters, defaultFound, defaults):
+        if len(parameters) >= 255:
+            raise ParseError(self.peek(), "Can't have more than 255 parameters.")
         name = self.consume(TokenType.IDENTIFIER, "Expect parameter name.")
         if self.match(TokenType.EQUAL):
             equals = self.previous()
@@ -298,14 +300,9 @@ class Parser:
             parameters = list()
             if not self.check(TokenType.RIGHT_PAREN):
                 # Implementing do-while logic.
-                if len(parameters) >= 255:
-                    raise ParseError(self.peek(), "Can't have more than 255 parameters.")
                 defaultFound, defaults = self.addParameter(parameters, 
                                                            defaultFound, defaults)
-                
                 while self.match(TokenType.COMMA):
-                    if len(parameters) >= 255:
-                        raise ParseError(self.peek(), "Can't have more than 255 parameters.")
                     defaultFound, defaults = self.addParameter(parameters, 
                                                                defaultFound, defaults)
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
@@ -360,16 +357,11 @@ class Parser:
             defaults = 0
             if not self.check(TokenType.RIGHT_PAREN):
                 # Implementing do-while logic.
-                if len(parameters) >= 255:
-                    raise ParseError(self.peek(), "Can't have more than 255 parameters.")
                 defaultFound, defaults = self.addParameter(parameters, 
                                                            defaultFound, defaults)
-                
                 while self.match(TokenType.COMMA):
-                    if len(parameters) >= 255:
-                        raise ParseError(self.peek(), "Can't have more than 255 parameters.")
                     defaultFound, defaults = self.addParameter(parameters, 
-                                                           defaultFound, defaults)
+                                                               defaultFound, defaults)
             
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
             self.consume(TokenType.LEFT_BRACE, "Expect '{' before lambda body.")
