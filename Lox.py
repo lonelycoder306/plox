@@ -65,7 +65,9 @@ def runFile(path, baseName = None):
 
     try:
         with open(path, "r") as file:
-            State.fileLines[path] = file.readlines()
+            lineList = file.readlines()
+            lineList = [line.rstrip() for line in lineList]
+            State.fileLines[path] = lineList
         with open(path, "r") as file:
             content = file.read()
         if testMode:

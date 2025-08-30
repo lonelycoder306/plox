@@ -124,7 +124,9 @@ class Parser:
                 f.close()
                 import State
                 with open(file, "r") as f:
-                    State.fileLines[file] = f.readlines()
+                    lines = f.readlines()
+                    lines = [line.rstrip() for line in lines]
+                    State.fileLines[file] = lines
             except FileNotFoundError:
                 raise ParseError(name, "No such library file.")
             scanner = Scanner(text, file)
