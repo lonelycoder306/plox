@@ -1,126 +1,22 @@
 '''
 Features to implement:
-1) Breakpoints (figure out a way to allow them to be added at function entry points as well).
+1) Breakpoints (figure out a way to allow them to be added at function entry points as well). DONE.
 2) Options:
 - step (Execute current line and stop at next one; if current line contains a function call, enter the function.)
 - next (Execute current line and stop at next one; if current line contains a function call, evaluate the call and go to the next line; do not step into the function.)
-- continue (Continue executing until breakpoint, end, or error is reached.)
-3) Inspect variables in scope (values and current local/global variables).
+- continue (Continue executing until breakpoint, end, or error is reached.) DONE.
+3) Inspect variables in scope (values and current local/global variables). DONE.
 4) Show current line being executed and call stack.
-5) Evaluating expressions (possibly involving variables) on the fly.
-6) Safely stop execution and return to shell or prompt.
+5) Evaluating expressions (possibly involving variables) on the fly. DONE.
+6) Safely stop execution and return to shell or prompt. DONE.
 Possibly:
 7) Show changes in values of expressions.
 8) Allow user to specify number of surrounding lines printed with breakpoint.
 9) Allow user to specify logging mode to print out all output and commands.
 '''
 
-# class breakpointStop(Exception):
-#     def showOptions(self):
-#         import State
-#         if not State.inAFile: #Using REPL.
-#             print("No debug breakpoint option for command-line interpreter.")
-#             return
-
-#         import sys
-#         sys.stdout.write("- Press Enter to continue.\n") # Use sys.stdout.write() consistently to avoid mixing with print().
-#         sys.stdout.write("- Press d/D for debug information.\n")
-#         sys.stdout.write("- Press t/T to end execution and open the terminal.\n")
-#         sys.stdout.write("- Press q/Q to quit.\n")
-
-#         while True:
-#             choice = input("")
-#             match choice:
-#                 case "":
-#                     self.clearOptions()
-#                     return
-#                 case 'd':
-#                     self.clearOptions()
-#                     self.debugDump()
-#                     return
-#                 case 'D':
-#                     self.clearOptions()
-#                     self.debugDump()
-#                     return
-#                 case 't':
-#                     State.switchCLI = True
-#                     self.clearOptions()
-#                     return
-#                 case 'T':
-#                     State.switchCLI = True
-#                     self.clearOptions()
-#                     return
-#                 case 'q':
-#                     self.clearOptions()
-#                     exit(0)
-#                 case 'Q':
-#                     self.clearOptions()
-#                     exit(0)
-#                 case _:
-#                     sys.stdout.write("Please enter a valid option (Enter, d/D, t/T, q/Q).\n")
-    
-#     def clearOptions(self):
-#         import sys
-#         for i in range(0,5):
-#             # Using special ASCII characters.
-#             # Move the cursor up one line.
-#             sys.stdout.write('\x1b[1A')
-#             # Clear the line.
-#             sys.stdout.write('\x1b[2K')
-
-#     def debugDump(self):
-#         lineCount = 0 # How many lines to remove if clearDump() is run.
-#         from State import debugTokens, debugStatements, debugEnv
-#         import sys
-#         sys.stdout.write("\nTokens constructed by scanner:\n")
-#         lineCount += 1
-#         for token in debugTokens:
-#             sys.stdout.write(token.toString() + '\n')
-#             lineCount +=1
-
-#         lineCount += 1
-#         # print("\nStatements constructed by parser:")
-#         # for statement in debugStatements:
-#         #     print(...) # Something here.
-#         #     lineCount += 1
-#         sys.stdout.write("\nVariables in scope:\n") # Scope display is work in progress.
-#         lineCount += 1
-#         # origEnv = debugEnv
-#         while debugEnv != None: # Print out the variables in every environment (inner-most to outer-most, i.e., global).
-#             for variable in debugEnv.values.keys():
-#                 from Interpreter import Interpreter
-#                 dummyInterpreter = Interpreter() # Just defined to use stringify().
-#                 sys.stdout.write(f"{variable}: {dummyInterpreter.stringify(debugEnv.values[variable])}\n")
-#                 lineCount += 1
-#             debugEnv = debugEnv.enclosing
-#         lineCount += 1
-#         sys.stdout.write("\n- Press d/D to remove debug information and continue.\n")
-#         sys.stdout.write("- Press Enter to keep debug information and continue.\n")
-#         lineCount += 2
-#         choice = input("")
-#         while True:
-#             match choice:
-#                 case "":
-#                     self.clearDump(2)
-#                     return
-#                 case 'd':
-#                     self.clearDump(lineCount)
-#                     return
-#                 case 'D':
-#                     self.clearDump(lineCount)
-#                     return
-#                 case _:
-#                     "Please enter a valid option (Enter, d/D)."
-        
-#     def clearDump(self, lineCount):
-#         import sys
-#         for i in range(0, lineCount + 1):
-#             # Move the cursor up one line.
-#             sys.stdout.write('\x1b[1A')
-#             # Clear the line.
-#             sys.stdout.write('\x1b[2K')
-
 from Error import RuntimeError, StopError
+import State
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment, expr):
         self.breakpoints = []
@@ -135,7 +31,8 @@ class breakpointStop(Exception):
                              "q": "quit",
                              "t": "term",
                              "sh": "shell",
-                             "e": "end"}
+                             "e": "end",
+                             "l": "list"}
         # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
                          "vars": "vars"}
@@ -143,16 +40,20 @@ class breakpointStop(Exception):
         self.quit = False # Continue debug prompt so long as this is false.
 
     def debugStart(self):
-        import State
         State.debugMode = True # Will turn off some features or specifications in our interpreter.
         if not State.inAFile:
             print("No debug breakpoint option for command-line interpreter.")
             return
 
         fileName = self.token.fileName
-        file = State.fileLines.get(fileName)
+        file = State.fileLines[fileName]
         line = self.token.line - 1
-        print(f'("{fileName}", {line}) ->\t{file[line - 1].lstrip()}', end = "")
+        # To avoid wrap-around and printing lines from the end
+        # if a breakpoint is on the first line.
+        if line > 0:
+            print(f'("{fileName}", {line}) ->\t{file[line - 1].lstrip()}')
+        else:
+            print(f'("{fileName}", {line}) ->\t{file[line].lstrip()}')
 
         while not self.quit:
             print("(debug)", end = " ")
@@ -179,7 +80,7 @@ class breakpointStop(Exception):
     def debugInstruction(self, choice):
         match choice:
             case "continue":
-                pass
+                self.quit = True
                 return
             case "step":
                 pass
@@ -188,14 +89,12 @@ class breakpointStop(Exception):
                 pass
                 return
             case "term":
-                import State
                 State.switchCLI = True
                 # It is never re-set to true during the session, 
                 # so user cannot return to file execution or debugging.
                 self.quit = True
                 return
             case "shell":
-                import State
                 State.switchCLI = True
                 self.quit = True
                 return
@@ -204,6 +103,17 @@ class breakpointStop(Exception):
                 return
             case "end":
                 raise StopError()
+            case "list":
+                line = self.token.line - 1
+                file = self.token.fileName
+                lines = State.fileLines[file]
+                line -= 2
+                for i in range(0, 5):
+                    if (line < 0) or (line >= len(lines)):
+                        line += 1
+                        continue
+                    print(lines[line])
+                    line += 1
 
     def debugCommand(self, command, arguments):
         match command:
