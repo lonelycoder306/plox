@@ -49,6 +49,7 @@ class LoxFunction(LoxCallable):
                 State.currentClass = self.context["class"]
             interpreter.executeBlock(self.declaration.body, environment)
         except Return as r:
+            State.callStack = State.callStack[1:]
             # Reset inMethod.
             if self.context["isMethod"]:
                 State.inMethod = currentState
@@ -57,6 +58,7 @@ class LoxFunction(LoxCallable):
                 return self.closure.getAt(0, dummyToken)
             return r.value
         
+        State.callStack = State.callStack[1:]
         # Reset inMethod.
         if self.context["isMethod"]:
             State.inMethod = currentState
