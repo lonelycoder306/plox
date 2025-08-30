@@ -32,7 +32,9 @@ class breakpointStop(Exception):
                              "t": "term",
                              "sh": "shell",
                              "e": "end",
-                             "l": "list"}
+                             "l": "list",
+                             "st": "stack",
+                             "log": "log"}
         # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
                          "vars": "vars"}
@@ -114,6 +116,12 @@ class breakpointStop(Exception):
                         continue
                     print(lines[line])
                     line += 1
+            case "stack":
+                for func in State.callStack:
+                    print(f"(\"{func["file"]}\", {func["line"]}): {func["name"]}")
+            case "log":
+                for func in State.traceLog:
+                    print(f"(\"{func["file"]}\", {func["line"]}): {func["name"]}")
 
     def debugCommand(self, command, arguments):
         match command:

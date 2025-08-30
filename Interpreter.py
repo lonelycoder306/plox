@@ -51,8 +51,12 @@ class Interpreter:
     
     def executeBlock(self, statements, environment: Environment):
         previous = self.environment
+        import State
+        currentCallStack = State.callStack
         try:
             self.environment = environment
+            import copy
+            State.callStack = copy.deepcopy(State.callStack)
 
             for statement in statements:
                 try:
@@ -64,6 +68,7 @@ class Interpreter:
                         raise bp
         finally:
             self.environment = previous
+            State.callStack = currentCallStack
 
     # No need to check that 'break' or 'continue' are inside a loop, since their presence outside one 
     # raises a Parse Error (before the interpreter phase).
@@ -337,6 +342,11 @@ class Interpreter:
     def lookUpVariable(self, name: Token, expr: Expr):
         import State
         if State.debugMode:
+            if name.lexeme in self.builtins.values.keys():
+                return self.builtins.get(name)
+            # Global user-defined functions can't be called,
+            # since they could themselves contain breakpoints,
+            # leading to very messy debugger problems.
             return self.environment.get(name)
 
         distance = self.locals.get(expr, None)
@@ -541,6 +551,12 @@ class Interpreter:
 
     def visitCallExpr(self, expr: Expr.Call):
         callee = self.evaluate(expr.callee)
+        import State
+        funcData = {"name": expr.callee.name.lexeme, 
+                    "file": expr.callee.name.fileName, 
+                    "line": expr.callee.name.line}
+        State.callStack.insert(0, funcData)
+        State.traceLog.insert(0, funcData)
 
         arguments = list()
         for argument in expr.arguments:
