@@ -1,5 +1,6 @@
 *.ps1
 *.md
+!README.md
 Extras/
 .vscode/
 *.lox
