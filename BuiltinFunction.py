@@ -49,7 +49,10 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "strformat":
             return self.b_strformat(expr, arguments[0])
         if self.mode == "perror":
-            self.b_perror(expr, arguments[0])
+            if len(arguments) == 2:
+                self.b_perror(expr, arguments[0], arguments[1])
+            elif len(arguments) == 1:
+                self.b_perror(expr, arguments[0])
             return ()
         if self.mode == "arity":
             return self.b_arity(expr, arguments[0])
