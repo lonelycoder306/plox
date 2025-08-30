@@ -4,6 +4,7 @@
 Extras/
 .vscode/
 *.lox
+!Libraries/*
 *.pyc
 *.txt
 *.json

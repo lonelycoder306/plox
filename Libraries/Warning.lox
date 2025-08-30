@@ -1,0 +1,30 @@
+class Warning
+{
+    init(message, code = nil)
+    {
+        if(type(message) != "<string>")
+        {
+            perror("Warning error: Warning constructor only accepts string arguments.");
+            return;
+        }
+
+        if (code != nil and type(code) != "<string>")
+        {
+            perror("Warning error: Warning constructor only accepts string arguments.");
+            return;
+        }
+        
+        this.message = message;
+        this.code = code;
+    }
+
+    show()
+    {
+        // Warnings print warning messages to stdout,
+        // not stderr (unlike actual errors).
+        if (this.code != nil)
+            print this.code + ": " + this.message;
+        else
+            print this.message;
+    }
+}

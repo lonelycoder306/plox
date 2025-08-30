@@ -1,0 +1,28 @@
+class Error
+{
+    init(message, code = nil)
+    {
+        if(type(message) != "<string>")
+        {
+            perror("Exception error: Error constructor only accepts string arguments.");
+            return;
+        }
+
+        if (code != nil and type(code) != "<string>")
+        {
+            perror("Exception error: Error constructor only accepts string arguments.");
+            return;
+        }
+        
+        this.message = message;
+        this.code = code;
+    }
+
+    show()
+    {
+        if (this.code != nil)
+            perror(this.code + ": " + this.message);
+        else
+            perror(this.message);
+    }
+}

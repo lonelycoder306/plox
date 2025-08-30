@@ -1,0 +1,82 @@
+class Set
+{
+    // Constructor.
+    init(baseList = [])
+    {
+        if (type(baseList) != "<list>")
+        {
+            perror("Set error: First argument is not a list.");
+            return;
+        }
+        
+        this.elements = baseList.sort(true).unique();
+    }
+
+    // Output for print statement.
+    _str()
+    {
+        var str = "{";
+        for (var i = 0; i < this.size(); i = i+1)
+        {
+            if (i != 0) str = str + ", ";
+            str = str + this.elements[i];
+        }
+        str = str + "}";
+        return str;
+    }
+
+    // Returns the elements of the set.
+    getElements
+    {
+        return this.elements;
+    }
+
+    // Returns size of the set.
+    size()
+    {
+        return length(this.elements);
+    }
+
+    // Adds an element to the set if it does not
+    // already exist.
+    extend(element)
+    {
+        if (!this.elements.contains(element))
+        {
+            this.elements.add(element);
+        }
+    }
+
+    // Constructs the union between the instance and
+    // another set.
+    union(set)
+    {
+        if (type(set) != "<Set>")
+        {
+            perror("Set error: Argument is not a set.");
+            return;
+        }
+
+        list newElements = this.elements + set.elements;
+        this.elements = newElements.unique();
+    }
+
+    intersect(set)
+    {
+        if (type(set) != "<Set>")
+        {
+            perror("Set error: Argument is not a set.");
+            return;
+        }
+
+        list shared;
+        for (var i = 0; i<length(this.elements); i = i+1)
+        {
+            var element = this.elements[i];
+            if (set.elements.contains(element))
+                shared.add(element);
+        }
+
+        return makeSet(shared);
+    }
+}

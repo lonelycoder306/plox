@@ -1,0 +1,270 @@
+class Map
+{
+    // Constructor.
+    init()
+    {
+        this.keys = List();
+        this.values = List();
+    }
+
+    // Output for print statement.
+    _str()
+    {
+        var str = "{";
+        if (this.size() > 0) str = str + " ";
+        for (var i = 0; i < this.size(); i = i+1)
+        {
+            if (i != 0) str = str + ", ";
+            str = str + "(" + this.keys[i] + ", " + this.values[i] + ")";
+        }
+        if (this.size() > 0) str = str + " ";
+        str = str + "}";
+        return str;
+    }
+
+    // Static method that constructs a map from a list
+    // and a mapping function.
+    class makeMap(fn, baseList)
+    {
+        if ((type(fn) != "<function>") and (type(fn) != "<lambda>"))
+        {
+            perror("Map error: First argument is not a function.");
+            return;
+        }
+
+        if (arity(fn) != [1,1])
+        {
+            perror("Map error: Function given does not take exactly one argument.");
+            return;
+        }
+
+        if (type(baseList) != "<list>")
+        {
+            perror("Map error: Second argument is not a list.");
+            return;
+        }
+
+        list values = [];
+        for (var i = 0; i < length(baseList); i = i+1)
+        {
+            values.add(fn(baseList[i]));
+        }
+
+        var newMap = Map();
+        newMap.keys = baseList;
+        newMap.values = values;
+        return newMap;
+    }
+
+    // Getter method for the map's keys as a list.
+    getKeys
+    {
+        return this.keys;
+    }
+
+    // Getter method for the map's values as a list.
+    getValues
+    {
+        return this.values;
+    }
+
+    // Getter method for the map's key-value pairs as a list of lists.
+    getItems
+    {
+        return this.keys.pair(this.values);
+    }
+
+    // Returns whether the key exists in the map.
+    has(key)
+    {
+        return (this.keys.contains(key));
+    }
+
+    // Adds a new key-value pair to the map.
+    // Raises an error if the pair's key is already in the map.
+    add(pair)
+    {
+        if (this.has(pair[0]))
+        {
+            perror("Map error: Key already assigned to value.");
+            return;
+        }
+        
+        this.keys.add(pair[0]);
+        this.values.add(pair[1]);
+    }
+
+    // Removes a key-value pair from the map using the key.
+    // Raises an error if the key is not in the map.
+    remove(key)
+    {
+        if (this.has(key))
+        {
+            var index = this.keys.index(key);
+            var value = this.values[index];
+            this.keys.remove(index);
+            this.values.remove(index);
+            return value;
+        }
+        else
+            perror("Map error: Key does not exist in the given map.");
+    }
+
+    // Returns the value for key if key is found in the map.
+    // Otherwise, returns alt (will print nothing if alt is nil).
+    get(key, alt)
+    {
+        if (this.keys.contains(key))
+        {
+            var index = this.keys.index(key);
+            return this.values[index];
+        }
+
+        return alt;
+    }
+
+    // Will change the key's value if key is found.
+    // Raises an error if the key is not in the map.
+    set(key, value)
+    {
+        if (!this.keys.contains(key))
+        {
+            perror("Map error: Key does not exist in the given map.");
+            return;
+        }
+
+        var index = this.keys.index(key);
+        this.values[index] = value;
+    }
+
+    // If the key is in the map, updates its associated value to value.
+    // If the key is not in the map, it adds key-value as a new pair.
+    put(key, value)
+    {
+        if (this.keys.contains(key))
+            this.set(key, value);
+        else
+            this.add([key, value]);
+    }
+
+    // Adds all the key-value pairs in map to the calling map object.
+    // Raises an error if the argument is not a map.
+    merge(map)
+    {
+        if (type(map) != "<Map>")
+        {
+            perror("Map error: Cannot merge map with non-map.");
+            return;
+        }
+
+        list origKeys = this.keys;
+        this.keys = this.keys + map.keys;
+        if (this.keys.duplicate())
+        {
+            perror("Map error: Key collision between original map and argument.");
+            this.keys = origKeys;
+            return;
+        }
+
+        this.values = this.values + map.values;
+    }
+
+    // Updates the key-value pairs in map with the pairs in the argument.
+    // If a pair's key exists, its value is updated to that in the argument.
+    // Otherwise, the pair is added to the map.
+    update(map)
+    {
+        list keys = map.getKeys;
+        list values = map.getValues;
+        for (var i = 0; i < map.size(); i = i+1)
+        {
+            this.put(keys[i], values[i]);
+        }
+    }
+
+    // Returns whether or not the map is empty.
+    empty()
+    {
+        return (length(this.keys) == 0);
+    }
+
+    // Returns whether or not the argument map is equivalent
+    // to the calling map.
+    equals(map)
+    {
+        if (type(map) != "<Map>")
+        {
+            perror("Map error: Argument is not a map.");
+            return;
+        }
+        return ((this.keys == map.keys) and (this.values == map.values));
+    }
+
+    // Returns an isolated copy of the calling map.
+    copy()
+    {
+        return copy(this);
+    }
+
+    // Returns the map as a list of two-item lists.
+    toList()
+    {
+        return this.getItems;
+    }
+
+    // Returns the number of key-value pairs in the map.
+    size()
+    {
+        return length(this.keys);
+    }
+
+    // Clears the map.
+    clear()
+    {
+        this.keys = [];
+        this.values = [];
+    }
+
+    // Switches the keys and values for all the pairs in the map.
+    // Raises an error if values contains duplicates, i.e.,
+    // map is not invertable (not one-to-one).
+    invert()
+    {
+        if (!this.values.duplicate())
+        {
+            list temp = this.keys;
+            this.keys = this.values;
+            this.values = temp;
+        }
+        else
+            perror("Map error: Cannot invert map. Values contain duplicates.");
+    }
+
+    // Applies the function argument to each pair in the map.
+    // Returns a new list with all the function outputs.
+    // Raises an error if fn is not a function.
+    reduce(fn)
+    {
+        if ((type(fn) != "<function>") and (type(fn) != "<lambda>"))
+        {
+            perror("Map error: Argument is not a function.");
+            return;
+        }
+
+        if (arity(fn) != [2,2])
+        {
+            perror("Map error: Function given does not take exactly two arguments.");
+            return;
+        }
+
+        list newList = [];
+        for (var i = 0; i < this.size(); i = i+1)
+        {
+            var key = this.keys[i];
+            var value = this.values[i];
+            newList.add(fn(key, value));
+        }
+
+        return newList;
+    }
+}
