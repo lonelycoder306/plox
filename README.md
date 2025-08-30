@@ -1,12 +1,17 @@
 # Introduction
 This is my implementation of the AST interpreter from (the first half of) Robert Nystrom's book "Crafting Interpreters". While I've largely stuck to Nystrom's own implementation details and structure, I've altered some parts of the interpreter structure (including minor parts of the language specification) and added a number of useful (in my opinion, anyway) features.
 I've include a brief list below of the implementation's basic features which can be found in Nystrom's original Java implementation, followed by a more detailed list of my own changes or additions to the interpreter. Any entries in the second list will include brief justification below the description of the change/addition, or a link to the relevant section for it if the modification was extensive.
+### Note
+Due to the constantly changing nature of this project, there may be some changes which I have (unfortunately) missed within this documentation. I will certainly try to make sure that doesn't happen, but my efforts in this regard will likely be imperfect. This document will be duly updated if any changes do come to mind which have been left out.
 
 # Regular Features of plox
 * 
 
 # Personal Modifications to plox
 ...
+
+# Brief Q&A
+This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
 
 # Further Information
 ...
