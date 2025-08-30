@@ -41,18 +41,18 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "string":
             return self.b_string(interpreter, arguments[0])
         if self.mode == "number":
-            return self.b_number(arguments[0], expr)
+            return self.b_number(expr, arguments[0])
         if self.mode == "length":
-            return self.b_length(arguments[0], expr)
+            return self.b_length(expr, arguments[0])
         if self.mode == "copy":
             return self.b_copy(interpreter, expr, arguments)
         if self.mode == "strformat":
-            return self.b_strformat(arguments[0], expr)
+            return self.b_strformat(expr, arguments[0])
         if self.mode == "perror":
-            self.b_perror(arguments[0], expr)
+            self.b_perror(expr, arguments[0])
             return ()
         if self.mode == "arity":
-            return self.b_arity(arguments[0], expr)
+            return self.b_arity(expr, arguments[0])
         if self.mode == "breakpoint":
             self.b_breakpoint(interpreter, expr)
             return ()
@@ -67,7 +67,7 @@ class BuiltinFunction(LoxCallable):
     def b_string(self, interpreter, object):
         return interpreter.stringify(object)
     
-    def b_number(self, object, expr):
+    def b_number(self, expr, object):
         callee = None
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
@@ -78,7 +78,7 @@ class BuiltinFunction(LoxCallable):
                 raise RuntimeError(callee, "Invalid input to number().")
         return float(object)
     
-    def b_length(self, object, expr):
+    def b_length(self, expr, object):
         callee = None
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
@@ -100,7 +100,7 @@ class BuiltinFunction(LoxCallable):
         newObj = copy.deepcopy(object)
         return newObj
     
-    def b_strformat(self, object, expr):
+    def b_strformat(self, expr, object):
         callee = None
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
@@ -110,13 +110,17 @@ class BuiltinFunction(LoxCallable):
             raise RuntimeError(callee, "strformat() only accepts string arguments.")
         return object.text.encode("utf-8").decode("unicode_escape")
      
-    def b_perror(self, message, expr):
+    def b_perror(self, expr, message, format = True):
         if type(message) != String:
             raise RuntimeError(expr.rightParen, "perror() only accepts string arguments.")
         import sys
-        sys.stderr.write(message.text + '\n')
+        if format:
+            text = message.text.encode("utf-8").decode("unicode_escape")
+        else:
+            text = message.text
+        sys.stderr.write(text + '\n')
     
-    def b_arity(self, function, expr):
+    def b_arity(self, expr, function):
         if not isinstance(function, LoxCallable):
             raise RuntimeError(expr.rightParen, "arity() only accepts function arguments.")
         return List(function.arity())
@@ -141,7 +145,7 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "strformat":
             return [1,1]
         if self.mode == "perror":
-            return [1,1]
+            return [1,2]
         if self.mode == "arity":
             return [1,1]
         if self.mode == "breakpoint":
