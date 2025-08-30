@@ -590,7 +590,11 @@ class Interpreter:
     # Lambdas can all be given default name None since they are accessed by index in the parameter/argument list, not by name.
     def visitLambdaExpr(self, expr: Expr.Lambda):
         lambdaDeclaration = Stmt.Function(None, expr.params, expr.body, expr.defaults)
-        return LoxFunction(lambdaDeclaration, self.environment, False, False)
+        context = {"isMethod": False,
+                   "isInitializer": False,
+                   "class": None,
+                   "safe": False}
+        return LoxFunction(lambdaDeclaration, self.environment, context)
 
     def visitLiteralExpr(self, expr: Expr.Literal):
         return expr.value
