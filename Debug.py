@@ -31,7 +31,6 @@ class breakpointStop(Exception):
                              "q": "quit",
                              "t": "term",
                              "sh": "shell",
-                             "e": "end",
                              "l": "list",
                              "st": "stack",
                              "log": "log"}
@@ -101,9 +100,6 @@ class breakpointStop(Exception):
                 self.quit = True
                 return
             case "quit":
-                self.quit = True
-                return
-            case "end":
                 raise StopError()
             case "list":
                 line = self.token.line - 1
