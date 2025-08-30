@@ -4,6 +4,7 @@ from LoxClass import LoxClass
 from LoxInstance import LoxInstance
 from Error import RuntimeError
 from String import String
+from List import List
 import io
 
 '''
@@ -217,7 +218,7 @@ class fileFunction(LoxCallable):
             previous = self.fd.tell()
             chars = self.fd.read(n)
             self.fd.seek(previous)
-            return chars
+            return String(chars)
         except ValueError: # File is closed.
             raise RuntimeError(expr.rightParen, "File is closed.")
     
@@ -252,7 +253,7 @@ class fileFunction(LoxCallable):
                     break
                 word += c
             self.fd.seek(previous)
-            return word
+            return String(word)
         except ValueError:
             raise RuntimeError(expr.rightParen, "File is closed.")
     
@@ -261,7 +262,7 @@ class fileFunction(LoxCallable):
             previous = self.fd.tell()
             line = self.fd.readline()
             self.fd.seek(previous)
-            return line.strip()
+            return String(line.strip())
         except ValueError:
             raise RuntimeError(expr.rightParen, "File is closed.")
     
@@ -269,8 +270,9 @@ class fileFunction(LoxCallable):
         try:
             previous = self.fd.tell()
             filelines = self.fd.readlines()
+            filelines = [String(line.rstrip()) for line in filelines]
             self.fd.seek(previous)
-            return filelines
+            return List(filelines)
         except ValueError:
             raise RuntimeError(expr.rightParen, "File is closed.")
     
@@ -279,7 +281,7 @@ class fileFunction(LoxCallable):
             previous = self.fd.tell()
             file = self.fd.read()
             self.fd.seek(previous)
-            return file
+            return String(file)
         except ValueError:
             raise RuntimeError(expr.rightParen, "File is closed.")
     
