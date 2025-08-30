@@ -57,11 +57,19 @@ from LoxCallable import LoxCallable
 class InstanceFunction(LoxCallable):
     def __init__(self, mode: str):
         self.mode = mode
+        self.instance = None
     
     def bind(self, instance: LoxInstance):
         self.instance = instance
 
     def call(self, interpreter, expr, arguments):
+        if self.instance == None:
+            # Expr is a Call Expr.
+            # The Call Expr's callee is a Get Expr.
+            # The Get Expr's object is a Variable Expr.
+            raise RuntimeError(expr.callee.object.name, 
+                               "Can only retrieve fields or methods for class instances.")
+
         match self.mode:
             case "_fieldList":
                 return self.i_fieldList(interpreter, expr, arguments)
