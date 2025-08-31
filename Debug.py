@@ -25,8 +25,8 @@ class breakpointStop(Exception):
         # Implementing them as dictionaries allows us to make easier match-case structures later.
         # Instructions -> Do X.
         # Commands -> Do X with Y as argument(s).
-        self.instructions = {"c": "continue", 
-                             "s": "step", 
+        self.instructions = {"c": "continue",
+                             "s": "step",
                              "n": "next", 
                              "q": "quit",
                              "t": "term",
