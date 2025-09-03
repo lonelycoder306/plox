@@ -215,11 +215,27 @@ class ListFunction(LoxCallable):
         array = self.instance.array
         return (len(array) != len(set(array)))
 
+    def compareHelper(self, object, element) -> bool:
+        if type(object) != type(element):
+            return False
+        match object:
+            case String():
+                return (object.text == element.text)
+            case List():
+                objArray = object.array
+                elemArray = element.array
+                for i, x in enumerate(objArray):
+                    if not self.compareHelper(x, elemArray[i]):
+                        return False
+                return True
+            case _:
+                return (object == element)
+
     def l_index(self, expr, element):
-        if element in self.instance.array:
-            return float(self.instance.array.index(element))
-        else:
-            return float(-1)
+        for i, object in enumerate(self.instance.array):
+            if self.compareHelper(object, element):
+                return float(i)
+        return float(-1)
 
     def l_indexLast(self, expr, element):
         import copy
