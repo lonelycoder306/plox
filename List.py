@@ -159,7 +159,7 @@ class ListFunction(LoxCallable):
     def l_join(self, expr):
         string = ""
         for part in self.instance.array:
-            string += part
+            string += part.text
         return String(string)
     
     def l_unique(self, expr):
