@@ -520,9 +520,9 @@ class fileFunction(LoxCallable):
     def toString(self):
         return "<fileIO function>"
 
-fileRef = LoxClass(None, None, "file", {})
+fileRef = LoxClass(None, None, "file", {}, {})
 def fileIOSetUp():
     for function in functions[:4]:
         fileIO.define(function, fileFunction(function))
     for function in functions[4:]:
-        fileRef.methods[function] = fileFunction(function)
+        fileRef.public[function] = fileFunction(function)
