@@ -56,6 +56,40 @@ class Map
         return newMap;
     }
 
+    // Static method that constructs a map from two lists.
+    // First list forms the keys, second forms the values.
+    class pairMap(list1, list2)
+    {
+        if (type(list1) != "<list>")
+        {
+            perror("Map error: First argument is not a list.");
+            return;
+        }
+
+        if (type(list2) != "<list>")
+        {
+            perror("Map error: Second argument is not a list.");
+            return;
+        }
+
+        if (length(list1) != length(list2))
+        {
+            perror("Map error: Lists have different sizes.");
+            return;
+        }
+
+        if (list1.duplicate())
+        {
+            perror("Map error: First list contains duplicate keys.");
+            return;
+        }
+
+        var newMap = Map();
+        newMap.keys = list1;
+        newMap.values = list2;
+        return newMap;
+    }
+
     // Getter method for the map's keys as a list.
     getKeys
     {
