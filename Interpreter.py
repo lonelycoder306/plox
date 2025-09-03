@@ -239,6 +239,10 @@ class Interpreter:
         
         if type(value) == List:
             raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
+        
+        if type(value) == String:
+            import copy
+            value = copy.deepcopy(value)
 
         self.environment.define(stmt.name.lexeme, value)
 
@@ -478,7 +482,7 @@ class Interpreter:
 
     def visitAssignExpr(self, expr: Expr.Assign):
         value = self.evaluate(expr.value)
-        if type(value) == List:
+        if (type(value) == List) or (type(value) == String):
             import copy
             value = copy.deepcopy(value)
 
