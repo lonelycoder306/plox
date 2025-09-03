@@ -8,11 +8,19 @@ class LoxInstance:
         self.public = dict()
         self.fields = self.private
 
+    def verifyClass(self, klass):
+        import State
+        while klass != None:
+            if klass == State.currentClass:
+                return True
+            klass = klass.superclass
+        return False
+
     def get(self, name):
         import State
 
         if name.lexeme in self.private.keys():
-            if State.inMethod and (State.currentClass == self.klass):
+            if State.inMethod and self.verifyClass(self.klass):
                 return self.private[name.lexeme]
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
 
