@@ -146,15 +146,37 @@ class ListFunction(LoxCallable):
         self.instance.array = array
         return element
 
+    def compareHelper(self, object, element) -> bool:
+        if type(object) != type(element):
+            return False
+        match object:
+            case String():
+                return (object.text == element.text)
+            case List():
+                objArray = object.array
+                elemArray = element.array
+                for i, x in enumerate(objArray):
+                    if not self.compareHelper(x, elemArray[i]):
+                        return False
+                return True
+            case _:
+                return (object == element)
+
     def l_delete(self, expr, element, all: bool = False):
         # Handle ValueError here.
         array = self.instance.array
+        removed = False
         if all:
-            while element in array:
-                array.remove(element)
+            while not removed:
+                removed = True
+                for i, object in enumerate(array):
+                    if self.compareHelper(object, element):
+                        removed = False
+                        array.remove(object)
         else:
-            if element in array:
-                self.instance.array.remove(element)
+            for i, object in enumerate(array):
+                if self.compareHelper(object, element):
+                    array.remove(object)
 
     def l_join(self, expr):
         string = ""
@@ -209,42 +231,29 @@ class ListFunction(LoxCallable):
         return List(self.flatHelper(array))
 
     def l_contains(self, expr, element):
-        return (element in self.instance.array)
+        for i, object in enumerate(self.instance.array):
+            if self.compareHelper(object, element):
+                return True
+        return False
     
     def l_duplicate(self, expr):
         array = self.instance.array
         return (len(array) != len(set(array)))
 
-    def compareHelper(self, object, element) -> bool:
-        if type(object) != type(element):
-            return False
-        match object:
-            case String():
-                return (object.text == element.text)
-            case List():
-                objArray = object.array
-                elemArray = element.array
-                for i, x in enumerate(objArray):
-                    if not self.compareHelper(x, elemArray[i]):
-                        return False
-                return True
-            case _:
-                return (object == element)
-
     def l_index(self, expr, element):
         for i, object in enumerate(self.instance.array):
             if self.compareHelper(object, element):
                 return float(i)
-        return float(-1)
+        return None
 
     def l_indexLast(self, expr, element):
         import copy
         array = copy.deepcopy(self.instance.array)
         array.reverse()
-        if element in array:
-            return float(len(array) - array.index(element) - 1)
-        else:
-            return float(-1)
+        for i, object in enumerate(array):
+            if self.compareHelper(object, element):
+                return float(len(array) - i - 1)
+        return None
 
     def l_any(self, expr, interpreter, condition):
         array = self.instance.array
@@ -272,12 +281,14 @@ class ListFunction(LoxCallable):
         array.reverse()
         return List(array)
 
+    # Update to sort strings?
     def l_sort(self, expr, ascending: bool = True):
         import copy
         array = copy.deepcopy(self.instance.array)
         array.sort(reverse = not ascending)
         return List(array)
     
+    # Update comparisons for strings.
     def l_sorted(self, expr, ascending: bool = True):
         array = self.instance.array
         for i in range(0, len(array) - 1):
