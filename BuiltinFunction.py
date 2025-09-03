@@ -65,10 +65,10 @@ class BuiltinFunction(LoxCallable):
         return datetime.now().time()
     
     def b_type(self, interpreter, object):
-        return f"<{interpreter.varType(object)}>"
+        return String(f"<{interpreter.varType(object)}>")
     
     def b_string(self, interpreter, object):
-        return interpreter.stringify(object)
+        return String(interpreter.stringify(object))
     
     def b_number(self, expr, object):
         callee = None
@@ -111,7 +111,7 @@ class BuiltinFunction(LoxCallable):
             callee = expr.leftParen
         if type(object) != String:
             raise RuntimeError(callee, "strformat() only accepts string arguments.")
-        return object.text.encode("utf-8").decode("unicode_escape")
+        return String(object.text.encode("utf-8").decode("unicode_escape"))
      
     def b_perror(self, expr, message, format = True):
         if type(message) != String:
