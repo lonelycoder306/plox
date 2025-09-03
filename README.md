@@ -13,11 +13,8 @@ Due to the constantly changing nature of this project, there may be some changes
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
 
-### Is it complete?
-I'm still continually adding, improving, or debugging certain features as of writing this. If there are any (fleshed-out) features you think would be a good addition, feel free to make a pull request. I'll try my best to have a look at any requests that come in and merge those that seem fitting to add.
-
-### Is it perfect?
-Far from. There are likely a few bugs lurking in the code, and multiple parts can certainly benefit from cleaner implementation or organization. If you have any suggestions or if you've found any bugs in this language implementation, feel free to make a new issue (or pull request), and I will try to address it.
+### Are there any bugs in this implementation?
+Possibly a few. I've tried my best to weed them all out with (hopefully) good solutions. If you do find any issues that I've missed, feel free to make an issue or pull request and I'll be happy to look at it. Feel free to also make non-bug-related suggestions on the implementation, which I might consider merging.
 
 # Further Information
 ...
