@@ -88,7 +88,7 @@ class BuiltinFunction(LoxCallable):
         elif type(expr.callee) == Expr.Access:
             callee = expr.leftParen
         validTypes = (String, List)
-        if type(object) not in validTypes: # Will work for strings (other data types to be added).
+        if type(object) not in validTypes:
             raise RuntimeError(callee, "Invalid input to length().")
         if type(object) == String:
             return float(len(object.text))
