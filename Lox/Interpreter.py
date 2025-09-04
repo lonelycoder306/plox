@@ -504,6 +504,37 @@ class Interpreter:
         
         raise RuntimeError(expr.operator, "Invalid product.")
     
+    def manageStack(self, expr, callee):
+        import State as State
+        token = None
+        if type(expr.callee) == Expr.Variable:
+            token = expr.callee.name
+        # Function object is being accessed from a list
+        # or as a field.
+        elif (type(expr) == Expr.Get) or (type(expr) == Expr.Access):
+            # LoxFunction object (and not a lambda).
+            if ((type(callee) == LoxFunction) 
+                and (callee.declaration.name != None)):
+                token = callee.declaration.name
+        funcData = {}
+        if token != None:
+            funcData = {"name": token.lexeme,
+                        "file": token.fileName,
+                        "line": token.line}
+        else:
+            # Closest token we can get.
+            token = expr.leftParen
+            name = "lambda"
+            # Function is another type of function object
+            # (not even a lambda).
+            if type(callee) != LoxFunction:
+                name = callee.mode
+            funcData = {"name": name,
+                        "file": token.fileName,
+                        "line": token.line}
+        State.callStack.insert(0, funcData)
+        State.traceLog.insert(0, funcData)
+    
     def evaluate(self, expr):
         return expr.accept(self)
     
@@ -615,36 +646,8 @@ class Interpreter:
         
         if not isinstance(callee, LoxCallable):
             raise RuntimeError(expr.leftParen, "No such function or class.")
-        
-        import State as State
-        token = None
-        if type(expr.callee) == Expr.Variable:
-            token = expr.callee.name
-        # Function object is being accessed from a list
-        # or as a field.
-        elif (type(expr) == Expr.Get) or (type(expr) == Expr.Access):
-            # LoxFunction object (and not a lambda).
-            if ((type(callee) == LoxFunction) 
-                and (callee.declaration.name != None)):
-                token = callee.declaration.name
-        funcData = {}
-        if token != None:
-            funcData = {"name": token.lexeme,
-                        "file": token.fileName,
-                        "line": token.line}
-        else:
-            # Closest token we can get.
-            token = expr.leftParen
-            name = "lambda"
-            # Function is another type of function object
-            # (not even a lambda).
-            if type(callee) != LoxFunction:
-                name = callee.mode
-            funcData = {"name": name,
-                        "file": token.fileName,
-                        "line": token.line}
-        State.callStack.insert(0, funcData)
-        State.traceLog.insert(0, funcData)
+
+        self.manageStack(expr, callee)
         
         arity = callee.arity()
         if (len(arguments) < arity[0]):
