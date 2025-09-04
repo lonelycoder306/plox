@@ -12,6 +12,7 @@ from Error import RuntimeError, BreakError, ContinueError, Return, StopError, Us
 from Warning import UserWarning
 from Debug import breakpointStop
 from String import String
+from Reference import Reference
 
 class Interpreter:
     def __init__(self):
@@ -226,10 +227,13 @@ class Interpreter:
         listInstance = List([])
         if stmt.initializer != None:
             listInstance = self.evaluate(stmt.initializer)
+            if type(listInstance) == Reference:
+                listInstance = listInstance.object
+            else:
+                import copy
+                listInstance = copy.deepcopy(listInstance)
             if type(listInstance) != List:
-                raise RuntimeError(stmt.name, "Cannot initialize list to non-list value.")
-            import copy
-            listInstance = copy.deepcopy(listInstance)
+                raise RuntimeError(stmt.name, "Cannot initialize list with non-list value.")
         self.environment.define(stmt.name.lexeme, listInstance)
 
     def visitPrintStmt(self, stmt: Stmt.Print):
@@ -284,12 +288,15 @@ class Interpreter:
         if stmt.initializer != None:
             value = self.evaluate(stmt.initializer)
         
-        if type(value) == List:
-            raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
-        
-        if type(value) == String:
+        if type(value) == Reference:
+            value = value.object
+
+        elif type(value) == String:
             import copy
             value = copy.deepcopy(value)
+
+        if type(value) == List:
+            raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
 
         self.environment.define(stmt.name.lexeme, value)
 
@@ -335,6 +342,8 @@ class Interpreter:
                 return "bytes"
             case List():
                 return "list"
+            case Reference():
+                return self.varType(object.object) + " reference"
             case LoxFunction():
                 if object.declaration.name == None:
                     return "lambda"
@@ -535,6 +544,51 @@ class Interpreter:
         State.callStack.insert(0, funcData)
         State.traceLog.insert(0, funcData)
     
+    def modifyString(self, mod, value, expr):
+        start = self.evaluate(expr.part.start)
+        end = None
+        if expr.part.end != None:
+            end = self.evaluate(expr.part.end)
+
+        # Error check.
+        if type(value) != String:
+            raise RuntimeError(expr.operator, "Can only assign string to string part.")
+
+        # Strings in Python are immutable.
+        # They, thus, do not support direct item assignment.
+        # Thus, we turn the string into a list of its characters,
+        # make our modifications, and put it back together.
+
+        string = mod.text
+        if self.checkIndices(expr, string, start, end):
+            tempList = list(string)
+            if end == None:
+                tempList[int(start)] = value.text
+            else:
+                tempList[int(start) : int(end) + 1] = value.text
+            string = "".join(tempList)
+        mod.text = string
+    
+    def modifyList(self, mod, value, expr):
+        start = self.evaluate(expr.part.start)
+        end = None
+        if expr.part.end != None:
+            end = self.evaluate(expr.part.end)
+
+        # Any value can be assigned to an *element* of a list,
+        # so no type-check needed here.
+        if self.checkIndices(expr, mod.array, start, end):
+            if end == None:
+                mod.array[int(start)] = value
+            else:
+                # Error check.
+                if type(value) != List:
+                    raise RuntimeError(expr.operator, "Can only assign list to list part.")
+                # We cannot modify an actual (built-in) list object with a custom List object.
+                # We thus turn value into its built-in list field.
+                value = value.array
+                mod.array[int(start) : int(end) + 1] = value
+    
     def evaluate(self, expr):
         return expr.accept(self)
     
@@ -562,7 +616,9 @@ class Interpreter:
 
     def visitAssignExpr(self, expr: Expr.Assign):
         value = self.evaluate(expr.value)
-        if (type(value) == List) or (type(value) == String):
+        if type(value) == Reference:
+            value = value.object
+        elif (type(value) == List) or (type(value) == String):
             import copy
             value = copy.deepcopy(value)
 
@@ -639,9 +695,13 @@ class Interpreter:
         arguments = list()
         for argument in expr.arguments:
             value = self.evaluate(argument)
-            if type(value) == List:
-                import copy
-                value = copy.deepcopy(value)
+            if (type(value) == List) or (type(value) == String):
+                if (type(callee) != BuiltinFunction) or (callee.mode != "reference"):
+                    import copy
+                    value = copy.deepcopy(value)
+            if type(value) == Reference:
+                if (type(callee) != BuiltinFunction) or (callee.mode != "type"):
+                    value = value.object
             arguments.append(value)
         
         if not isinstance(callee, LoxCallable):
@@ -730,45 +790,11 @@ class Interpreter:
         if (type(mod) != String) and (type(mod) != List):
             raise RuntimeError(expr.operator, "Left-hand value not modifiable.")
 
-        start = self.evaluate(expr.part.start)
-        end = None
-        if expr.part.end != None:
-            end = self.evaluate(expr.part.end)
-
         if type(mod) == String:
-            # Error check.
-            if type(value) != String:
-                raise RuntimeError(expr.operator, "Can only assign string to string part.")
-
-            # Strings in Python are immutable.
-            # They, thus, do not support direct item assignment.
-            # Thus, we turn the string into a list of its characters,
-            # make our modifications, and put it back together.
-
-            string = mod.text
-            if self.checkIndices(expr, string, start, end):
-                tempList = list(string)
-                if end == None:
-                    tempList[int(start)] = value.text
-                else:
-                    tempList[int(start) : int(end) + 1] = value.text
-                string = "".join(tempList)
-            mod.text = string
+            self.modifyString(mod, value, expr)
 
         elif type(mod) == List:
-            # Any value can be assigned to an *element* of a list,
-            # so no type-check needed here.
-            if self.checkIndices(expr, mod.array, start, end):
-                if end == None:
-                    mod.array[int(start)] = value
-                else:
-                    # Error check.
-                    if type(value) != List:
-                        raise RuntimeError(expr.operator, "Can only assign list to list part.")
-                    # We cannot modify an actual (built-in) list object with a custom List object.
-                    # We thus turn value into its built-in list field.
-                    value = value.array
-                    mod.array[int(start) : int(end) + 1] = value
+            self.modifyList(mod, value, expr)
         return value
     
     def visitSetExpr(self, expr: Expr.Set):
