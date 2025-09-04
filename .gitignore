@@ -1,6 +1,6 @@
 *.ps1
 *.md
-!Justification.md
+!docs/*
 !README.md
 Extras/
 .vscode/
