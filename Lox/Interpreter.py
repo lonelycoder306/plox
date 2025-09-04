@@ -185,7 +185,7 @@ class Interpreter:
         name = stmt.name.lexeme[1:-1]
         match mode:
             case "Mod":
-                # try:
+                try:
                     import os
                     import sys
                     from importlib import import_module
@@ -196,8 +196,8 @@ class Interpreter:
                     env = getattr(module, name)
                     self.environment.values.update(env.values)
                     sys.path.pop()
-                # except ModuleNotFoundError:
-                    # raise RuntimeError(stmt.name, "Module not found.")
+                except ModuleNotFoundError:
+                    raise RuntimeError(stmt.name, "Module not found.")
             case "Lib":
                 pass
             case "File":
