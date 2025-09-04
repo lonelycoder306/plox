@@ -15,8 +15,8 @@ Possibly:
 9) Allow user to specify logging mode to print out all output and commands.
 '''
 
-from Lox.Error import RuntimeError, StopError
-import Lox.State as State
+from Error import RuntimeError, StopError
+import State as State
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment, expr):
         self.breakpoints = []
@@ -149,8 +149,8 @@ class breakpointStop(Exception):
         if (arguments[0] == "g") or (arguments[0] == "global"):
             prevEnv = self.interpreter.environment
             try:
-                from Lox.Scanner import Scanner
-                from Lox.Parser import Parser
+                from Scanner import Scanner
+                from Parser import Parser
                 tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
                 statements = Parser(tokens).parse()
 
@@ -162,8 +162,8 @@ class breakpointStop(Exception):
         elif (arguments[0] == "l") or (arguments[0] == "local"):
             prevEnv = self.interpreter.environment
             try:
-                from Lox.Scanner import Scanner
-                from Lox.Parser import Parser
+                from Scanner import Scanner
+                from Parser import Parser
                 tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
                 statements = Parser(tokens).parse()
 

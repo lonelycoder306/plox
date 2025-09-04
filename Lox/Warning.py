@@ -1,4 +1,4 @@
-from Lox.Token import Token
+from Token import Token
 
 # Warning raised if code appears after return statement within the same scope.
 class returnWarning(Warning):
@@ -6,7 +6,7 @@ class returnWarning(Warning):
         self.token = token # The token appearing after the return statement.
         self.message = f"code found after return statement (will be ignored).\n"
     def warn(self):
-        from Lox.Lox import warn
+        from LoxMain import warn
         warn(self)
 
 class unusedWarning(Warning):
@@ -14,7 +14,7 @@ class unusedWarning(Warning):
         self.token = token
         self.message = f"unused local variable found.\n"
     def warn(self):
-        from Lox.Lox import warn
+        from LoxMain import warn
         warn(self)
 
 class UserWarning(Warning):

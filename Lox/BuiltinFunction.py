@@ -1,10 +1,10 @@
-from Lox.LoxCallable import LoxCallable
-from Lox.Environment import Environment
-from Lox.Error import RuntimeError
-from Lox.List import List
-from Lox.Expr import Expr
-from Lox.LoxInstance import LoxInstance
-from Lox.String import String
+from LoxCallable import LoxCallable
+from Environment import Environment
+from Error import RuntimeError
+from List import List
+from Expr import Expr
+from LoxInstance import LoxInstance
+from String import String
 
 # General class to implement built-in functions.
 '''
@@ -129,7 +129,7 @@ class BuiltinFunction(LoxCallable):
         return List(function.arity())
     
     def b_breakpoint(self, interpreter, expr):
-        from Lox.Debug import breakpointStop
+        from Debug import breakpointStop
         raise breakpointStop(interpreter, interpreter.environment, expr)
 
     def arity(self):

@@ -1,4 +1,4 @@
-from Lox.Token import Token
+from Token import Token
 
 class LexError(Exception):
     def __init__(self, line: int, column: int, file: str, message: str):
@@ -7,7 +7,7 @@ class LexError(Exception):
         self.file = file
         self.message = message
     def show(self):
-        from Lox.Lox import lError
+        from LoxMain import lError
         lError(self)
 
 class ParseError(Exception):
@@ -15,7 +15,7 @@ class ParseError(Exception):
         self.token = token
         self.message = message
     def show(self):
-        from Lox.Lox import tError
+        from LoxMain import tError
         tError(self)
 
 class ResolveError(Exception):
@@ -23,7 +23,7 @@ class ResolveError(Exception):
         self.token = token
         self.message = message
     def show(self):
-        from Lox.Lox import tError
+        from LoxMain import tError
         tError(self)
 
 class RuntimeError(Exception):
@@ -31,7 +31,7 @@ class RuntimeError(Exception):
         self.token = token
         self.message = message
     def show(self):
-        from Lox.Lox import runtimeError
+        from LoxMain import runtimeError
         runtimeError(self)
 
 # Not actual errors.

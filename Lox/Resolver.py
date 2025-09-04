@@ -1,10 +1,10 @@
-from Lox.Expr import Expr
-from Lox.Stmt import Stmt
-from Lox.Token import Token, TokenType
-from Lox.Error import ResolveError
+from Expr import Expr
+from Stmt import Stmt
+from Token import Token, TokenType
+from Error import ResolveError
 from enum import Enum
-from Lox.Interpreter import Interpreter
-from Lox.Warning import unusedWarning
+from Interpreter import Interpreter
+from Warning import unusedWarning
 
 class Resolver:
     def __init__(self, interpreter: Interpreter):
@@ -116,8 +116,8 @@ class Resolver:
             unusedWarning(var).warn()
     
     def getStatements(self, stmt: Stmt.Fetch):
-        from Lox.Scanner import Scanner
-        from Lox.Parser import Parser
+        from Scanner import Scanner
+        from Parser import Parser
         file = stmt.name.lexeme[1:-1]
         text = open(file, "r").read()
         print(text)

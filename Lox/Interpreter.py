@@ -1,17 +1,17 @@
-from Lox.Token import Token, TokenType
-from Lox.Expr import Expr
-from Lox.Stmt import Stmt
-from Lox.Environment import Environment
-from Lox.LoxCallable import LoxCallable
-from Lox.LoxFunction import LoxFunction
-from Lox.LoxClass import LoxClass
-from Lox.LoxInstance import LoxInstance, InstanceFunction
-from Lox.List import List, initList
-from Lox.BuiltinFunction import BuiltinFunction
-from Lox.Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
-from Lox.Warning import UserWarning
-from Lox.Debug import breakpointStop
-from Lox.String import String
+from Token import Token, TokenType
+from Expr import Expr
+from Stmt import Stmt
+from Environment import Environment
+from LoxCallable import LoxCallable
+from LoxFunction import LoxFunction
+from LoxClass import LoxClass
+from LoxInstance import LoxInstance, InstanceFunction
+from List import List, initList
+from BuiltinFunction import BuiltinFunction
+from Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
+from Warning import UserWarning
+from Debug import breakpointStop
+from String import String
 
 class Interpreter:
     def __init__(self):
@@ -22,9 +22,9 @@ class Interpreter:
         self.ExprStmt = False
 
         # Setting up built-in functions in global scope.
-        from Lox.BuiltinFunction import builtinSetUp
+        from BuiltinFunction import builtinSetUp
         builtinSetUp()
-        from Lox.BuiltinFunction import builtins
+        from BuiltinFunction import builtins
         # Setting up the List() constructor.
         builtins.define("List", initList)
         self.builtins = builtins
@@ -35,7 +35,7 @@ class Interpreter:
                 try:
                     self.execute(statement)
                 except breakpointStop as bp: # Only stops current line execution.
-                    import Lox.State as State
+                    import State as State
                     if State.switchCLI:
                         return
                     bp.debugStart()
@@ -58,7 +58,7 @@ class Interpreter:
     
     def executeBlock(self, statements, environment: Environment):
         previous = self.environment
-        import Lox.State as State
+        import State as State
         currentCallStack = State.callStack
         try:
             self.environment = environment
@@ -70,7 +70,7 @@ class Interpreter:
                     self.execute(statement)
                 except breakpointStop as bp:
                     bp.debugStart()
-                    import Lox.State as State
+                    import State as State
                     if State.switchCLI:
                         raise bp
                 except UserWarning as warning:
@@ -180,19 +180,23 @@ class Interpreter:
         self.ExprStmt = prevState
     
     def visitFetchStmt(self, stmt: Stmt.Fetch):
-        import importlib
         mode = stmt.mode.lexeme[3:]
         name = stmt.name.lexeme[1:-1]
         match mode:
             case "Mod":
-                try:
-                    module = importlib.import_module(f"Modules.{name}")
+                # try:
+                    import os
+                    import sys
+                    from importlib import import_module
+                    sys.path.append(os.getcwd() + "/Modules")
+                    module = import_module(f"{name}")
                     setUp = getattr(module, f"{name}SetUp")
                     setUp()
                     env = getattr(module, name)
                     self.environment.values.update(env.values)
-                except ModuleNotFoundError:
-                    raise RuntimeError(stmt.name, "Module not found.")
+                    sys.path.pop()
+                # except ModuleNotFoundError:
+                    # raise RuntimeError(stmt.name, "Module not found.")
             case "Lib":
                 pass
             case "File":
@@ -389,7 +393,7 @@ class Interpreter:
         return text
     
     def lookUpVariable(self, name: Token, expr: Expr):
-        import Lox.State as State
+        import State as State
         if State.debugMode:
             if name.lexeme in self.builtins.values.keys():
                 return self.builtins.get(name)
@@ -612,7 +616,7 @@ class Interpreter:
         if not isinstance(callee, LoxCallable):
             raise RuntimeError(expr.leftParen, "No such function or class.")
         
-        import Lox.State as State
+        import State as State
         token = None
         if type(expr.callee) == Expr.Variable:
             token = expr.callee.name

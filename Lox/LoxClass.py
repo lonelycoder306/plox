@@ -1,6 +1,6 @@
-from Lox.LoxCallable import LoxCallable
-from Lox.LoxInstance import LoxInstance
-from Lox.Error import RuntimeError
+from LoxCallable import LoxCallable
+from LoxInstance import LoxInstance
+from Error import RuntimeError
 
 class LoxClass(LoxInstance, LoxCallable):
     def __init__(self, metaclass, superclass, name: str, private: dict, public: dict):
@@ -11,7 +11,7 @@ class LoxClass(LoxInstance, LoxCallable):
         self.public = public
     
     def call(self, interpreter, expr, arguments):
-        from Lox.LoxInstance import LoxInstance
+        from LoxInstance import LoxInstance
         instance = LoxInstance(self)
         initializer = self.findMethod("init")
         if initializer != None:
@@ -22,7 +22,7 @@ class LoxClass(LoxInstance, LoxCallable):
     
     def findMethod(self, nameString, nameToken = None):
         if nameString in self.private.keys():
-            import Lox.State as State
+            import State as State
             if State.inMethod:
                 method = self.private.get(nameString)
                 if method.context["class"].name == self.name:

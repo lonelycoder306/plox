@@ -1,10 +1,15 @@
-from Lox.Environment import Environment
-from Lox.LoxCallable import LoxCallable
-from Lox.LoxClass import LoxClass
-from Lox.LoxInstance import LoxInstance
-from Lox.Error import RuntimeError
-from Lox.String import String
-from Lox.List import List
+import os
+import sys
+sys.path.append(os.getcwd() +  "/Lox")
+from importlib import import_module as im
+Environment = getattr(im("Environment"), "Environment")
+LoxCallable = getattr(im("LoxCallable"), "LoxCallable")
+LoxClass = getattr(im("LoxClass"), "LoxClass")
+LoxInstance = getattr(im("LoxInstance"), "LoxInstance")
+RuntimeError = getattr(im("Error"), "RuntimeError")
+List = getattr(im("List"), "List")
+String = getattr(im("String"), "String")
+sys.path.pop()
 import io
 
 '''
@@ -154,7 +159,7 @@ class fileFunction(LoxCallable):
 
     # File handling.
 
-    def f_filemake(self, expr, path: String, makedirs = False):
+    def f_filemake(self, expr, path, makedirs = False):
         try:
             instance = LoxInstance(fileRef)
             open(path.text, "x").close() # Just create the file.
@@ -182,7 +187,7 @@ class fileFunction(LoxCallable):
                 raise RuntimeError(expr.rightParen, 
                                    f"Error deleting file '{path}':\n{str(error)}")
 
-    def f_fileopen(self, expr, path: String):
+    def f_fileopen(self, expr, path):
         try:
             instance = LoxInstance(fileRef)
             instance.fields["fd"] = open(path.text, "r+")
@@ -190,11 +195,11 @@ class fileFunction(LoxCallable):
         except FileNotFoundError:
             raise RuntimeError(expr.rightParen, "File does not exist.")
     
-    def f_filehas(self, expr, path: String):
+    def f_filehas(self, expr, path):
         from pathlib import Path
         return Path(path.text).is_file()
     
-    def f_fileremove(self, expr, path: String):
+    def f_fileremove(self, expr, path):
         import os
         if os.path.exists(path.text): # Check that file exists.
             try:
@@ -287,7 +292,7 @@ class fileFunction(LoxCallable):
     
     # File output.
     
-    def f_filewrite(self, expr, string: String, format: bool = True):
+    def f_filewrite(self, expr, string, format: bool = True):
         previous = self.fd.tell()
         try:
             if format:
@@ -301,7 +306,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous)
     
     # Will not change cursor position (use jump then write instead for that).
-    def f_fileput(self, expr, string: String, pos: int, format: bool = True):
+    def f_fileput(self, expr, string, pos: int, format: bool = True):
         previous = self.fd.tell()
         try:
             self.fd.seek(pos)
@@ -335,7 +340,7 @@ class fileFunction(LoxCallable):
         except ValueError:
             raise RuntimeError(expr.rightParen, "File is closed.")
 
-    def f_filelimits(self, expr, option: String):
+    def f_filelimits(self, expr, option):
         try:
             match option.text:
                 case "b":

@@ -1,5 +1,5 @@
-from Lox.Token import Token, TokenType
-from Lox.Error import LexError
+from Token import Token, TokenType
+from Error import LexError
 
 class Scanner:
     source = str()

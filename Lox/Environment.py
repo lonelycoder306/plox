@@ -1,5 +1,5 @@
-from Lox.Token import Token
-from Lox.Error import RuntimeError
+from Token import Token
+from Error import RuntimeError
 
 class Environment:
     def __init__(self, enclosing = None):

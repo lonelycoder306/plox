@@ -1,9 +1,9 @@
-from Lox.LoxCallable import LoxCallable
-from Lox.Expr import Expr
-from Lox.Stmt import Stmt
-from Lox.Environment import Environment
-from Lox.Error import Return
-from Lox.Token import Token, TokenType
+from LoxCallable import LoxCallable
+from Expr import Expr
+from Stmt import Stmt
+from Environment import Environment
+from Error import Return
+from Token import Token, TokenType
 
 class LoxFunction(LoxCallable):
     def __init__(self, declaration: Stmt.Function, closure: Environment, 
@@ -39,7 +39,7 @@ class LoxFunction(LoxCallable):
         
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
-        import Lox.State as State
+        import State as State
         currentState = State.inMethod
         currentClass = State.currentClass
 

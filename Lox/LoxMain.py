@@ -1,10 +1,10 @@
 import sys
-from Lox.Token import TokenType
-from Lox.Scanner import Scanner
-from Lox.Parser import Parser
-from Lox.Interpreter import Interpreter
-from Lox.Resolver import Resolver
-from Lox.Error import LexError, ParseError, ResolveError, RuntimeError
+from Token import TokenType
+from Scanner import Scanner
+from Parser import Parser
+from Interpreter import Interpreter
+from Resolver import Resolver
+from Error import LexError, ParseError, ResolveError, RuntimeError
 
 fileName = None
 testMode = False
@@ -23,7 +23,7 @@ if len(sys.argv) == 2:
 interpreter = Interpreter()
 
 def run(source, fileName = None):
-    import Lox.State as State
+    import State as State
 
     scanner = Scanner(source, fileName)
     tokens = scanner.scanTokens()
@@ -77,7 +77,7 @@ def piping(path: str, baseName: str):
         sys.stdout = fd
 
 def runFile(path, baseName = None):
-    import Lox.State as State
+    import State as State
     State.inAFile = True
 
     try:
@@ -126,7 +126,7 @@ def runPrompt():
             line = line[:-1]
             line += input("... ")
         run(line)
-        import Lox.State as State
+        import State as State
         if State.debugMode: # Do not issue proper errors while in debug mode.
             State.debugError = True
         else:
@@ -159,7 +159,7 @@ def report(error, line, column, where, message, lexerFile = None):
         sys.stderr.write("Parse ")
     elif type(error) == ResolveError:
         sys.stderr.write("Resolve ")
-    import Lox.State as State
+    import State as State
 
     if State.debugMode:
         sys.stderr.write(f'error{where}: {message}\n')
@@ -205,7 +205,7 @@ def runtimeError(error: RuntimeError):
     column = error.token.column
     lexemeLen = len(error.token.lexeme)
     file = error.token.fileName
-    import Lox.State as State
+    import State as State
 
     if State.debugMode:
         sys.stderr.write(f'Runtime error: {error.message}\n')
@@ -245,7 +245,7 @@ def warn(warning):
     column = warning.token.column
     lexemeLen = len(warning.token.lexeme)
     file = warning.token.fileName
-    import Lox.State as State
+    import State as State
     if (file != None) and (not State.debugMode):
         if lexemeLen == 1: 
             sys.stderr.write(f'Warning ["{file}", line {line}, {column}]: ' + warning.message)
@@ -260,7 +260,7 @@ def warn(warning):
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
 def printErrorLine(line: int, file: str, start = None, end = None):
-    import Lox.State as State
+    import State as State
     # rstrip used so a potential newline at the end of a line does not impact our error message.
     printLine = State.fileLines[file][line - 1].rstrip('\n') # -1 since line is minimum 1.
     # Strip all the whitespace on the left-side of the line, and record 
@@ -294,8 +294,11 @@ def fileNameCheck(path):
         sys.exit(64) # Same issue (bad usage), so same exit code.
 
 def test():
-    import importlib
-    module = importlib.import_module("Testing.Python Files.generateTests")
+    from importlib import import_module
+    import os
+    import sys
+    sys.path.append(os.getcwd() +  "\\Testing\\Python Files")
+    module = import_module("generateTests")
     generateFunc = getattr(module, "generateTestFiles")
     generateFunc()
     with open("Testing/testList.txt") as f:

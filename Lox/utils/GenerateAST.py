@@ -56,8 +56,14 @@ StmtClasses = [ "Break      : breakCMD, loopType",
                 "Var        : name, equals, initializer",
                 "While      : condition, body"]
 
-with open("Expr.py", "w") as f:
+import os
+
+script_dir = os.path.dirname(__file__) # script_dir = 'Lox/utils'
+
+target_path = os.path.join(script_dir, "..", "Expr.py")
+with open(os.path.abspath(target_path), "w") as f:
     defineAST("Expr", ExprClasses, f)
 
-with open("Stmt.py", "w") as f:
+target_path = os.path.join(script_dir, "..", "Stmt.py")
+with open(os.path.abspath(target_path), "w") as f:
     defineAST("Stmt", StmtClasses, f)

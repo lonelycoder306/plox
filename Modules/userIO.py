@@ -1,9 +1,12 @@
-from Lox.Environment import Environment
-from Lox.LoxCallable import LoxCallable
-from Lox.Error import RuntimeError
-from Lox.List import List
-from Lox.String import String
+import os
 import sys
+sys.path.append(os.getcwd() +  "/Lox")
+from importlib import import_module as im
+Environment = getattr(im("Environment"), "Environment")
+LoxCallable = getattr(im("LoxCallable"), "LoxCallable")
+RuntimeError = getattr(im("Error"), "RuntimeError")
+List = getattr(im("List"), "List")
+String = getattr(im("String"), "String")
 
 userIO = Environment()
 functions = ["inchars", "inbytes", "inline", "inlines", "inpeek", "echo"]
@@ -54,7 +57,7 @@ class IOFunction(LoxCallable):
                     raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: string.")
-                self.io_echo(arguments[0])
+                self.io_echo(arguments[0], expr)
                 return ()
     
     def arity(self):
@@ -121,9 +124,12 @@ class IOFunction(LoxCallable):
     
     # Output.
 
-    def io_echo(self, arg: String):
-        printText = arg.text.encode("utf-8").decode("unicode_escape")
-        print(printText)
+    def io_echo(self, arg, expr):
+        try:
+            printText = arg.text.encode("utf-8").decode("unicode_escape")
+            print(printText)
+        except UnicodeDecodeError:
+            raise RuntimeError(expr.leftParen, "Failed to format string.")
     
     # Error checking.
 
@@ -151,7 +157,7 @@ class IOFunction(LoxCallable):
         return True
 
     def check_echo(self, arguments):
-        if type(arguments[0]) == str:
+        if type(arguments[0]) == String:
             return True
         return False
     
