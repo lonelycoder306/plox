@@ -1,0 +1,6 @@
+* Added scoped file imports.
+    * Users can import modules (Python code which is "hooked up" to the interpreter), library files (pre-written .lox files for certain capabilities), and personal .lox files. This seemed very useful for a proper user experience, particularly with modules and library files since adding them automatically to the interpreter would heavily bog it down and cause inevitable name collisions. The imports are scoped, so they follow the language's variable scoping and shadowing rules.
+* Improved error messages with aesthetic display of error locations (for running files).
+    * I was unhappy with the short and somewhat inconsistent appearance of the errors in jlox, so I decided to re-format the errors and have the location of the error show on the screen (which was even helpful for me as I debugged parts of the interpreter).
+* Added user-defined exceptions (errors and warnings).
+    * It seemed reasonable (and fairly easy) to add exception classes that users can utilize to report exceptions in their own code. It also makes the language seem more independent from the Interpreter (the language has its own report-able exceptions!).
