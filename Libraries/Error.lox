@@ -1,6 +1,6 @@
 class Error
 {
-    init(message, code = nil)
+    init(message, halt = true, code = nil)
     {
         if(type(message) != "<string>")
         {
@@ -16,6 +16,7 @@ class Error
         
         this.message = message;
         this.code = code;
+        this.halt = halt;
     }
 
     show()
