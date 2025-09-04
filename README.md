@@ -4,6 +4,14 @@ I've include a brief list below of the implementation's basic features which can
 ### Note
 Due to the constantly changing nature of this project, there may be some changes which I have (unfortunately) missed within this documentation. I will certainly try to make sure that doesn't happen, but my efforts in this regard will likely be imperfect. This document will be duly updated if any changes do come to mind which have been left out.
 
+# Project Directory Structure
+* Libraries - Pre-written .lox files you can use with the "GetLib" directive.
+* Lox - All the main Python files for the interpreter.
+    * LoxMain.py is the main file to run for the interpreter to work.
+    * utils/ holds utility files that can be used for work with the interpreter, but are not used when it is running.
+* Modules - Additional Python files that can be "hooked up" to the interpreter at runtime with the "GetMod" directive.
+* docs - Project documentation.
+
 # Regular Features of plox
 * 
 
