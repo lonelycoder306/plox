@@ -8,5 +8,6 @@ Extras/
 !Libraries/*
 *.pyc
 *.txt
+!requirements.txt
 *.json
 Testing/
