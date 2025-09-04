@@ -9,7 +9,7 @@ Due to the constantly changing nature of this project, there may be some changes
 
 # Personal Modifications to plox
 This a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.
-For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./Justification.md).
+For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./docs/Justification.md).
 * Added scoped file imports.
 * Improved error messages with aesthetic display of error locations (for running files).
 * Added user-defined exceptions (errors and warnings).
