@@ -43,7 +43,7 @@ class LoxInstance:
         import State
 
         if name.lexeme in self.private.keys():
-            if State.inMethod:
+            if State.inMethod and self.verifyClass(self.klass):
                 self.private[name.lexeme] = value
                 return
             raise RuntimeError(name, f"Private field '{name.lexeme}' is inaccessible.")
