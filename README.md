@@ -8,7 +8,13 @@ Due to the constantly changing nature of this project, there may be some changes
 * 
 
 # Personal Modifications to plox
-...
+This a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.
+* Added scoped file imports.
+    * Users can import modules (Python code which is "hooked up" to the interpreter), library files (pre-written .lox files for certain capabilities), and personal .lox files. This seemed very useful for a proper user experience, particularly with modules and library files since adding them automatically to the interpreter would heavily bog it down and cause inevitable name collisions. The imports are scoped, so they follow the language's variable scoping and shadowing rules.
+* Improved error messages with aesthetic display of error locations (for running files).
+    * I was unhappy with the short and somewhat inconsistent appearance of the errors in jlox, so I decided to re-format the errors and have the location of the error show on the screen (which was even helpful for me as I debugged parts of the interpreter).
+* Added user-defined exceptions (errors and warnings).
+    * It seemed reasonable (and fairly easy) to add exception classes that users can utilize to report exceptions in their own code. It also makes the language seem more independent from the Interpreter (the language has its own report-able exceptions!).
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
