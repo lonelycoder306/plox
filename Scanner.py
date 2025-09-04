@@ -33,7 +33,10 @@ class Scanner:
         "GetMod": TokenType.GET,
         "GetLib": TokenType.GET,
         "GetFile": TokenType.GET,
-        "safe": TokenType.SAFE
+        "safe": TokenType.SAFE,
+        "attempt": TokenType.ATTEMPT,
+        "handle": TokenType.HANDLE,
+        "report": TokenType.REPORT
     }
 
     def __init__(self, source, fileName):

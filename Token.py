@@ -7,7 +7,7 @@ TokenType = Enum('TokenType',
                  'IDENTIFIER, STRING, NUMBER, AND, CLASS, ELSE, FALSE, FUN, FOR, IF, ' 
                  'NIL, OR, PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE, EOF, ' 
                  'BREAK, CONTINUE, Q_MARK, COLON, MOD, POWER, LIST, GET, '
-                 'PRE_INC, PRE_DEC, SAFE')
+                 'PRE_INC, PRE_DEC, SAFE, ATTEMPT, HANDLE, REPORT')
 
 class Token:
     def __init__(self, type: TokenType, lexeme: str, literal, line: int, column: int, fileName: str):

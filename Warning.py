@@ -16,3 +16,14 @@ class unusedWarning(Warning):
     def warn(self):
         from Lox import warn
         warn(self)
+
+class UserWarning(Warning):
+    def __init__(self, warning, expression):
+        self.warning = warning
+        self.expression = expression
+    
+    def show(self, interpreter):
+        method = self.warning.klass.findMethod("show")
+        method.bind(self.warning).call(interpreter,
+                                     self.expression,
+                                     [])

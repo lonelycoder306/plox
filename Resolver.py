@@ -197,6 +197,10 @@ class Resolver:
     def visitContinueStmt(self, stmt: Stmt.Continue):
         pass
 
+    def visitErrorStmt(self, stmt: Stmt.Error):
+        self.resolve(stmt.body)
+        self.resolve(stmt.handler)
+
     def visitExpressionStmt(self, stmt: Stmt.Expression):
         self.resolve(stmt.expression)
     
@@ -224,6 +228,9 @@ class Resolver:
     def visitPrintStmt(self, stmt: Stmt.Print):
         self.resolve(stmt.expression)
     
+    def visitReportStmt(self, stmt: Stmt.Report):
+        self.resolve(stmt.exception)
+
     def visitReturnStmt(self, stmt: Stmt.Return):
         if self.currentFunction == self.FunctionType.NONE:
             raise ResolveError(stmt.keyword, "Cannot return from top-level code.")

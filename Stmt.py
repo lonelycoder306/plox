@@ -33,6 +33,14 @@ class Stmt:
 		def accept(self, visitor):
 			return visitor.visitContinueStmt(self)
 
+	class Error:
+		def __init__(self, body, handler):
+			self.body = body
+			self.handler = handler
+
+		def accept(self, visitor):
+			return visitor.visitErrorStmt(self)
+
 	class Expression:
 		def __init__(self, expression):
 			self.expression = expression
@@ -81,6 +89,14 @@ class Stmt:
 
 		def accept(self, visitor):
 			return visitor.visitPrintStmt(self)
+
+	class Report:
+		def __init__(self, keyword, exception):
+			self.keyword = keyword
+			self.exception = exception
+
+		def accept(self, visitor):
+			return visitor.visitReportStmt(self)
 
 	class Return:
 		def __init__(self, keyword, value):

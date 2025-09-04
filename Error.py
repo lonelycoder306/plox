@@ -35,12 +35,12 @@ class RuntimeError(Exception):
         runtimeError(self)
 
 # Not actual errors.
-class breakError(Exception):
+class BreakError(Exception):
     def __init__(self, token, loopType):
         self.token = token
         self.loopType = loopType
 
-class continueError(Exception):
+class ContinueError(Exception):
     def __init__(self, token, loopType):
         self.token = token
         self.loopType = loopType
@@ -51,3 +51,14 @@ class Return(Exception):
 
 class StopError(Exception):
     pass
+
+class UserError(Exception):
+    def __init__(self, error, expression):
+        self.error = error
+        self.expression = expression
+    
+    def show(self, interpreter):
+        method = self.error.klass.findMethod("show")
+        method.bind(self.error).call(interpreter,
+                                     self.expression,
+                                     [])

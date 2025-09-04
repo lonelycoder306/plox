@@ -67,6 +67,10 @@ class Parser:
             return Stmt.Block(self.block())
         if self.match(TokenType.GET):
             return self.fetchStatement()
+        if self.match(TokenType.ATTEMPT):
+            return self.errorStatement()
+        if self.match(TokenType.REPORT):
+            return self.reportStatement()
 
         return self.expressionStatement()
 
@@ -108,6 +112,12 @@ class Parser:
             raise ParseError(continueToken, "Cannot have 'continue' outside loop.")
         self.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.")
         return Stmt.Continue(continueToken, self.loopType)
+
+    def errorStatement(self):
+        body = self.declaration()
+        self.consume(TokenType.HANDLE, "Attempt statement must have a handler.")
+        handler = self.declaration()
+        return Stmt.Error(body, handler)
     
     def fetchStatement(self):
         mode = self.previous()
@@ -220,6 +230,12 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Stmt.Print(value)
     
+    def reportStatement(self):
+        keyword = self.previous()
+        error = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after error report.")
+        return Stmt.Report(keyword, error)
+
     def returnStatement(self):
         keyword = self.previous()
 
