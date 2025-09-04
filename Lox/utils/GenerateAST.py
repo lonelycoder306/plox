@@ -58,12 +58,12 @@ StmtClasses = [ "Break      : breakCMD, loopType",
 
 import os
 
-script_dir = os.path.dirname(__file__) # script_dir = 'Lox/utils'
+scriptDir = os.path.dirname(__file__) # scriptDir = 'Lox/utils'
 
-target_path = os.path.join(script_dir, "..", "Expr.py")
-with open(os.path.abspath(target_path), "w") as f:
+targetPath = os.path.join(scriptDir, "..", "Expr.py")
+with open(os.path.abspath(targetPath), "w") as f:
     defineAST("Expr", ExprClasses, f)
 
-target_path = os.path.join(script_dir, "..", "Stmt.py")
-with open(os.path.abspath(target_path), "w") as f:
+targetPath = os.path.join(scriptDir, "..", "Stmt.py")
+with open(os.path.abspath(targetPath), "w") as f:
     defineAST("Stmt", StmtClasses, f)
