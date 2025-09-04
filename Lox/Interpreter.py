@@ -1,16 +1,17 @@
-from Token import Token, TokenType
-from Expr import Expr
-from Stmt import Stmt
-from Environment import Environment
-from LoxCallable import LoxCallable
-from LoxFunction import LoxFunction
-from LoxClass import LoxClass
-from LoxInstance import LoxInstance, InstanceFunction
-from List import List, initList
-from BuiltinFunction import BuiltinFunction
-from Error import RuntimeError, breakError, continueError, Return, StopError
-from Debug import breakpointStop
-from String import String
+from Lox.Token import Token, TokenType
+from Lox.Expr import Expr
+from Lox.Stmt import Stmt
+from Lox.Environment import Environment
+from Lox.LoxCallable import LoxCallable
+from Lox.LoxFunction import LoxFunction
+from Lox.LoxClass import LoxClass
+from Lox.LoxInstance import LoxInstance, InstanceFunction
+from Lox.List import List, initList
+from Lox.BuiltinFunction import BuiltinFunction
+from Lox.Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
+from Lox.Warning import UserWarning
+from Lox.Debug import breakpointStop
+from Lox.String import String
 
 class Interpreter:
     def __init__(self):
@@ -21,9 +22,9 @@ class Interpreter:
         self.ExprStmt = False
 
         # Setting up built-in functions in global scope.
-        from BuiltinFunction import builtinSetUp
+        from Lox.BuiltinFunction import builtinSetUp
         builtinSetUp()
-        from BuiltinFunction import builtins
+        from Lox.BuiltinFunction import builtins
         # Setting up the List() constructor.
         builtins.define("List", initList)
         self.builtins = builtins
@@ -34,10 +35,16 @@ class Interpreter:
                 try:
                     self.execute(statement)
                 except breakpointStop as bp: # Only stops current line execution.
-                    import State
+                    import Lox.State as State
                     if State.switchCLI:
                         return
                     bp.debugStart()
+                except UserError as error:
+                    error.show(self)
+                    if error.error.private["halt"] == True:
+                        return
+                except UserWarning as warning:
+                    warning.show(self)
         except RuntimeError as error: # Stops all execution.
             error.show()
         except StopError:
@@ -51,7 +58,7 @@ class Interpreter:
     
     def executeBlock(self, statements, environment: Environment):
         previous = self.environment
-        import State
+        import Lox.State as State
         currentCallStack = State.callStack
         try:
             self.environment = environment
@@ -63,9 +70,11 @@ class Interpreter:
                     self.execute(statement)
                 except breakpointStop as bp:
                     bp.debugStart()
-                    import State
+                    import Lox.State as State
                     if State.switchCLI:
                         raise bp
+                except UserWarning as warning:
+                    warning.show(self)
         finally:
             self.environment = previous
             State.callStack = currentCallStack
@@ -76,7 +85,7 @@ class Interpreter:
     # placed inside the block after a false condition; 
     # the program will never run those statements, so no error gets raised (despite it being bad code).
     def visitBreakStmt(self, stmt: Stmt.Break):
-        raise breakError(stmt.breakCMD, stmt.loopType)
+        raise BreakError(stmt.breakCMD, stmt.loopType)
 
     def visitBlockStmt(self, stmt: Stmt.Block):
         self.executeBlock(stmt.statements, Environment(self.environment))
@@ -144,7 +153,13 @@ class Interpreter:
         self.environment.assign(stmt.name, klass)
 
     def visitContinueStmt(self, stmt: Stmt.Continue):
-        raise continueError(stmt.continueCMD, stmt.loopType)
+        raise ContinueError(stmt.continueCMD, stmt.loopType)
+
+    def visitErrorStmt(self, stmt: Stmt.Error):
+        try:
+            self.execute(stmt.body)
+        except (UserError, UserWarning, RuntimeError):
+            self.execute(stmt.handler)
 
     def visitExpressionStmt(self, stmt: Stmt.Expression):
         prevState = self.ExprStmt
@@ -221,6 +236,34 @@ class Interpreter:
             return
         print(self.stringify(value))
 
+    def exceptClassHelper(self, klass: LoxClass):
+        if klass.name == "Error":
+            return (True, "Error")
+        elif klass.name == "Warning":
+            return (True, "Warning")
+        else:
+            while klass.superclass != None:
+                klass = klass.superclass
+                if klass.name == "Error":
+                    return (True, "Error")
+                elif klass.name == "Warning":
+                    return (True, "Warning")
+            return (False, None)
+
+    def visitReportStmt(self, stmt: Stmt.Report):
+        exception = self.evaluate(stmt.exception)
+        if type(exception) != LoxInstance:
+            raise RuntimeError(stmt.keyword, 
+                               "Cannot report an exception on non-exception object.")
+        check = self.exceptClassHelper(exception.klass)
+        if not check[0]:
+            raise RuntimeError(stmt.keyword, 
+                               "Cannot report an exception on non-exception object.")
+        if check[1] == "Error":
+            raise UserError(exception, stmt.exception)
+        elif check[1] == "Warning":
+            raise UserWarning(exception, stmt.exception)
+
     def visitReturnStmt(self, stmt: Stmt.Return):
         value = ()
         if stmt.value != None:
@@ -251,9 +294,9 @@ class Interpreter:
         while self.isTruthy(self.evaluate(stmt.condition)):
             try:
                 self.execute(stmt.body)
-            except breakError:
+            except BreakError:
                 break
-            except continueError as error:
+            except ContinueError as error:
                 if error.loopType == "whileLoop":
                     pass
                 # Evaluate the increment expression if loop is a for-loop.
@@ -286,6 +329,8 @@ class Interpreter:
                 return "boolean"
             case bytes():
                 return "bytes"
+            case List():
+                return "list"
             case LoxFunction():
                 if object.declaration.name == None:
                     return "lambda"
@@ -293,10 +338,10 @@ class Interpreter:
                     return "function"
             case BuiltinFunction():
                 return "native function"
-            case List():
-                return "list"
             case InstanceFunction():
                 return "native method"
+            case _ if isinstance(object, LoxCallable):
+                return object.toString()[1:-1]
             case _ if isinstance(object, time): # Format to check Boolean conditions in match-case structure.
                 return "datetime"
             case _ if isinstance(object, LoxClass):
@@ -344,7 +389,7 @@ class Interpreter:
         return text
     
     def lookUpVariable(self, name: Token, expr: Expr):
-        import State
+        import Lox.State as State
         if State.debugMode:
             if name.lexeme in self.builtins.values.keys():
                 return self.builtins.get(name)
@@ -555,12 +600,6 @@ class Interpreter:
 
     def visitCallExpr(self, expr: Expr.Call):
         callee = self.evaluate(expr.callee)
-        import State
-        funcData = {"name": expr.callee.name.lexeme, 
-                    "file": expr.callee.name.fileName, 
-                    "line": expr.callee.name.line}
-        State.callStack.insert(0, funcData)
-        State.traceLog.insert(0, funcData)
 
         arguments = list()
         for argument in expr.arguments:
@@ -573,6 +612,36 @@ class Interpreter:
         if not isinstance(callee, LoxCallable):
             raise RuntimeError(expr.leftParen, "No such function or class.")
         
+        import Lox.State as State
+        token = None
+        if type(expr.callee) == Expr.Variable:
+            token = expr.callee.name
+        # Function object is being accessed from a list
+        # or as a field.
+        elif (type(expr) == Expr.Get) or (type(expr) == Expr.Access):
+            # LoxFunction object (and not a lambda).
+            if ((type(callee) == LoxFunction) 
+                and (callee.declaration.name != None)):
+                token = callee.declaration.name
+        funcData = {}
+        if token != None:
+            funcData = {"name": token.lexeme,
+                        "file": token.fileName,
+                        "line": token.line}
+        else:
+            # Closest token we can get.
+            token = expr.leftParen
+            name = "lambda"
+            # Function is another type of function object
+            # (not even a lambda).
+            if type(callee) != LoxFunction:
+                name = callee.mode
+            funcData = {"name": name,
+                        "file": token.fileName,
+                        "line": token.line}
+        State.callStack.insert(0, funcData)
+        State.traceLog.insert(0, funcData)
+        
         arity = callee.arity()
         if (len(arguments) < arity[0]):
             if arity[0] == 1: # To make argument singular rather than plural (plural for 0 as well).
@@ -582,7 +651,7 @@ class Interpreter:
                 raise RuntimeError(expr.rightParen, 
                                f"Expected minimum {arity[0]} arguments but got {len(arguments)}.")
         if len(arguments) > arity[1]:
-            if arity[1] == 1: # To make argument singular rather than plural (plural for 0 as well).
+            if arity[1] == 1:
                 raise RuntimeError(expr.rightParen, 
                                f"Expected maximum {arity[1]} argument but got {len(arguments)}.")
             else:

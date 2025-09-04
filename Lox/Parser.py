@@ -1,9 +1,9 @@
-from Token import TokenType, Token
-from Expr import Expr
-from Stmt import Stmt
-from Error import ParseError
-from Warning import returnWarning
-from String import String
+from Lox.Token import TokenType, Token
+from Lox.Expr import Expr
+from Lox.Stmt import Stmt
+from Lox.Error import ParseError
+from Lox.Warning import returnWarning
+from Lox.String import String
 
 class Parser:
     tokens = list()
@@ -126,13 +126,13 @@ class Parser:
             name = self.consume(TokenType.STRING, "Expect name of import.")
             self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
-            from Scanner import Scanner
+            from Lox.Scanner import Scanner
             file = "Libraries/" + name.lexeme[1:-1] + ".lox"
             try:
                 with open(file, "r") as f:
                     text = f.read()
                 f.close()
-                import State
+                import Lox.State as State
                 with open(file, "r") as f:
                     lines = f.readlines()
                     lines = [line.rstrip() for line in lines]
@@ -147,7 +147,7 @@ class Parser:
             name = self.consume(TokenType.STRING, "Expect name of import.")
             self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
-            from Scanner import Scanner
+            from Lox.Scanner import Scanner
             file = name.lexeme[1:-1]
             try:
                 text = open(file, "r").read()

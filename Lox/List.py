@@ -1,6 +1,6 @@
-from LoxCallable import LoxCallable
-from Error import RuntimeError
-from String import String
+from Lox.LoxCallable import LoxCallable
+from Lox.Error import RuntimeError
+from Lox.String import String
 
 class ListFunction(LoxCallable):
     def __init__(self, mode):
@@ -433,7 +433,7 @@ class List:
         pass
 
     def __str__(self):
-        from Interpreter import Interpreter
+        from Lox.Interpreter import Interpreter
         dummyInterpreter = Interpreter()
         string = "["
         for element in self.array:

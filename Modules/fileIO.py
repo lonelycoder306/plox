@@ -1,10 +1,10 @@
-from Environment import Environment
-from LoxCallable import LoxCallable
-from LoxClass import LoxClass
-from LoxInstance import LoxInstance
-from Error import RuntimeError
-from String import String
-from List import List
+from Lox.Environment import Environment
+from Lox.LoxCallable import LoxCallable
+from Lox.LoxClass import LoxClass
+from Lox.LoxInstance import LoxInstance
+from Lox.Error import RuntimeError
+from Lox.String import String
+from Lox.List import List
 import io
 
 '''

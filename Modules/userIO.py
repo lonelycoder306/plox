@@ -1,8 +1,8 @@
-from Environment import Environment
-from LoxCallable import LoxCallable
-from Error import RuntimeError
-from List import List
-from String import String
+from Lox.Environment import Environment
+from Lox.LoxCallable import LoxCallable
+from Lox.Error import RuntimeError
+from Lox.List import List
+from Lox.String import String
 import sys
 
 userIO = Environment()

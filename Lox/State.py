@@ -16,6 +16,7 @@ debugMode = False # Whether or not we are in a debug session (will alter format 
 debugError = False # Different error variable for any errors that occur during a debug prompt session (to not impact system exits or exit codes).
 callStack = list()
 traceLog = list()
+breakpoints = []
 
 # For access to private fields within methods.
 inMethod = False

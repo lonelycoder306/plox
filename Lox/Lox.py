@@ -1,10 +1,10 @@
 import sys
-from Token import TokenType
-from Scanner import Scanner
-from Parser import Parser
-from Interpreter import Interpreter
-from Resolver import Resolver
-from Error import LexError, ParseError, ResolveError, RuntimeError
+from Lox.Token import TokenType
+from Lox.Scanner import Scanner
+from Lox.Parser import Parser
+from Lox.Interpreter import Interpreter
+from Lox.Resolver import Resolver
+from Lox.Error import LexError, ParseError, ResolveError, RuntimeError
 
 fileName = None
 testMode = False
@@ -23,7 +23,7 @@ if len(sys.argv) == 2:
 interpreter = Interpreter()
 
 def run(source, fileName = None):
-    import State
+    import Lox.State as State
 
     scanner = Scanner(source, fileName)
     tokens = scanner.scanTokens()
@@ -59,8 +59,25 @@ def run(source, fileName = None):
         State.inAFile = False
         runPrompt()
 
+def piping(path: str, baseName: str):
+    if "Error" in path:
+        # To re-direct errors to the given file as well.
+        fd = None # For scope purposes.
+        try:
+            fd = open(f"Testing/Output/{baseName}Error.txt", "r+")
+        except FileNotFoundError:
+            fd = open(f"Testing/Output/{baseName}Error.txt", "w+")
+        sys.stderr = fd
+    else:
+        fd = None
+        try:
+            fd = open(f"Testing/Output/{baseName}Output.txt", "r+")
+        except FileNotFoundError:
+            fd = open(f"Testing/Output/{baseName}Output.txt", "w+")
+        sys.stdout = fd
+
 def runFile(path, baseName = None):
-    import State
+    import Lox.State as State
     State.inAFile = True
 
     try:
@@ -71,21 +88,7 @@ def runFile(path, baseName = None):
         with open(path, "r") as file:
             content = file.read()
         if testMode:
-            if "Error" in path:
-                # To re-direct errors to the given file as well.
-                fd = None # For scope purposes.
-                try:
-                    fd = open(f"Testing/Output/{baseName}Error.txt", "r+")
-                except FileNotFoundError:
-                    fd = open(f"Testing/Output/{baseName}Error.txt", "w+")
-                sys.stderr = fd
-            else:
-                fd = None
-                try:
-                    fd = open(f"Testing/Output/{baseName}Output.txt", "r+")
-                except FileNotFoundError:
-                    fd = open(f"Testing/Output/{baseName}Output.txt", "w+")
-                sys.stdout = fd
+            piping(path, baseName)
         if testMode and ("Error" in path):
             for line in State.fileLines[path]:
                 # We run each line separately so errors for each line
@@ -106,6 +109,7 @@ def runFile(path, baseName = None):
         
         if State.hadRuntimeError:
             sys.exit(70)
+
     # Must reset error flags here so that each test file
     # can run with freshly reset flags, allowing it to execute successfully.
     else:
@@ -122,7 +126,7 @@ def runPrompt():
             line = line[:-1]
             line += input("... ")
         run(line)
-        import State
+        import Lox.State as State
         if State.debugMode: # Do not issue proper errors while in debug mode.
             State.debugError = True
         else:
@@ -155,7 +159,7 @@ def report(error, line, column, where, message, lexerFile = None):
         sys.stderr.write("Parse ")
     elif type(error) == ResolveError:
         sys.stderr.write("Resolve ")
-    import State
+    import Lox.State as State
 
     if State.debugMode:
         sys.stderr.write(f'error{where}: {message}\n')
@@ -201,7 +205,7 @@ def runtimeError(error: RuntimeError):
     column = error.token.column
     lexemeLen = len(error.token.lexeme)
     file = error.token.fileName
-    import State
+    import Lox.State as State
 
     if State.debugMode:
         sys.stderr.write(f'Runtime error: {error.message}\n')
@@ -241,7 +245,7 @@ def warn(warning):
     column = warning.token.column
     lexemeLen = len(warning.token.lexeme)
     file = warning.token.fileName
-    import State
+    import Lox.State as State
     if (file != None) and (not State.debugMode):
         if lexemeLen == 1: 
             sys.stderr.write(f'Warning ["{file}", line {line}, {column}]: ' + warning.message)
@@ -256,7 +260,7 @@ def warn(warning):
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
 def printErrorLine(line: int, file: str, start = None, end = None):
-    import State
+    import Lox.State as State
     # rstrip used so a potential newline at the end of a line does not impact our error message.
     printLine = State.fileLines[file][line - 1].rstrip('\n') # -1 since line is minimum 1.
     # Strip all the whitespace on the left-side of the line, and record 
@@ -289,52 +293,58 @@ def fileNameCheck(path):
         sys.stderr.write("Invalid lox file.\n")
         sys.exit(64) # Same issue (bad usage), so same exit code.
 
+def test():
+    import importlib
+    module = importlib.import_module("Testing.Python Files.generateTests")
+    generateFunc = getattr(module, "generateTestFiles")
+    generateFunc()
+    with open("Testing/testList.txt") as f:
+        lines = f.readlines()
+        if len(lines) == 0:
+            print("No test files available.")
+            exit(0)
+        for line in lines:
+            if line[-1] == '\n':
+                line = line[:-1]
+            path = "Testing/Tests/" + line
+            fileNameCheck(path)
+            runFile(path, line[:-4])
+            path = "Testing/Tests/" + line[:-4] + "Error.lox"
+            fileNameCheck(path)
+            runFile(path, line[:-4])
+
+def clean():
+    import os
+    lines = list()
+    with open("Testing/testList.txt") as f:
+        lines = f.readlines()
+        for line in lines:
+            if line[-1] == '\n':
+                line = line[:-1]
+    if len(lines) == 0:
+        print("No test files to clean.")
+        exit(0)
+    for line in lines:
+        paths = []
+        paths.append(f"Testing/Python Files/test_{line[:-4]}.py")
+        paths.append(f"Testing/Output/{line[:-4]}Output.txt")
+        paths.append(f"Testing/Output/{line[:-4]}Error.txt")
+        for path in paths:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except OSError as error:
+                        sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
+
 def main():
     if len(sys.argv) > 2:
         sys.stderr.write("Usage: plox [script]\n")
         sys.exit(64)
     elif len(sys.argv) == 2:
         if testMode:
-            import importlib
-            module = importlib.import_module("Testing.Python Files.generateTests")
-            generateFunc = getattr(module, "generateTestFiles")
-            generateFunc()
-            with open("Testing/testList.txt") as f:
-                lines = f.readlines()
-                if len(lines) == 0:
-                    print("No test files available.")
-                    exit(0)
-                for line in lines:
-                    if line[-1] == '\n':
-                        line = line[:-1]
-                    path = "Testing/Tests/" + line
-                    fileNameCheck(path)
-                    runFile(path, line[:-4])
-                    path = "Testing/Tests/" + line[:-4] + "Error.lox"
-                    fileNameCheck(path)
-                    runFile(path, line[:-4])
+            test()
         elif cleanMode:
-            import os
-            lines = list()
-            with open("Testing/testList.txt") as f:
-                lines = f.readlines()
-                for line in lines:
-                    if line[-1] == '\n':
-                        line = line[:-1]
-            if len(lines) == 0:
-                print("No test files to clean.")
-                exit(0)
-            for line in lines:
-                paths = []
-                paths.append(f"Testing/Python Files/test_{line[:-4]}.py")
-                paths.append(f"Testing/Output/{line[:-4]}Output.txt")
-                paths.append(f"Testing/Output/{line[:-4]}Error.txt")
-                for path in paths:
-                    if os.path.exists(path):
-                        try:
-                            os.remove(path)
-                        except OSError as error:
-                                sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
+            clean()
         else:
             fileNameCheck(fileName)
             runFile(fileName)

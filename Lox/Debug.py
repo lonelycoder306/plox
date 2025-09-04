@@ -15,8 +15,8 @@ Possibly:
 9) Allow user to specify logging mode to print out all output and commands.
 '''
 
-from Error import RuntimeError, StopError
-import State
+from Lox.Error import RuntimeError, StopError
+import Lox.State as State
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment, expr):
         self.breakpoints = []
@@ -36,7 +36,8 @@ class breakpointStop(Exception):
                              "log": "log"}
         # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
-                         "vars": "vars"}
+                         "vars": "vars",
+                         "b": "break"}
         self.token = expr.callee.name
         self.quit = False # Continue debug prompt so long as this is false.
 
@@ -125,6 +126,8 @@ class breakpointStop(Exception):
                 self.comm_value(arguments)
             case "vars":
                 self.comm_vars(arguments)
+            case "break":
+                self.comm_break(arguments)
     
     def comm_value(self, arguments):
         options = ["l", "local", "g", "global"]
@@ -146,8 +149,8 @@ class breakpointStop(Exception):
         if (arguments[0] == "g") or (arguments[0] == "global"):
             prevEnv = self.interpreter.environment
             try:
-                from Scanner import Scanner
-                from Parser import Parser
+                from Lox.Scanner import Scanner
+                from Lox.Parser import Parser
                 tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
                 statements = Parser(tokens).parse()
 
@@ -159,8 +162,8 @@ class breakpointStop(Exception):
         elif (arguments[0] == "l") or (arguments[0] == "local"):
             prevEnv = self.interpreter.environment
             try:
-                from Scanner import Scanner
-                from Parser import Parser
+                from Lox.Scanner import Scanner
+                from Lox.Parser import Parser
                 tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
                 statements = Parser(tokens).parse()
 
@@ -190,3 +193,22 @@ class breakpointStop(Exception):
                 print(f"{var}: {value}")
         else:
             print("Invalid argument.")
+    
+    def comm_break(self, arguments):
+        if len(arguments) == 0:
+            print("No line provided.")
+            return
+        for i, line in enumerate(arguments):
+            if line.isdigit():
+                line = int(line)
+                if self.token.line <= line:
+                    State.breakpoints.append(line)
+                else:
+                    if len(arguments) == 1:
+                        print("Line has been passed.")
+                    else:
+                        print(f"Line no. {i+1} has been passed.")
+                    return
+            else:
+                print("Invalid input type. Type is: positive integer.")
+                return

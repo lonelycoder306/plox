@@ -1,5 +1,5 @@
-from Error import RuntimeError
-from LoxFunction import LoxFunction
+from Lox.Error import RuntimeError
+from Lox.LoxFunction import LoxFunction
 
 class LoxInstance:
     def __init__(self, klass):
@@ -9,7 +9,7 @@ class LoxInstance:
         self.fields = self.private
 
     def verifyClass(self, klass):
-        import State
+        import Lox.State as State
         while klass != None:
             if klass == State.currentClass:
                 return True
@@ -17,7 +17,7 @@ class LoxInstance:
         return False
 
     def get(self, name):
-        import State
+        import Lox.State as State
 
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
@@ -40,7 +40,7 @@ class LoxInstance:
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
     def set(self, name, value):
-        import State
+        import Lox.State as State
 
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
@@ -61,7 +61,7 @@ class LoxInstance:
     def varType(self):
         return self.klass.name
 
-from LoxCallable import LoxCallable
+from Lox.LoxCallable import LoxCallable
 class InstanceFunction(LoxCallable):
     def __init__(self, mode: str):
         self.mode = mode
@@ -94,14 +94,14 @@ class InstanceFunction(LoxCallable):
         privates = list(self.instance.private.keys())
         publics = list(self.instance.public.keys())
         array = publics + privates
-        from List import List
+        from Lox.List import List
         return List(array)
 
     def i_methodList(self, interpreter, expr, arguments):
         private = self.instance.klass.private.keys()
         public = self.instance.klass.public.keys()
         array = list(private + public)
-        from List import List
+        from Lox.List import List
         return List(array)
 
     def i_fields(self, interpreter, expr, arguments):
