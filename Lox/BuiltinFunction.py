@@ -5,6 +5,7 @@ from List import List
 from Expr import Expr
 from LoxInstance import LoxInstance
 from String import String
+from Reference import Reference
 
 # General class to implement built-in functions.
 '''
@@ -27,7 +28,7 @@ You then assign the appropriate name to the object in the variable environment.
 
 builtins = Environment()
 functions = ["clock", "type", "string", "number", "length", "copy",
-            "strformat", "perror", "arity", "breakpoint"]
+            "strformat", "perror", "arity", "reference", "breakpoint"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -56,6 +57,8 @@ class BuiltinFunction(LoxCallable):
             return ()
         if self.mode == "arity":
             return self.b_arity(expr, arguments[0])
+        if self.mode == "reference":
+            return self.b_reference(arguments[0])
         if self.mode == "breakpoint":
             self.b_breakpoint(interpreter, expr)
             return ()
@@ -127,6 +130,9 @@ class BuiltinFunction(LoxCallable):
         if not isinstance(function, LoxCallable):
             raise RuntimeError(expr.rightParen, "arity() only accepts function arguments.")
         return List(function.arity())
+
+    def b_reference(self, object):
+        return Reference(object)
     
     def b_breakpoint(self, interpreter, expr):
         from Debug import breakpointStop
@@ -150,6 +156,8 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "perror":
             return [1,2]
         if self.mode == "arity":
+            return [1,1]
+        if self.mode == "reference":
             return [1,1]
         if self.mode == "breakpoint":
             return [0,0] # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
