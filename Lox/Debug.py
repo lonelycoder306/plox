@@ -15,7 +15,10 @@ Possibly:
 9) Allow user to specify logging mode to print out all output and commands.
 '''
 
-from Error import RuntimeError, StopError
+class CLISwitch(Exception):
+    pass
+
+from Error import StopError
 import State as State
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment, expr):
@@ -61,13 +64,14 @@ class breakpointStop(Exception):
             print("(debug)", end = " ")
             prompt = input("")
             if prompt == "":
-                self.debugInstruction("continue")
+                break
             else:
                 prompt = prompt.split()
                 choice = prompt[0].strip()
                 arguments = [x.strip() for x in prompt[1:]]
                 if (choice in self.instructions.keys()) or (choice in self.instructions.values()):
-                    choice = self.instructions.get(choice, choice) # If it is a key, return its value; if it is a value, return itself.
+                    # If it is a key, return its value; if it is a value, return itself.
+                    choice = self.instructions.get(choice, choice)
                     if len(arguments) == 0:
                         self.debugInstruction(choice)
                     else:
@@ -91,14 +95,11 @@ class breakpointStop(Exception):
                 pass
                 return
             case "term":
-                State.switchCLI = True
-                # It is never re-set to true during the session, 
-                # so user cannot return to file execution or debugging.
-                self.quit = True
-                return
+                # Cannot be reset.
+                # Permanent switch to command-line.
+                raise CLISwitch()
             case "shell":
-                State.switchCLI = True
-                self.quit = True
+                raise CLISwitch()
                 return
             case "quit":
                 raise StopError()

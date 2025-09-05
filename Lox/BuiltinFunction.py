@@ -136,7 +136,7 @@ class BuiltinFunction(LoxCallable):
     
     def b_breakpoint(self, interpreter, expr):
         from Debug import breakpointStop
-        raise breakpointStop(interpreter, interpreter.environment, expr)
+        breakpointStop(interpreter, interpreter.environment, expr).debugStart()
 
     def arity(self):
         if self.mode == "clock":

@@ -10,7 +10,7 @@ from List import List, initList
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
 from Warning import UserWarning
-from Debug import breakpointStop
+from Debug import CLISwitch
 from String import String
 from Reference import Reference
 
@@ -35,11 +35,6 @@ class Interpreter:
             for statement in statements:
                 try:
                     self.execute(statement)
-                except breakpointStop as bp: # Only stops current line execution.
-                    import State as State
-                    if State.switchCLI:
-                        return
-                    bp.debugStart()
                 except UserError as error:
                     error.show(self)
                     if error.error.private["halt"] == True:
@@ -49,6 +44,10 @@ class Interpreter:
         except RuntimeError as error: # Stops all execution.
             error.show()
         except StopError:
+            return
+        except CLISwitch:
+            import State
+            State.switchCLI = True
             return
     
     def resolve(self, expr: Expr.Variable, depth: int):
@@ -69,11 +68,6 @@ class Interpreter:
             for statement in statements:
                 try:
                     self.execute(statement)
-                except breakpointStop as bp:
-                    bp.debugStart()
-                    import State as State
-                    if State.switchCLI:
-                        raise bp
                 except UserWarning as warning:
                     warning.show(self)
         finally:
