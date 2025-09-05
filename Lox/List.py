@@ -23,7 +23,8 @@ class ListFunction(LoxCallable):
                 return ()
             # Adds element to specified position X.
             case "insert":
-                return self.l_insert(expr, arguments[0], arguments[1])
+                self.l_insert(expr, arguments[0], arguments[1])
+                return ()
             # Removes last element and returns it.
             case "pop":
                 return self.l_pop(expr)
@@ -136,9 +137,12 @@ class ListFunction(LoxCallable):
         self.instance.array.insert(index, element)
 
     def l_pop(self, expr):
+        if len(self.instance.array) == 0:
+            return #None
         return self.instance.array.pop()
 
     def l_remove(self, expr, index):
+        # Check index validity before running this.
         array = self.instance.array
         index = int(index)
         element = array[index]
