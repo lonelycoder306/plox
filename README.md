@@ -18,9 +18,23 @@ Due to the constantly changing nature of this project, there may be some changes
 # Personal Modifications to plox
 This a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.
 For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./docs/Justification.md).
+* Added a minimal command-line debugger.
+* Added multi-line support for REPL prompts.
+* Added support for lambdas.
+* Added modulus (%) and exponent (^) operators.
+* Added support for the (C-syntax) ternary/conditional operator.
+* Added multiple built-in functions (in a separate environment).
+* Added support for the (C-syntax) comma operator.
+* Added default parameters for functions.
+* Added importable userIO and fileIO modules.
 * Added scoped file imports.
-* Improved error messages with aesthetic display of error locations (for running files).
-* Added user-defined exceptions (errors and warnings).
+* Improved error messages (with aesthetic display of error locations when running files).
+* Added user-defined exceptions (errors and warnings) and exception-handling.
+* Added full encapsulation for classes.
+    * Methods (non-static) can be made private with the 'safe' modifier before the function name.
+    * Any field declared in the constructor is made private.
+* Added support for nested multi-line comments (/**/ syntax).
+* Added (C-syntax) 'break' and 'continue' commands.
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
