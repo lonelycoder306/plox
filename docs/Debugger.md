@@ -59,7 +59,7 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 ### ```v(alue)```
 * Argument #: 2
 * Argument Form:
-    * A scope modifier (```l```/```local``` for variables defined in the current scope; ```g```/```global``` for variables defined in the global scope). Variable scope is determined by lexical scope relative to where the breakpoint is. As an example:
+    * A scope modifier (```l```/```local``` for variables defined in the current scope; ```g```/```global``` for variables defined in the global scope). Variable scope is determined by *dynamic* scope relative to where the breakpoint is. As an example:
         ```
         fun makebreak()
         {
@@ -69,7 +69,8 @@ Commands can accept any context-appropriate arguments, though the arguments cann
         var x = 1;
         makebreak();
         ```
-        No variables are in scope where the actual ```breakpoint()``` call is, and thus no objects will show with either option.
+        No variables are in scope where the actual ```breakpoint()``` call is (besides makebreak itself), but since the call is executed after ```x``` is defined, ```x``` will appear in the list if the ```g```/```global``` option is used.\
+        Considering ways to make it follow lexical scope instead (i.e., only variables declared before the position of the function call would appear).
     * Any expression (can involve variables). Cannot contain any spaces.
 * Prints out the value of the given expression.
 * Examples:
