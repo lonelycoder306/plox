@@ -28,9 +28,11 @@ This a brief list of the changes I've made to the language, including additions 
 For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./docs/Justification.md).\
 For further instruction on how to make use of some of these features, please go to [Instructions](./docs/Instructions.md).
 * Added a minimal command-line debugger.
+* Added a testing and cleaning option.
+    * Testing uses Pytest.
 * Added a built-in list class.
     * List objects are heterogeneous, variable-length arrays.
-    * Multiple methods are made available for list objects.
+    * Multiple methods are made available for List objects.
 * Added multi-line support for REPL prompts.
 * Added support for lambdas.
 * Added modulus (%) and exponent (^) operators.
@@ -39,6 +41,7 @@ For further instruction on how to make use of some of these features, please go 
 * Added support for the (C-syntax) comma operator.
 * Added default parameters for functions.
 * Added importable userIO and fileIO modules.
+* Added importable library files.
 * Added scoped file imports.
 * Improved error messages (with aesthetic display of error locations when running files).
 * Added user-defined exceptions (errors and warnings) and exception-handling.
@@ -49,6 +52,7 @@ For further instruction on how to make use of some of these features, please go 
 * Added (C-syntax) 'break' and 'continue' commands.
 * Modified string literal form to distinguish between single-line and multi-line strings.
     * "" for single-line, `` for multi-line (similar to JS).
+* Made strings mutable.
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
