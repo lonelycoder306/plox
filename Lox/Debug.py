@@ -32,12 +32,10 @@ class breakpointStop(Exception):
                              "s": "step",
                              "n": "next", 
                              "q": "quit",
-                             "t": "term",
-                             "sh": "shell",
+                             "r": "repl",
                              "l": "list",
                              "st": "stack",
                              "log": "log"}
-        # Replace 'term' and 'shell' with 'cli'?
         self.commands = {"v": "value",
                          "vars": "vars",
                          "b": "break"}
@@ -94,13 +92,10 @@ class breakpointStop(Exception):
             case "next":
                 pass
                 return
-            case "term":
+            case "repl":
                 # Cannot be reset.
                 # Permanent switch to command-line.
                 raise CLISwitch()
-            case "shell":
-                raise CLISwitch()
-                return
             case "quit":
                 raise StopError()
             case "list":
