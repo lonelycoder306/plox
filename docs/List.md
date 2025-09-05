@@ -6,7 +6,7 @@
 * To *declare* a list object, you must use the ```list``` modifier:\
     ```list a;```
 * Though it may be changed later (since Lox is dynamically-typed), an initializer in a list definition must be a List object.
-* An initializer for a list object can be one of three things:
+* An initializer for a list object can be one of four things:
     1. A list literal: ```[..., ..., ...]```.\
        Note: Lambdas can be declared within a list literal.
     2. Another List object.\
@@ -22,7 +22,7 @@
        * A List object &rarr; The constructor will return a **copy** of the passed List object.
        * A string &rarr; The constructor will return a list where each character of the string is a separate element.
        * An integer &rarr; The constructor will return a list containing that number of elements, all initialized to ```nil```.
-    4. The built-in ```reference()``` function.
+    4. A function call to the built-in ```reference()``` function.
        * This function can accept a List object as its argument, returning that object itself (*not* a copy of it).
        * A call to this function cannot itself be treated as a list object. For example, the following is not allowed:\
          ```
