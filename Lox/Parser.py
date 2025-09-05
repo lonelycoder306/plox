@@ -149,6 +149,8 @@ class Parser:
 
             from Scanner import Scanner
             file = name.lexeme[1:-1]
+            if (len(file) < 4) or (file[-4:] != ".lox"):
+                raise ParseError(name, "Invalid Lox file.")
             try:
                 text = open(file, "r").read()
             except FileNotFoundError:
