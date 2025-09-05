@@ -13,12 +13,24 @@ Due to the constantly changing nature of this project, there may be some changes
 * docs - Project documentation.
 
 # Regular Features of plox
-* 
+The main Lox language implementation supports:
+* REPL prompt and file-execution options.
+* Arithmetic expressions involving any of the four main arithmetic operators.
+* Boolean expressions (including compound and nested expressions).
+* Number (float), string, Boolean, function, class and class-instance objects.
+* User-defined functions.
+* User-defined classes.
+* Inheritance.
+* Error messages for all interpreter stages (scanning, parsing, resolving, executing).
 
 # Personal Modifications to plox
-This a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.
-For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./docs/Justification.md).
+This a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.\
+For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./docs/Justification.md).\
+For further instruction on how to make use of some of these features, please go to [Instructions](./docs/Instructions.md).
 * Added a minimal command-line debugger.
+* Added a built-in list class.
+    * List objects are heterogeneous, variable-length arrays.
+    * Multiple methods are made available for list objects.
 * Added multi-line support for REPL prompts.
 * Added support for lambdas.
 * Added modulus (%) and exponent (^) operators.
@@ -35,6 +47,8 @@ For a more detailed list with justification (brief or lengthy) for each change, 
     * Any field declared in the constructor is made private.
 * Added support for nested multi-line comments (/**/ syntax).
 * Added (C-syntax) 'break' and 'continue' commands.
+* Modified string literal form to distinguish between single-line and multi-line strings.
+    * "" for single-line, `` for multi-line (similar to JS).
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
