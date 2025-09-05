@@ -6,6 +6,26 @@
 ### Debugger
 * The debugger itself has a number of features, instructions, and parts, and thus deserves its own [Debugger](./Debugger.md) file.
 
+### File Imports
+All imports are scope, i.e., they follow the same variable binding and shadowing rules as regular objects in the language, and do not apply outside the scope in which the import is made.\
+**Note:** Imports are done by accessing files through particular paths. For them to work, the interpreter ***must*** be run from within the project's root directory.
+
+There are three main import directives supported:
+1. GetMod
+    * This is used for modules (currently: userIO, fileIO).
+    * This will make all functions and methods within these modules available for use.
+    * Example: ```GetMod "userIO";```.
+2. GetLib
+    * This is used for library files (currently: Error, Map, Set, String, Warning).
+    * As with modules, all functions, classes, and methods within these library files will be made available for use.
+    * Only the file name is passed; no extension should be added.
+    * Example: ```GetLib "Map";```.
+3. GetFile
+    * This is used with user-owned Lox files.
+    * Passing non-Lox files will raise an error.
+    * The relative path to the file must be passed.
+    * Example: ```GetFile "FileDir/Example.lox";```.
+
 ### IO
 * Input/output operations in this implementation can be split into user IO (covered in [this file](./userIO.md)) and file IO (covered in [this file](./fileIO.md)).
 
