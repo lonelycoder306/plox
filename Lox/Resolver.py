@@ -66,7 +66,9 @@ class Resolver:
                 if key.lexeme == name.lexeme:
                     self.interpreter.resolve(expr, size - 1 - i)
                     if not self.inAssign:
-                        self.localVars[key][1] = True # True = has been used in this scope (in other than an assignment).
+                        # True = has been used in this scope 
+                        # (in other than an assignment).
+                        self.localVars[key][1] = True
                     return
     
     def resolveFunction(self, function: Stmt.Function, funcType):
