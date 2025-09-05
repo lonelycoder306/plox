@@ -30,6 +30,7 @@ For further instruction on how to make use of some of these features, please go 
 * Added a minimal command-line debugger.
 * Added a testing and cleaning option.
     * Testing uses Pytest.
+    * Cleaning removes unnecessary test files after testing is complete.
 * Added a built-in list class.
     * List objects are heterogeneous, variable-length arrays.
     * Multiple methods are made available for List objects.
