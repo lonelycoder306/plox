@@ -8,10 +8,12 @@ from String import String
 from Reference import Reference
 
 # General class to implement built-in functions.
+
 '''
 To define a built-in function, simply include its logic under its mode for both call() and arity(), 
-and then create an object with the appropriate mode.
-You then assign the appropriate name to the object in the variable environment.
+constructing a method for it that is used for call(), and then create a BuiltinFunction object 
+with the appropriate mode. You thereafter assign the appropriate name to the object in 
+the builtins environment.
 '''
 
 # Current built-in functions supported:
@@ -19,12 +21,18 @@ You then assign the appropriate name to the object in the variable environment.
 # 2. type(x) - Prints the type of x.
 # 3. str(x) - Returns a string form of x.
 # 4. number(x) - Returns a number (float) form of x.
-# 5. length(x) - Returns the length of a string (other iterable data types to be added).
+# 5. length(x) - Returns the length of a string (String object) or list (List object).
 # 6. copy(x) - Returns an isolated copy of X (will use the constructor if X is a class instance).
 # 7. strformat(x) - Returns an ASCII-encoded/formatted version of its argument string.
 # 8. perror(x) - Prints message X to stderr.
 # 9. arity(x) - Returns the arity of function X.
-# 10. breakpoint() - Starts a debug prompt when run from a file.
+# 10. reference(x) - Returns a reference to the exact object passed to it.
+# Similar to C++, this allows assignment or argument passing for functions
+# to use the object itself, rather than a copy (which is the default).
+# Once the return value of the function is used somewhere, e.g., assigned to a variable,
+# passed to a function, etc., it simply becomes the object.
+# Until then, it is a Reference object.
+# 11. breakpoint() - Starts a debug prompt when run from a file.
 
 builtins = Environment()
 functions = ["clock", "type", "string", "number", "length", "copy",
