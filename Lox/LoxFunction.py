@@ -38,6 +38,8 @@ class LoxFunction(LoxCallable):
                     name = param.name
                     value = arguments[i]
                     environment.define(name.lexeme, value)
+            # Will never have default parameters and variable-length parameter lists.
+            # Any combination including both will throw a parse error.
             if not self.context["variadic"]:
                 for i in range(argLen, paramLen):
                     name = self.declaration.params[i].name
