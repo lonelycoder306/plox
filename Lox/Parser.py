@@ -294,7 +294,7 @@ class Parser:
         if self.match(TokenType.ELLIPSIS):
             if defaultFound:
                 raise ParseError(self.previous(),
-                    "Can't have variable-length parameter following default parameter.")
+                    "Can't have variable-length parameter list following default parameter.")
             parameters.append(self.previous())
             variadic = True
             return (defaultFound, defaults, variadic)
