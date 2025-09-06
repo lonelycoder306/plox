@@ -288,9 +288,16 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Stmt.Expression(expr)
     
-    def addParameter(self, parameters, defaultFound, defaults):
+    def addParameter(self, parameters, defaultFound, defaults, variadic):
         if len(parameters) >= 255:
             raise ParseError(self.peek(), "Can't have more than 255 parameters.")
+        if self.match(TokenType.ELLIPSIS):
+            if defaultFound:
+                raise ParseError(self.previous(),
+                    "Can't have variable-length parameter following default parameter.")
+            parameters.append(self.previous())
+            variadic = True
+            return (defaultFound, defaults, variadic)
         name = self.consume(TokenType.IDENTIFIER, "Expect parameter name.")
         if self.match(TokenType.EQUAL):
             equals = self.previous()
@@ -303,7 +310,7 @@ class Parser:
                 raise ParseError(name, 
                     "Cannot have regular parameter following default parameter.")
             parameters.append(name)
-        return (defaultFound, defaults)
+        return (defaultFound, defaults, variadic)
 
     def function(self, kind):
         # Default in case of unassigned lambda.
@@ -317,17 +324,18 @@ class Parser:
 
         defaultFound = False
         defaults = 0
+        variadic = False
         # Allow omitting the parameter list entirely in method getters.
         if (kind != "method") or self.check(TokenType.LEFT_PAREN):
             self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
             parameters = list()
             if not self.check(TokenType.RIGHT_PAREN):
                 # Implementing do-while logic.
-                defaultFound, defaults = self.addParameter(parameters, 
-                                                           defaultFound, defaults)
-                while self.match(TokenType.COMMA):
-                    defaultFound, defaults = self.addParameter(parameters, 
-                                                               defaultFound, defaults)
+                defaultFound, defaults, variadic = self.addParameter(parameters, 
+                                                    defaultFound, defaults, variadic)
+                while (self.match(TokenType.COMMA)) and not variadic:
+                    defaultFound, defaults, variadic = self.addParameter(parameters, 
+                                                        defaultFound, defaults, variadic)
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
 
         # Cannot use f-strings here due to the presence of the { character.
@@ -378,13 +386,14 @@ class Parser:
             parameters = list()
             defaultFound = False
             defaults = 0
+            variadic = False
             if not self.check(TokenType.RIGHT_PAREN):
                 # Implementing do-while logic.
-                defaultFound, defaults = self.addParameter(parameters, 
-                                                           defaultFound, defaults)
+                defaultFound, defaults, variadic = self.addParameter(parameters, 
+                                                    defaultFound, defaults, variadic)
                 while self.match(TokenType.COMMA):
-                    defaultFound, defaults = self.addParameter(parameters, 
-                                                               defaultFound, defaults)
+                    defaultFound, defaults, variadic = self.addParameter(parameters, 
+                                                    defaultFound, defaults, variadic)
             
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
             self.consume(TokenType.LEFT_BRACE, "Expect '{' before lambda body.")

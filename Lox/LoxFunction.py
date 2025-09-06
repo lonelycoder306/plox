@@ -4,6 +4,7 @@ from Stmt import Stmt
 from Environment import Environment
 from Error import Return
 from Token import Token, TokenType
+from List import List
 
 class LoxFunction(LoxCallable):
     def __init__(self, declaration: Stmt.Function, closure: Environment, 
@@ -20,6 +21,7 @@ class LoxFunction(LoxCallable):
     
     def call(self, interpreter, expr, arguments):
         environment = Environment(self.closure)
+        vargs = None
 
         if self.declaration.params != None:
             argLen = len(arguments)
@@ -27,7 +29,14 @@ class LoxFunction(LoxCallable):
             for i in range(0, argLen):
                 param = self.declaration.params[i]
                 if type(param) == Token:
-                    environment.define(param.lexeme, arguments[i])
+                    if param.type != TokenType.ELLIPSIS:
+                        environment.define(param.lexeme, arguments[i])
+                    else:
+                        vargs = arguments[i:argLen]
+                        environment.define("vargs", List(vargs))
+                        # To avoid the next for-loop.
+                        paramLen = argLen
+                        break
                 elif type(param) == Expr.Assign:
                     name = param.name
                     value = arguments[i]
@@ -71,6 +80,8 @@ class LoxFunction(LoxCallable):
     def arity(self):
         max = len(self.declaration.params)
         min = max - self.declaration.defaults
+        if self.context["variadic"]:
+            max = 256
         return [min, max]
     
     def isGetter(self):

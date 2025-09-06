@@ -204,6 +204,11 @@ class Interpreter:
                        "isInitializer": False,
                        "class": None,
                        "safe": False}
+            param = stmt.params[-1]
+            if (type(param) == Token) and (param.type == TokenType.ELLIPSIS):
+                context["variadic"] = True
+            else:
+                context["variadic"] = False
             function = LoxFunction(stmt, self.environment, context)
             self.environment.define(stmt.name.lexeme, function)
 
@@ -750,6 +755,11 @@ class Interpreter:
                    "isInitializer": False,
                    "class": None,
                    "safe": False}
+        param = expr.params[-1]
+        if (type(param) == Token) and (param.type == TokenType.ELLIPSIS):
+            context["variadic"] = True
+        else:
+            context["variadic"] = False
         return LoxFunction(lambdaDeclaration, self.environment, context)
 
     def visitLiteralExpr(self, expr: Expr.Literal):

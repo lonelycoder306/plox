@@ -78,7 +78,7 @@ class Resolver:
         self.beginScope()
         if function.params != None:
             for param in function.params:
-                if type(param) == Token:
+                if (type(param) == Token) and (param.type != TokenType.ELLIPSIS):
                     self.declare(param)
                     self.define(param)
                 elif type(param) == Expr.Assign:
@@ -95,9 +95,9 @@ class Resolver:
 
         self.beginScope()
         for param in expr.params:
-            if type(param) == Token:
-                self.declare(param)
-                self.define(param)
+            if (type(param) == Token) and (param.type != TokenType.ELLIPSIS):
+                    self.declare(param)
+                    self.define(param)
             elif type(param) == Expr.Assign:
                 self.declare(param.name)
                 self.define(param.name)
