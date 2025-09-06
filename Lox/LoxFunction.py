@@ -21,7 +21,7 @@ class LoxFunction(LoxCallable):
     
     def call(self, interpreter, expr, arguments):
         environment = Environment(self.closure)
-        vargs = None
+        vargs = []
 
         if self.declaration.params != None:
             argLen = len(arguments)
@@ -33,18 +33,19 @@ class LoxFunction(LoxCallable):
                         environment.define(param.lexeme, arguments[i])
                     else:
                         vargs = arguments[i:argLen]
-                        environment.define("vargs", List(vargs))
-                        # To avoid the next for-loop.
-                        paramLen = argLen
                         break
                 elif type(param) == Expr.Assign:
                     name = param.name
                     value = arguments[i]
                     environment.define(name.lexeme, value)
-            for i in range(argLen, paramLen):
-                name = self.declaration.params[i].name
-                value = interpreter.evaluate(self.declaration.params[i].value)
-                environment.define(name.lexeme, value)
+            if not self.context["variadic"]:
+                for i in range(argLen, paramLen):
+                    name = self.declaration.params[i].name
+                    value = interpreter.evaluate(self.declaration.params[i].value)
+                    environment.define(name.lexeme, value)
+        
+        if self.context["variadic"]:
+            environment.define("vargs", List(vargs))
         
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
@@ -81,6 +82,7 @@ class LoxFunction(LoxCallable):
         max = len(self.declaration.params)
         min = max - self.declaration.defaults
         if self.context["variadic"]:
+            min -= 1 # ... must be excluded.
             max = 256
         return [min, max]
     
