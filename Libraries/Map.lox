@@ -1,3 +1,9 @@
+/*
+Disclaimer: maps are currently implemented using paired lists of keys and values.
+They are not implemented throug hash tables with proper hash functions (yet).
+Thus, their time complexity will be O(n) on average rather than O(1).
+*/
+
 class Map
 {
     // Constructor.
