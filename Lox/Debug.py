@@ -35,7 +35,8 @@ class breakpointStop(Exception):
                              "r": "repl",
                              "l": "list",
                              "st": "stack",
-                             "log": "log"}
+                             "log": "log",
+                             "h": "help"}
         self.commands = {"v": "value",
                          "vars": "vars",
                          "b": "break"}
@@ -115,6 +116,24 @@ class breakpointStop(Exception):
             case "log":
                 for func in State.traceLog:
                     print(f"(\"{func["file"]}\", {func["line"]}): {func["name"]}")
+            case "help":
+                self.displayHelp()
+    
+    def displayHelp(self):
+        print("Available commands:")
+        print("c(ontinue) - Exit debugger and continue execution until breakpoint, error, or end is reached.")
+        print("s(tep) - Go to the next line, and enter the function if it is a function call.")
+        print("n(ext) - Go to the next line, and evaluate (but do not enter) the function if it is a function call.")
+        print("r(epl) - End debug session and file execution and open a prompt shell.")
+        print("q(uit) - Exit the debugger and conclude all code execution.")
+        print("l(ist) - Display lines surrounding current breakpoint.")
+        print("st(ack) - Display call-stack.")
+        print("log - Display trace-log for the file up until the current breakpoint.")
+        print("")
+        print("Available instructions:")
+        print("v(alue) [l/local or g/global] (expr) - Prints the value of the given expression within the given scope.")
+        print("vars [l/local or g/global] - Displays all the variables in the specified scope with their values.")
+        print("b*reak) [line #] - Adds a breakpoint at the given line (if the line has yet to be passed).")
 
     def debugCommand(self, command, arguments):
         match command:

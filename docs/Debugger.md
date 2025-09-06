@@ -53,6 +53,9 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 ### ```log```
 * Displays the trace-log for the program (all the function calls, including nested calls, run since execution of the file commenced).
 
+### ```h(elp)```
+* Provides a help screen displaying all the supported instructions and commands with their functionality and syntax.
+
 ## Debugger Commands
 #### Parts between parentheses (if any) in command names may be ommitted when using the command.
 
