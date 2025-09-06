@@ -1,7 +1,7 @@
 #### Instructions are in alphabetical order by title.
 
 ### Built-in Functions
-* Those are two numerous to go over here in their entirety. However, the comments at the beginning of the [code file](../Lox/BuiltinFunction.py) should be sufficiently clear and detailed to explain what they all do, including the arguments they take.
+* Those are too numerous to go over here in their entirety. However, the comments at the beginning of the [code file](../Lox/BuiltinFunction.py) should be sufficiently clear and detailed to explain what they all do, including the arguments they take.
 
 ### Debugger
 * The debugger itself has a number of features, instructions, and parts, and thus deserves its own [Debugger](./Debugger.md) file.
