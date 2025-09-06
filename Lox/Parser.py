@@ -303,7 +303,7 @@ class Parser:
                 raise ParseError(name, 
                     "Cannot have regular parameter following default parameter.")
             parameters.append(name)
-        return (defaultFound, defaults)
+        return defaults
 
     def function(self, kind):
         # Default in case of unassigned lambda.
@@ -323,11 +323,9 @@ class Parser:
             parameters = list()
             if not self.check(TokenType.RIGHT_PAREN):
                 # Implementing do-while logic.
-                defaultFound, defaults = self.addParameter(parameters, 
-                                                           defaultFound, defaults)
+                defaults = self.addParameter(parameters, defaultFound, defaults)
                 while self.match(TokenType.COMMA):
-                    defaultFound, defaults = self.addParameter(parameters, 
-                                                               defaultFound, defaults)
+                    defaults = self.addParameter(parameters, defaultFound, defaults)
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
 
         # Cannot use f-strings here due to the presence of the { character.
@@ -380,11 +378,9 @@ class Parser:
             defaults = 0
             if not self.check(TokenType.RIGHT_PAREN):
                 # Implementing do-while logic.
-                defaultFound, defaults = self.addParameter(parameters, 
-                                                           defaultFound, defaults)
+                defaults = self.addParameter(parameters, defaultFound, defaults)
                 while self.match(TokenType.COMMA):
-                    defaultFound, defaults = self.addParameter(parameters, 
-                                                               defaultFound, defaults)
+                    defaults = self.addParameter(parameters, defaultFound, defaults)
             
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
             self.consume(TokenType.LEFT_BRACE, "Expect '{' before lambda body.")
