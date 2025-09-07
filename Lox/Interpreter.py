@@ -41,6 +41,10 @@ class Interpreter:
                         return
                 except UserWarning as warning:
                     warning.show(self)
+        except RecursionError:
+            import sys
+            sys.stderr.write("Recursion error: Recursion limit exceeded.\n")
+            return
         except RuntimeError as error: # Stops all execution.
             error.show()
         except StopError:
