@@ -854,22 +854,6 @@ class Interpreter:
             case TokenType.MINUS:
                 self.checkNumberOperand(expr.operator, right)
                 return -1 * float(right)
-            case TokenType.PRE_INC:
-                if type(expr.right) == Expr.Variable:
-                    name = expr.right.name
-                    right += 1
-                    self.environment.assign(name, right)
-                    return right
-                # Other cases here, like ++a[0].
-                raise RuntimeError(expr.operator, "Operand is not mutable.")
-            case TokenType.PRE_DEC:
-                if type(expr.right) == Expr.Variable:
-                    name = expr.right.name
-                    right -= 1
-                    self.environment.assign(name, right)
-                    return right
-                # Other cases here, like ++a[0].
-                raise RuntimeError(expr.operator, "Operand is not mutable.")
 
     def visitVariableExpr(self, expr: Expr.Variable):
         return self.lookUpVariable(expr.name, expr)

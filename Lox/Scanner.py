@@ -84,18 +84,18 @@ class Scanner:
                 else:
                     self.addToken(TokenType.DOT)
             case '-':
-                if self.match('-'):
-                    self.addToken(TokenType.PRE_DEC)
-                else:
-                    self.addToken(TokenType.MINUS)
+                if self.match('='):
+                    self.addToken(TokenType.MINUS_EQUALS)
+                self.addToken(TokenType.MINUS)
             case '+':
-                if self.match('+'):
-                    self.addToken(TokenType.PRE_INC)
-                else:
-                    self.addToken(TokenType.PLUS)
+                if self.match('='):
+                    self.addToken(TokenType.PLUS_EQUALS)
+                self.addToken(TokenType.PLUS)
             case ';':
                 self.addToken(TokenType.SEMICOLON)
             case '*':
+                if self.match('='):
+                    self.addToken(TokenType.STAR_EQUALS)
                 self.addToken(TokenType.STAR)
             case '?':
                 self.addToken(TokenType.Q_MARK)
@@ -140,8 +140,9 @@ class Scanner:
                     if count != 0:
                         raise LexError(self.line, self.column, self.fileName, "Unterminated comment block.")
                 
-                else:
-                    self.addToken(TokenType.SLASH)
+                elif self.match('='):
+                    self.addToken(TokenType.SLASH_EQUALS)
+                self.addToken(TokenType.SLASH)
             
             # Ignore whitespace.
             case ' ':

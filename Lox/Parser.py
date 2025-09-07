@@ -404,6 +404,12 @@ class Parser:
         return self.assignment()
     
     def assignment(self):
+        # For +=, -=, *=, and /= operators.
+        validTypes = (TokenType.PLUS_EQUALS,
+                       TokenType.MINUS_EQUALS,
+                       TokenType.STAR_EQUALS,
+                       TokenType.SLASH_EQUALS)
+
         expr = self.orExpr()
 
         if self.match(TokenType.EQUAL):
@@ -421,6 +427,27 @@ class Parser:
                 return Expr.Modify(expr, equals, value)
             
             raise ParseError(equals, "Invalid assignment target.")
+
+        else:
+            for operType in validTypes:
+                if self.match(operType):
+                    operator = self.previous()
+                    binaryOper = self.advance()
+                    value = self.lambdaExpr()
+
+                    rhs = Expr.Binary(expr, binaryOper, value)
+
+                    if type(expr) == Expr.Variable:
+                        name = expr.name
+                        return Expr.Assign(name, operator, rhs)
+                    
+                    if type(expr) == Expr.Get:
+                        return Expr.Set(expr.object, expr.name, rhs)
+                    
+                    if type(expr) == Expr.Access:
+                        return Expr.Modify(expr, operator, rhs)
+                    
+                    raise ParseError(operator, "Invalid increment target.")
         
         return expr
     
