@@ -86,10 +86,14 @@ class Scanner:
             case '-':
                 if self.match('='):
                     self.addToken(TokenType.MINUS_EQUALS)
+                elif self.match('-'):
+                    self.addToken(TokenType.POST_DEC)
                 self.addToken(TokenType.MINUS)
             case '+':
                 if self.match('='):
                     self.addToken(TokenType.PLUS_EQUALS)
+                elif self.match('+'):
+                    self.addToken(TokenType.POST_INC)
                 self.addToken(TokenType.PLUS)
             case ';':
                 self.addToken(TokenType.SEMICOLON)

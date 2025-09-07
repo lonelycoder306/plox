@@ -408,7 +408,9 @@ class Parser:
         validTypes = (TokenType.PLUS_EQUALS,
                        TokenType.MINUS_EQUALS,
                        TokenType.STAR_EQUALS,
-                       TokenType.SLASH_EQUALS)
+                       TokenType.SLASH_EQUALS,
+                       TokenType.POST_INC,
+                       TokenType.POST_DEC)
 
         expr = self.orExpr()
 
@@ -433,7 +435,10 @@ class Parser:
                 if self.match(operType):
                     operator = self.previous()
                     binaryOper = self.advance()
-                    value = self.lambdaExpr()
+                    value = Expr.Literal(float(1))
+                    if ((operType != TokenType.POST_INC) and
+                        (operType != TokenType.POST_DEC)):
+                        value = self.lambdaExpr()
 
                     rhs = Expr.Binary(expr, binaryOper, value)
 
