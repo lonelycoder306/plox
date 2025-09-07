@@ -527,8 +527,7 @@ class Parser:
         return expr
     
     def unary(self):
-        if self.match(TokenType.BANG, TokenType.MINUS,
-                      TokenType.PRE_INC, TokenType.PRE_DEC):
+        if self.match(TokenType.BANG, TokenType.MINUS):
             operator = self.previous()
             right = self.unary()
             return Expr.Unary(operator, right)
