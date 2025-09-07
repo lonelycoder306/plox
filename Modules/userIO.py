@@ -9,7 +9,7 @@ List = getattr(im("List"), "List")
 String = getattr(im("String"), "String")
 
 userIO = Environment()
-functions = ["inchars", "inbytes", "inline", "inlines", "inpeek", "echo"]
+functions = ["inchars", "inbytes", "inline", "inlines", "inpeek", "echo", "inflush", "outflush"]
 
 class IOFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -59,6 +59,18 @@ class IOFunction(LoxCallable):
                                        "Types are: string.")
                 self.io_echo(arguments[0], expr)
                 return ()
+            case "inflush":
+                if not self.check_inflush(arguments):
+                    raise RuntimeError(expr.rightParen,
+                                       "Arguments do not match accepted parameter types.")
+                self.io_inflush()
+                return ()
+            case "outflush":
+                if not self.check_outflush(arguments):
+                    raise RuntimeError(expr.rightParen,
+                                       "Arguments do not match accepted parameter types.")
+                self.io_outflush()
+                return ()
     
     def arity(self):
         match self.mode:
@@ -74,6 +86,10 @@ class IOFunction(LoxCallable):
                 return [0,0]
             case "echo":
                 return [1,1]
+            case "inflush":
+                return [0,0]
+            case "outflush":
+                return [0,0]
     
     # Input.
 
@@ -102,7 +118,7 @@ class IOFunction(LoxCallable):
             return string
         else:
             return sys.stdin.buffer.read(n)
-    
+
     def io_inline(self):
         string = sys.stdin.readline()
         if string[-1] == '\n':
@@ -130,6 +146,14 @@ class IOFunction(LoxCallable):
             print(printText)
         except UnicodeDecodeError:
             raise RuntimeError(expr.leftParen, "Failed to format string.")
+    
+    # Buffer flushing.
+
+    def io_inflush(self):
+        sys.stdin.flush()
+    
+    def io_outflush(self):
+        sys.stdout.flush()
     
     # Error checking.
 
@@ -160,6 +184,12 @@ class IOFunction(LoxCallable):
         if type(arguments[0]) == String:
             return True
         return False
+
+    def check_inflush(self, arguments):
+        return True
+    
+    def check_outflush(self, arguments):
+        return True
     
     def toString(self):
         return "<userIO function>"
