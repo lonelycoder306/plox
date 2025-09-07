@@ -6,6 +6,17 @@
 ### Debugger
 * The debugger itself has a number of features, instructions, and parts, and thus deserves its own [Debugger](./Debugger.md) file.
 
+### Default Parameters in Functions
+* As is the case with most programming languages (e.g., Python), you can simply add a default value for any parameter in your function *declaration*.
+* No default parameter can be followed by a regular (i.e., non-default) parameter. However, you can have multiple default parameters after each other. For example:
+  ```
+  fun nothing(a, b = 1, c = 2) {}
+
+  fun problem(a = 1, b) {} // Error! Can't have a regular parameter after a default parameter.
+  ```
+* Any expression can be used as the default value for such a parameter, including lambdas (covered below).
+* As is also the case with most programming languages, a default parameter's value will be bound to the parameter if no value is passed in its place as an argument when the function is called.
+
 ### File Imports
 All imports are scope, i.e., they follow the same variable binding and shadowing rules as regular objects in the language, and do not apply outside the scope in which the import is made.\
 **Note:** Imports are done by accessing files through particular paths. For them to work, the interpreter ***must*** be run from within the project's root directory.
@@ -23,7 +34,7 @@ There are three main import directives supported:
 3. GetFile
     * This is used with user-owned Lox files.
     * Passing non-Lox files will raise an error.
-    * The relative path to the file must be passed.
+    * The path to the file must be passed.
     * Example: ```GetFile "FileDir/Example.lox";```.
 
 ### IO
@@ -37,8 +48,42 @@ There are three main import directives supported:
 ### Lists
 * Similar to the debugger, lists have a number of useful features and methods, so I've devoted a [List](./List.md) file to it on its own.
 
-### Multi-line REPL prompt.
+### Multi-line REPL Prompt
 * Simply add a \ at the end of each line (except the very last).
 * The \ can be put any number of spaces away (including zero) from the end of the line.
-* It will be automatically deleted from the actual formatted string (so you don't need to worry about deleting it).
+* It will be automatically deleted from the actual formatted string (so you don't need to worry about deleting it yourself).
 * Note: errors given on the prompt will treat it as a single long string, rather than a number of lines.
+
+### Variadic Functions
+* To declare a variadic function, simply put ```...``` where the variable list of arguments should start, like so:\
+  ```fun nothing(...) {}```
+* Variadic functions can also have regular (non-default) parameters *before* the ellipsis (...). For example:
+  ```
+  fun nothing(a, b, ...) {}
+  fun problem(..., a) {} // Error! Can't have parameters after the ellipsis.
+  fun anotherProblem(a = 1, ...) {} // Error! Can't have a default parameter before the ellipsis.
+  ```
+* Variadic functions can accept a total of 256 arguments (the maximum number a Lox function can accept).
+* Variadic functions declared with only an ellipsis (...) can accept zero arguments (though ```vargs``` would be empty).
+* ```vargs``` is not defined automatically for *non*-variadic functions (and thus there is no need to worry about name collisions).
+* The variable list of arguments (following any regular arguments) will be saved in a list called ```vargs``` which can be accessed in the function body. For example:
+  ```
+  fun loop(...)
+  {
+    for (var i = 0; i < length(vargs); i++)
+        print i;
+  }
+
+  fun mix(a, b, ...)
+  {
+    if (length(vargs) == 0)
+        return a+b;
+    else
+    {
+        var sum = a+b;
+        for (var i = 0; i < length(vargs); i++)
+            sum += vargs[i];
+        return sum;
+    }
+  }
+  ```

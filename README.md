@@ -54,6 +54,7 @@ For further instruction on how to make use of some of these features, please go 
 * Modified string literal form to distinguish between single-line and multi-line strings.
     * "" for single-line, `` for multi-line (similar to JS).
 * Made strings mutable.
+* Added declarations for variadic functions.
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
