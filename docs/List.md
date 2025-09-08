@@ -5,10 +5,21 @@
 ## Constructing List Objects
 * To *declare* a list object, you must use the ```list``` modifier:\
     ```list a;```
-* Though it may be changed later (since Lox is dynamically-typed), an initializer in a list definition must be a List object.
+* Though it may be changed later (since Lox is dynamically-typed), an initializer in a list definition *must* be a List object.
+  * Both of these will result in an error:
+    ```
+    list a = 1;
+    var a = [1,2,3];
+    ```
 * An initializer for a list object can be one of four things:
     1. A list literal: ```[..., ..., ...]```.\
-       Note: Lambdas can be declared within a list literal.
+       Note: Lambdas can be declared within a list literal.\
+       Examples:
+       ```
+       list a = [1,2,3];
+       list b = [fun (x) {print x;}];
+       list c = [1, true, "Hello, world!"];
+       ```
     2. Another List object.\
        For example:
        ```
@@ -21,14 +32,22 @@
        * A list literal &rarr; The constructor will return a List object containing the same elements as the passed list.
        * A List object &rarr; The constructor will return a **copy** of the passed List object.
        * A string &rarr; The constructor will return a list where each character of the string is a separate element.
-       * An integer &rarr; The constructor will return a list containing that number of elements, all initialized to ```nil```.
+       * An integer &rarr; The constructor will return a list containing that number of elements, all initialized to ```nil```.\
+         Examples:
+         ```
+         list a = List();
+         list b = List([1,2,3]);
+         list c = List(a);
+         list d = List("string");
+         list e = List(5);
+         ```
     4. A function call to the built-in ```reference()``` function.
        * This function can accept a List object as its argument, returning that object itself (*not* a copy of it).
-       * A call to this function cannot itself be treated as a list object. For example, the following is not allowed:\
+       * A call to this function cannot itself be treated as a List object. For example, the following is not allowed:
          ```
          list a = [1,2,3];
-         reference(a) = [1,2,3,4];
-         reference(a).add(4);
+         reference(a) = [1,2,3,4]; // Error! Can't treat reference(a) as an lvalue List object.
+         reference(a).add(4); // Repeated error.
          ```
 
 ## List Methods
