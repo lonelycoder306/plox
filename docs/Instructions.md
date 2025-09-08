@@ -54,6 +54,9 @@ There are three main import directives supported:
 * It will be automatically deleted from the actual formatted string (so you don't need to worry about deleting it yourself).
 * Note: errors given on the prompt will treat it as a single long string, rather than a number of lines.
 
+### User-Defined Errors and Warnings
+* As with other topics here, user-defined errors and warnings need a dedicated treatment, and are thus covered separately in [Exceptions](./Exceptions.md).
+
 ### Variadic Functions
 * To declare a variadic function, simply put ```...``` where the variable list of arguments should start, like so:\
   ```fun nothing(...) {}```
