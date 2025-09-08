@@ -105,10 +105,16 @@ class Interpreter:
 
         classMethods = dict()
         for method in stmt.classMethods:
+            variadic = False
+            if (method.params != None) and len(method.params) != 0:
+                if ((type(method.params[-1]) == Token) and
+                    (method.params[-1].type == TokenType.ELLIPSIS)):
+                    variadic = True
             context = {"isMethod": True, 
                        "isInitializer": False, 
                        "class": None, # Temporarily.
-                       "safe": False}
+                       "safe": False,
+                       "variadic": variadic}
             function = LoxFunction(method, self.environment, context)
             classMethods[method.name.lexeme] = function
         
@@ -120,18 +126,30 @@ class Interpreter:
         public = dict()
 
         for method in stmt.private:
-            context = {"isMethod": True,
-                       "isInitializer": False,
+            variadic = False
+            if (method.params != None) and len(method.params) != 0:
+                if ((type(method.params[-1]) == Token) and
+                    (method.params[-1].type == TokenType.ELLIPSIS)):
+                    variadic = True
+            context = {"isMethod": True, 
+                       "isInitializer": False, 
                        "class": None, # Temporarily.
-                       "safe": True}
+                       "safe": True,
+                       "variadic": variadic}
             function = LoxFunction(method, self.environment, context)
             private[method.name.lexeme] = function
         
         for method in stmt.public:
-            context = {"isMethod": True,
-                       "isInitializer": (method.name.lexeme == "init"),
+            variadic = False
+            if (method.params != None) and len(method.params) != 0:
+                if ((type(method.params[-1]) == Token) and
+                    (method.params[-1].type == TokenType.ELLIPSIS)):
+                    variadic = True
+            context = {"isMethod": True, 
+                       "isInitializer": (method.name.lexeme == "init"), 
                        "class": None, # Temporarily.
-                       "safe": False}
+                       "safe": False,
+                       "variadic": variadic}
             function = LoxFunction(method, self.environment, context)
             public[method.name.lexeme] = function
 
