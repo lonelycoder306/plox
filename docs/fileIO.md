@@ -52,7 +52,7 @@ If it doesn't exist, use ```filemake()```. If it does, use ```fileopen()```.
 ### filedrop()
 * Closes the file accessed through the file object it is called on.
 
-### flush()
+### fileflush()
 * Flushes the buffer for output to the file.
 
 ### Input Methods
