@@ -43,7 +43,7 @@ There are three main import directives supported:
 ### Lambdas
 * You can simply create a lambda with the regular function definition syntax, but with the function name ommitted.
 * The interpreter will automatically ignore any lambdas that are not assigned to a variable/stored somewhere, since they are effectively values.
-* Lambdas can be called from whichever object/variable they are stored in, e.g., by the name of the variable they are assigned to or as an array element with the [] operator.
+* Lambdas can be called from whichever object/variable they are stored in, e.g., by the name of the variable they are assigned to or as an array element with the [ ] operator.
 
 ### Lists
 * Similar to the debugger, lists have a number of useful features and methods, so I've devoted a [List](./List.md) file to it on its own.
@@ -53,6 +53,17 @@ There are three main import directives supported:
 * The \ can be put any number of spaces away (including zero) from the end of the line.
 * It will be automatically deleted from the actual formatted string (so you don't need to worry about deleting it yourself).
 * Note: errors given on the prompt will treat it as a single long string, rather than a number of lines.
+
+### Testing and Clean-up
+* The tests check expected output and error messages for a wide number of different test cases which check multiple features, including edge cases.
+* The tests rely on pre-written test and expected output files, which can be found in the "Testing" directory (currently hidden). 
+* The testing option can be used with the following command:\
+  ```plox -test```
+* This command generates all the necessary Python testing scripts, as well as executing the given Lox test files, organizing the output into a dedicated child directory in "Testing".
+* After running the command, simply run: ```pytest```. This will use the Python testing scripts to give test results.
+* To clean up the left-over Python testing files and output files, simply run:\
+  ```plox -clean```
+* **Note:** The file "testList.txt" and any files in the "Tests" child directory should ***not*** be deleted for the testing option to work.
 
 ### User-Defined Errors and Warnings
 * As with other topics here, user-defined errors and warnings need a dedicated treatment, and are thus covered separately in [Exceptions](./Exceptions.md).
