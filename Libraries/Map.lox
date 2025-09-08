@@ -122,6 +122,10 @@ class Map
 
     // Adds a new key-value pair to the map.
     // Raises an error if the pair's key is already in the map.
+    // Though strings have been made mutable, this will not affect 
+    // the key's validity.
+    // Keys are inserted into the map by their value, even if 
+    // reference(x) is used for the key.
     add(pair)
     {
         if (this.has(pair[0]))
@@ -144,7 +148,8 @@ class Map
             var value = this.values[index];
             this.keys.remove(index);
             this.values.remove(index);
-            return value;
+            // No need to return the value.
+            // Above call to .remove() will return it by default.
         }
         else
             perror("Map error: Key does not exist in the given map.");
