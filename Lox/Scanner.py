@@ -146,7 +146,10 @@ class Scanner:
                 
                 elif self.match('='):
                     self.addToken(TokenType.SLASH_EQUALS)
-                self.addToken(TokenType.SLASH)
+                    self.addToken(TokenType.SLASH)
+                
+                else:
+                    self.addToken(TokenType.SLASH)
             
             # Ignore whitespace.
             case ' ':
