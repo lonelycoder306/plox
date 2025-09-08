@@ -116,8 +116,18 @@ class Parser:
     def errorStatement(self):
         body = self.declaration()
         self.consume(TokenType.HANDLE, "Attempt statement must have a handler.")
+        errors = None
+        if self.match(TokenType.LEFT_PAREN):
+            errors = []
+            while not self.check(TokenType.RIGHT_PAREN):
+                error = self.primary()
+                if ((type(error) != Expr.Literal) or
+                    (type(error.value) != String)):
+                    raise RuntimeError(self.previous(), "Invalid error type.")
+                errors.append(error)
+            self.consume(TokenType.RIGHT_PAREN, "Expect ')' after error types.")
         handler = self.declaration()
-        return Stmt.Error(body, handler)
+        return Stmt.Error(body, errors, handler)
     
     def fetchStatement(self):
         mode = self.previous()

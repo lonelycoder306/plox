@@ -34,8 +34,9 @@ class Stmt:
 			return visitor.visitContinueStmt(self)
 
 	class Error:
-		def __init__(self, body, handler):
+		def __init__(self, body, errors, handler):
 			self.body = body
+			self.errors = errors
 			self.handler = handler
 
 		def accept(self, visitor):

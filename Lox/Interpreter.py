@@ -173,10 +173,27 @@ class Interpreter:
         raise ContinueError(stmt.continueCMD, stmt.loopType)
 
     def visitErrorStmt(self, stmt: Stmt.Error):
+        errors = []
+        if stmt.errors != None:
+            for error in stmt.errors:
+                errors.append(error.value.text)
         try:
             self.execute(stmt.body)
-        except (UserError, UserWarning, RuntimeError):
-            self.execute(stmt.handler)
+        except UserError as e:
+            if e.error.klass.name in errors:
+                self.execute(stmt.handler)
+            else:
+                raise
+        except UserWarning as w:
+            if w.warning.klass.name in errors:
+                self.execute(stmt.handler)
+            else:
+                raise
+        except RuntimeError:
+            if ("RuntimeError" in errors) or ("Runtime Error" in errors):
+                self.execute(stmt.handler)
+            else:
+                raise
 
     def visitExpressionStmt(self, stmt: Stmt.Expression):
         prevState = self.ExprStmt
