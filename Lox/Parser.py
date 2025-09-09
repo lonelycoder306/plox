@@ -121,8 +121,7 @@ class Parser:
             errors = []
             while not self.check(TokenType.RIGHT_PAREN):
                 error = self.primary()
-                if ((type(error) != Expr.Literal) or
-                    (type(error.value) != String)):
+                if type(error) != Expr.Variable:
                     raise RuntimeError(self.previous(), "Invalid error type.")
                 errors.append(error)
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after error types.")
