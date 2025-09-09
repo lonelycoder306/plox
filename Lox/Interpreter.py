@@ -194,6 +194,11 @@ class Interpreter:
                     self.execute(stmt.handler)
                 else:
                     raise
+            except RecursionError:
+                if "RecursionError" in errors:
+                    self.execute(stmt.handler)
+                else:
+                    raise
 
         else:
             try:
