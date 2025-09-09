@@ -198,7 +198,7 @@ class Interpreter:
         else:
             try:
                 self.execute(stmt.body)
-            except (UserError, UserWarning, RuntimeError):
+            except (UserError, UserWarning, RuntimeError, RecursionError):
                 self.execute(stmt.handler)
 
     def visitExpressionStmt(self, stmt: Stmt.Expression):
