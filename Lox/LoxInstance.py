@@ -59,7 +59,7 @@ class LoxInstance:
         return f"<{self.klass.name} instance>"
 
     def varType(self):
-        return self.klass.name
+        return self.klass.name + " instance"
 
 from LoxCallable import LoxCallable
 class InstanceFunction(LoxCallable):
@@ -98,9 +98,9 @@ class InstanceFunction(LoxCallable):
         return List(array)
 
     def i_methodList(self, interpreter, expr, arguments):
-        private = self.instance.klass.private.keys()
-        public = self.instance.klass.public.keys()
-        array = list(private + public)
+        privates = list(self.instance.klass.private.keys())
+        publics = list(self.instance.klass.public.keys())
+        array = list(privates + publics)
         from List import List
         return List(array)
 
