@@ -58,5 +58,12 @@ handle
 * The new-lines after ```attempt``` and ```handle``` are (of course) not necessary.
 * Any statement may be put after ```attempt``` or ```handle```, including an entire block.
 * An ```attempt``` statement *must* be followed by a single ```handle``` statement.
-* There is current work in progress for ```handle``` statements to specify particular types of errors to handle. For the moment, they will execute if *any* error (runtime errors or any user-defined errors) occur, and prevent the error from being presented to the user.
 * Any errors that occur while executing ```handle``` statements will not themselves be handled.
+* The above syntax will handle *any* errors that occur at runtime (including errors raised by the interpreter). To handle specific error types, you can instead use the following syntax:
+  ```
+  attempt
+    [Possibly problematic statement...]
+  handle (ErrorType1, ErrorType2, ...)
+    [What to do if any of these errors occurs above...]
+  ```
+  (The ... is only to illustrate that any number of error types can be placed between the parentheses.)
