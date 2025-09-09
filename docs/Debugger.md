@@ -78,7 +78,7 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 * Prints out the value of the given expression.
 * Examples:
     * ```v l a```
-    * ```value global x```
+    * ```value global (x*2)+1```
 
 ### ```vars```
 * Argument #: 1
