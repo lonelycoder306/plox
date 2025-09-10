@@ -174,6 +174,51 @@ class Parser:
 
         return Stmt.Fetch(mode, name)
 
+    def rangeForLoop(self):
+        iterator = self.consume(TokenType.IDENTIFIER, "Expect iterator variable name.")
+        self.advance() # Skip the colon.
+        iterable = self.consume(TokenType.IDENTIFIER, "Expect name of iterable object.")
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after iteration clause.")
+
+        # var __UNUSED__VAR = 0;
+        indexToken = Token(TokenType.IDENTIFIER, "__UNUSED__VAR", None, 0, 0, "")
+        indexInit = Expr.Literal(float(0))
+        indexDecl = Stmt.Var(indexToken, None, indexInit)
+
+        # var i = array[0]; (example)
+        iterableVar = Expr.Variable(iterable)
+        iteratorInit = Expr.Access(iterableVar, None, Expr.Literal(float(0)), None)
+        iteratorDecl = Stmt.Var(iterator, None, iteratorInit)
+        
+        # __UNUSED__VAR < length(array) (example)
+        compareLeft = Expr.Variable(indexToken)
+        compareToken = Token(TokenType.LESS, "<", None, 0, 0, "")
+        calleeToken = Token(TokenType.IDENTIFIER, "length", None, 0, 0, "")
+        callee = Expr.Variable(calleeToken)
+        compareRight = Expr.Call(callee, None, None, [iterableVar])
+        condition = Expr.Binary(compareLeft, compareToken, compareRight)
+
+        # __UNUSED__VAR = __UNUSED__VAR + 1;
+        incrementLHS = Expr.Variable(indexToken)
+        dummyOper = Token(TokenType.PLUS, "+", None, 0, 0, "")
+        incrementRHS = Expr.Binary(incrementLHS, dummyOper, Expr.Literal(float(1)))
+        increment = Expr.Assign(indexToken, None, incrementRHS)
+
+        # i = array[__UNUSED__VAR];
+        nextElement = Expr.Access(iterableVar, None, Expr.Variable(indexToken), None)
+        iterNextElement = Expr.Assign(iterator, None, nextElement)
+
+        currentLoop = self.loopType
+        self.loopType = "forLoop"
+        body = self.statement()
+        self.loopType = currentLoop
+
+        body = Stmt.Block([Stmt.Expression(iterNextElement), body, Stmt.Expression(increment)])
+        loop = Stmt.While(condition, body)
+        full = Stmt.Block([indexDecl, iteratorDecl, loop])
+
+        return full
+
     def forStatement(self):
         self.loopLevel += 1
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
@@ -181,6 +226,8 @@ class Parser:
         if self.match(TokenType.SEMICOLON):
             initializer = None
         elif self.match(TokenType.VAR):
+            if self.peekNext().type == TokenType.COLON:
+                return self.rangeForLoop()
             initializer = self.varDeclaration()
         else:
             initializer = self.expressionStatement()
@@ -694,6 +741,9 @@ class Parser:
 
     def peek(self) -> Token:
         return self.tokens[self.current]
+    
+    def peekNext(self) -> Token:
+        return self.tokens[self.current + 1]
 
     def previous(self) -> Token:
         return self.tokens[self.current - 1]
