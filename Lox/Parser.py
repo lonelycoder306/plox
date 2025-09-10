@@ -176,37 +176,42 @@ class Parser:
 
     def rangeForLoop(self):
         iterator = self.consume(TokenType.IDENTIFIER, "Expect iterator variable name.")
-        self.advance() # Skip the colon.
+        colon = self.advance()
         iterable = self.consume(TokenType.IDENTIFIER, "Expect name of iterable object.")
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after iteration clause.")
 
         # var __UNUSED__VAR = 0;
         indexToken = Token(TokenType.IDENTIFIER, "__UNUSED__VAR", None, 0, 0, "")
         indexInit = Expr.Literal(float(0))
-        indexDecl = Stmt.Var(indexToken, None, indexInit)
+        # We use the colon as our "blame token" in case any errors occur
+        # and need to be reported.
+        # It replaces the actual tokens that should be in many of these nodes.
+        # We can't make and use fake tokens since they need to exist in the actual
+        # text of the code if reporting occurs.
+        indexDecl = Stmt.Var(indexToken, colon, indexInit)
 
         # var i = array[0]; (example)
         iterableVar = Expr.Variable(iterable)
-        iteratorInit = Expr.Access(iterableVar, None, Expr.Literal(float(0)), None)
-        iteratorDecl = Stmt.Var(iterator, None, iteratorInit)
+        iteratorInit = Expr.Access(iterableVar, colon, Expr.Literal(float(0)), None)
+        iteratorDecl = Stmt.Var(iterator, colon, iteratorInit)
         
         # __UNUSED__VAR < length(array) (example)
         compareLeft = Expr.Variable(indexToken)
         compareToken = Token(TokenType.LESS, "<", None, 0, 0, "")
         calleeToken = Token(TokenType.IDENTIFIER, "length", None, 0, 0, "")
         callee = Expr.Variable(calleeToken)
-        compareRight = Expr.Call(callee, None, None, [iterableVar])
+        compareRight = Expr.Call(callee, colon, colon, [iterableVar])
         condition = Expr.Binary(compareLeft, compareToken, compareRight)
 
         # __UNUSED__VAR = __UNUSED__VAR + 1;
         incrementLHS = Expr.Variable(indexToken)
         dummyOper = Token(TokenType.PLUS, "+", None, 0, 0, "")
         incrementRHS = Expr.Binary(incrementLHS, dummyOper, Expr.Literal(float(1)))
-        increment = Expr.Assign(indexToken, None, incrementRHS)
+        increment = Expr.Assign(indexToken, colon, incrementRHS)
 
         # i = array[__UNUSED__VAR];
-        nextElement = Expr.Access(iterableVar, None, Expr.Variable(indexToken), None)
-        iterNextElement = Expr.Assign(iterator, None, nextElement)
+        nextElement = Expr.Access(iterableVar, colon, Expr.Variable(indexToken), None)
+        iterNextElement = Expr.Assign(iterator, colon, nextElement)
 
         currentLoop = self.loopType
         self.loopType = "forLoop"
