@@ -365,6 +365,8 @@ class ListFunction(LoxCallable):
     
     def check_remove(self, expr, arguments):
         index = arguments[0]
+        if type(index) != float:
+            raise RuntimeError(expr.rightParen, "Index argument must evaluate to a number.")
         if index < 0:
             raise RuntimeError(expr.rightParen, "Index value cannot be negative.")
         elif index >= len(self.instance.array):
