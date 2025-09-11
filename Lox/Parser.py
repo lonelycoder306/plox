@@ -175,7 +175,7 @@ class Parser:
 
         return Stmt.Fetch(mode, name)
 
-    def rangeForLoop(self):
+    def rangeForLoop(self, initType):
         iterator = self.consume(TokenType.IDENTIFIER, "Expect iterator variable name.")
         colon = self.advance()
         iterableVar = None
@@ -202,7 +202,11 @@ class Parser:
 
         # var i = array[0]; (example)
         iteratorInit = Expr.Access(iterableVar, colon, Expr.Literal(float(0)), None)
-        iteratorDecl = Stmt.Var(iterator, colon, iteratorInit)
+        iteratorDecl = None
+        if initType == "var":
+            iteratorDecl = Stmt.Var(iterator, colon, iteratorInit)
+        elif initType == "assign":
+            iteratorDecl = Stmt.Expression(Expr.Assign(iterator, colon, iteratorInit))
         
         # __UNUSED__VAR < length(array) (example)
         compareLeft = Expr.Variable(indexToken)
@@ -248,9 +252,11 @@ class Parser:
             initializer = None
         elif self.match(TokenType.VAR):
             if self.peekNext().type == TokenType.COLON:
-                return self.rangeForLoop()
+                return self.rangeForLoop("var")
             initializer = self.varDeclaration()
         else:
+            if self.peekNext().type == TokenType.COLON:
+                return self.rangeForLoop("assign")
             initializer = self.expressionStatement()
         
         condition = None
