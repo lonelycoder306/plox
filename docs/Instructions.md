@@ -54,6 +54,23 @@ There are three main import directives supported:
 * It will be automatically deleted from the actual formatted string (so you don't need to worry about deleting it yourself).
 * Note: errors given on the prompt will treat it as a single long string, rather than a number of lines.
 
+### Range-For Loops
+* To construct a range-for loop, use either of the following syntaxes:
+  1. ```
+     for (var [iterator variable]: [iterable object]) {...}
+     // Example:
+     for (var i: [1,2,3]) {...}
+     ```
+  2. ```
+     var [iterator variable] = [insert value];
+     for ([iterator variable]: [iterable object]) {...}
+     // Example:
+     var i;
+     list a = [1,2,3];
+     for (i: a) {...}
+     ```
+* The iterable object can be a list, a string, or anything that evaluates to either of those.
+
 ### Testing and Clean-up
 * The tests check expected output and error messages for a wide number of different test cases which check multiple features, including edge cases.
 * The tests rely on pre-written test and expected output files, which can be found in the "Testing" directory (currently hidden). 

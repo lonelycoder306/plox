@@ -56,6 +56,7 @@ For further instruction on how to make use of some of these features, please go 
     * "" for single-line, `` for multi-line (similar to JS).
 * Made strings mutable.
 * Added declarations for variadic functions.
+* Added support for range-for loops.
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
