@@ -9,68 +9,48 @@ List = getattr(im("List"), "List")
 String = getattr(im("String"), "String")
 
 userIO = Environment()
-functions = ["inchars", "inbytes", "inline", "inlines", "inpeek", "echo", "inflush", "outflush"]
+functions = ["inchars", "inbytes", "inword", "inline", "inlines", "inpeek", "echo", "inflush", "outflush"]
 
 class IOFunction(LoxCallable):
     def __init__(self, mode: str):
         self.mode = mode
     
+    def check(self, expr, arguments):
+        funcString = "check_" + self.mode
+        func = IOFunction.__dict__[funcString]
+        return func(self, expr, arguments)
+    
     def call(self, interpreter, expr, arguments):
-        match self.mode:
-            case "inchars":
-                if not self.check_inchars(arguments):
-                    raise RuntimeError(expr.rightParen, 
-                                       "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: number, boolean.")
-                # Our numbers are all saved as floats, but read() only accepts integers.
-                if len(arguments) == 2:
-                    return self.io_inchars(int(arguments[0]), arguments[1])
-                elif len(arguments) == 1:
-                    return self.io_inchars(int(arguments[0]))
-            case "inbytes":
-                if not self.check_inbytes(arguments):
-                    raise RuntimeError(expr.rightParen, 
-                                       "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: number.")
-                if len(arguments) == 2:
-                    return self.io_inbytes(int(arguments[0]), arguments[1])
-                elif len(arguments) == 1:
-                    return self.io_inbytes(int(arguments[0]))
-            case "inline":
-                if not self.check_inline(arguments):
-                    raise RuntimeError(expr.rightParen, 
-                                       "Arguments do not match accepted parameter types.")
-                return self.io_inline()
-            case "inlines":
-                if not self.check_inlines(arguments):
-                    raise RuntimeError(expr.rightParen, 
-                                       "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: number.")
-                return self.io_inlines(int(arguments[0]))
-            case "inpeek":
-                if not self.check_inpeek(arguments):
-                    raise RuntimeError(expr.rightParen, 
-                                       "Arguments do not match accepted parameter types.")
-                return self.io_inpeek()
-            case "echo":
-                if not self.check_echo(arguments):
-                    raise RuntimeError(expr.rightParen, 
-                                       "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: string.")
-                self.io_echo(arguments[0], expr)
-                return ()
-            case "inflush":
-                if not self.check_inflush(arguments):
-                    raise RuntimeError(expr.rightParen,
-                                       "Arguments do not match accepted parameter types.")
-                self.io_inflush()
-                return ()
-            case "outflush":
-                if not self.check_outflush(arguments):
-                    raise RuntimeError(expr.rightParen,
-                                       "Arguments do not match accepted parameter types.")
-                self.io_outflush()
-                return ()
+        if self.check(expr, arguments):
+            match self.mode:
+                case "inchars":
+                    # Our numbers are all saved as floats, but read() only accepts integers.
+                    if len(arguments) == 2:
+                        return self.io_inchars(int(arguments[0]), arguments[1])
+                    elif len(arguments) == 1:
+                        return self.io_inchars(int(arguments[0]))
+                case "inbytes":
+                    if len(arguments) == 2:
+                        return self.io_inbytes(int(arguments[0]), arguments[1])
+                    elif len(arguments) == 1:
+                        return self.io_inbytes(int(arguments[0]))
+                case "inword":
+                    return self.io_inword()
+                case "inline":
+                    return self.io_inline()
+                case "inlines":
+                    return self.io_inlines(int(arguments[0]))
+                case "inpeek":
+                    return self.io_inpeek()
+                case "echo":
+                    self.io_echo(arguments[0], expr)
+                    return ()
+                case "inflush":
+                    self.io_inflush()
+                    return ()
+                case "outflush":
+                    self.io_outflush()
+                    return ()
     
     def arity(self):
         match self.mode:
@@ -78,6 +58,8 @@ class IOFunction(LoxCallable):
                 return [1,2]
             case "inbytes":
                 return [1,2]
+            case "inword":
+                return [0,0]
             case "inline":
                 return [0,0]
             case "inlines":
@@ -119,6 +101,16 @@ class IOFunction(LoxCallable):
         else:
             return sys.stdin.buffer.read(n)
 
+    def io_inword(self):
+        string = ""
+        char = ""
+        while True:
+            char = sys.stdin.read(1)
+            if char.isspace():
+                break
+            string += char
+        return String(string)
+
     def io_inline(self):
         string = sys.stdin.readline()
         if string[-1] == '\n':
@@ -150,45 +142,65 @@ class IOFunction(LoxCallable):
     # Buffer flushing.
 
     def io_inflush(self):
-        sys.stdin.flush()
+        import os
+        if os.name == "nt": # Using Windows.
+            import msvcrt
+            while msvcrt.kbhit():
+                msvcrt.getch()
+        else: # POSIX.
+            # Cannot import termios at the beginning since 
+            # it doesn't work on Windows.
+            import termios
+            termios.tcflush(sys.stdin, termios.TCIFLUSH)
     
     def io_outflush(self):
         sys.stdout.flush()
     
     # Error checking.
 
-    def check_inchars(self, arguments):
+    def check_inchars(self, expr, arguments):
         # No need for argument number checks since that is already a part of the interpreter.
         if (type(arguments[0]) == float):
             if (len(arguments) == 1) or (type(arguments[1]) == bool):
                 return True
-        return False
+        raise RuntimeError(expr.rightParen, 
+                                       "Arguments do not match accepted parameter types.\n" \
+                                       "Types are: number, boolean.")
     
-    def check_inbytes(self, arguments):
+    def check_inbytes(self, expr, arguments):
         if type(arguments[0]) == float:
             return True
-        return False
+        raise RuntimeError(expr.rightParen, 
+                                       "Arguments do not match accepted parameter types.\n" \
+                                       "Types are: number.")
+
+    def check_inword(self, expr, arguments):
+        return True
     
-    def check_inline(self, arguments):
+    def check_inline(self, expr, arguments):
         return True
 
-    def check_inlines(self, arguments):
+    def check_inlines(self, expr, arguments):
         if len(arguments) or type(arguments[0]) == float:
             return True
-        return False
+        raise RuntimeError(expr.rightParen, 
+                                       "Arguments do not match accepted parameter types.\n" \
+                                       "Types are: number.")
     
-    def check_inpeek(self, argument):
+    def check_inpeek(self, expr, arguments):
         return True
 
-    def check_echo(self, arguments):
+    def check_echo(self, expr, arguments):
         if type(arguments[0]) == String:
             return True
-        return False
+        raise RuntimeError(expr.rightParen, 
+                                       "Arguments do not match accepted parameter types.\n" \
+                                       "Types are: number.")
 
-    def check_inflush(self, arguments):
+    def check_inflush(self, expr, arguments):
         return True
     
-    def check_outflush(self, arguments):
+    def check_outflush(self, expr, arguments):
         return True
     
     def toString(self):
