@@ -4,7 +4,7 @@ from Scanner import Scanner
 from Parser import Parser
 from Interpreter import Interpreter
 from Resolver import Resolver
-from Error import LexError, ParseError, ResolveError, RuntimeError
+from Error import LexError, ParseError, StaticError, RuntimeError
 
 fileName = None
 testMode = False
@@ -135,7 +135,7 @@ def runPrompt():
 def lError(error: LexError): #lError: line-error
     report(error, error.line, error.column, "", error.message, error.file)
 
-def tError(error: ParseError | ResolveError): #tError: token-error
+def tError(error: ParseError | StaticError): #tError: token-error
     if error.token.type == TokenType.EOF:
         report(error, error.token.line, error.token.column, " at end", error.message)
     else:
@@ -157,8 +157,8 @@ def report(error, line, column, where, message, lexerFile = None):
         sys.stderr.write("Scan ")
     elif type(error) == ParseError:
         sys.stderr.write("Parse ")
-    elif type(error) == ResolveError:
-        sys.stderr.write("Resolve ")
+    elif type(error) == StaticError:
+        sys.stderr.write("Static ")
     import State as State
 
     if State.debugMode:
@@ -337,7 +337,7 @@ def clean():
                 try:
                     os.remove(path)
                 except OSError as error:
-                        sys.stderr.write(f"Error cleaning test files:\n{str(error)}")
+                        sys.stderr.write(f"Error cleaning test file {path}:\n{str(error)}")
 
 def main():
     if len(sys.argv) > 2:
