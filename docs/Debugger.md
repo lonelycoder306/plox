@@ -40,7 +40,7 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 
 ### ```r(epl)```
 * Ends file-execution and exits the debugger, opening a REPL Lox shell.
-* The shell effectively follows on from the execution of the file, so any variables/objects in scope up until the breakpoint was hit remains defined within this shell.
+* The shell effectively follows on from the execution of the file, so any variables/objects in scope up until the breakpoint was hit remain defined within this shell.
 
 ### ```l(ist)```
 * Presents the context of the breakpoint, printing it with the two lines above it and the two lines below it.
