@@ -181,7 +181,6 @@ class Parser:
         iterableVar = None
         if self.check(TokenType.IDENTIFIER):
             iterable = self.advance()
-            # iterable = self.consume(TokenType.IDENTIFIER, "Expect name of iterable object.")
             iterableVar = Expr.Variable(iterable)
         elif self.check(TokenType.LEFT_BRACKET):
             iterableVar = self.listExpr()
