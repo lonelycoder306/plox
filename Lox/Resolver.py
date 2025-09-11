@@ -170,7 +170,7 @@ class Resolver:
         for method in stmt.private:
             declaration = self.FunctionType.METHOD
             if method.name.lexeme == "init":
-                raise StaticError(method.name, "Class constructor cannot be private.")
+                raise StaticError(method.name, "Class constructor cannot be made private.")
             self.resolveFunction(method, declaration)
         
         for method in stmt.public:
