@@ -1,7 +1,7 @@
 from Expr import Expr
 from Stmt import Stmt
 from Token import Token, TokenType
-from Error import ResolveError
+from Error import StaticError
 from enum import Enum
 from Interpreter import Interpreter
 from Warning import unusedWarning
@@ -35,7 +35,7 @@ class Resolver:
         scope = self.scopes[-1]
         for key in scope.keys():
             if key.lexeme == name.lexeme:
-                raise ResolveError(name, "Already a variable with this name in this scope.")
+                raise StaticError(name, "Already a variable with this name in this scope.")
         
         scope[name] = False
         # Add the token instead of the lexeme in case its fields are required for error-reporting.
@@ -55,7 +55,7 @@ class Resolver:
         else:
             try:
                 target.accept(self)
-            except ResolveError as error:
+            except StaticError as error:
                 error.show()
     
     def resolveLocal(self, expr: Expr, name: Token):
@@ -117,16 +117,6 @@ class Resolver:
         for var in varList:
             unusedWarning(var).warn()
     
-    def getStatements(self, stmt: Stmt.Fetch):
-        from Scanner import Scanner
-        from Parser import Parser
-        file = stmt.name.lexeme[1:-1]
-        text = open(file, "r").read()
-        print(text)
-        scanner = Scanner(text)
-        parser = Parser(scanner.scanTokens())
-        return parser.parse()
-    
     def visitBreakStmt(self, stmt: Stmt.Break):
         pass
     
@@ -180,7 +170,7 @@ class Resolver:
         for method in stmt.private:
             declaration = self.FunctionType.METHOD
             if method.name.lexeme == "init":
-                raise ResolveError(method.name, "Class constructor cannot be private.")
+                raise StaticError(method.name, "Class constructor cannot be private.")
             self.resolveFunction(method, declaration)
         
         for method in stmt.public:
@@ -235,11 +225,11 @@ class Resolver:
 
     def visitReturnStmt(self, stmt: Stmt.Return):
         if self.currentFunction == self.FunctionType.NONE:
-            raise ResolveError(stmt.keyword, "Cannot return from top-level code.")
+            raise StaticError(stmt.keyword, "Cannot return from top-level code.")
         
         if stmt.value != None:
             if self.currentFunction == self.FunctionType.INITIALIZER:
-                raise ResolveError(stmt.keyword, 
+                raise StaticError(stmt.keyword, 
                                    "Cannot return a value from an initializer.")
             self.resolve(stmt.value)
     
@@ -310,10 +300,10 @@ class Resolver:
     
     def visitSuperExpr(self, expr: Expr.Super):
         if self.currentClass == self.classType.NONE:
-            raise ResolveError(expr.keyword, 
+            raise StaticError(expr.keyword, 
                                "Can't use 'super' outside of a class.")
         elif self.currentClass == self.classType.CLASS:
-            raise ResolveError(expr.keyword,
+            raise StaticError(expr.keyword,
                                "Can't use 'super' in a class with no superclass.")
         
         self.resolveLocal(expr, expr.keyword)
@@ -325,7 +315,7 @@ class Resolver:
     
     def visitThisExpr(self, expr: Expr.This):
         if self.currentClass == self.classType.NONE:
-            raise ResolveError(expr.keyword, "Cannot use 'this' outside of a class.")
+            raise StaticError(expr.keyword, "Cannot use 'this' outside of a class.")
 
         self.resolveLocal(expr, expr.keyword)
     
@@ -338,6 +328,6 @@ class Resolver:
             scope = self.scopes[-1]
             for key in scope.keys():
                 if (key.lexeme == expr.name.lexeme) and (scope.get(key, None) == False):
-                    raise ResolveError(expr.name, "Cannot read local variable in its own initializer.")
+                    raise StaticError(expr.name, "Cannot read local variable in its own initializer.")
         
         self.resolveLocal(expr, expr.name)

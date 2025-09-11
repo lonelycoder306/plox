@@ -18,7 +18,7 @@ class ParseError(Exception):
         from LoxMain import tError
         tError(self)
 
-class ResolveError(Exception):
+class StaticError(Exception):
     def __init__(self, token: Token, message: str):
         self.token = token
         self.message = message
