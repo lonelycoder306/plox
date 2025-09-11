@@ -178,7 +178,17 @@ class Parser:
     def rangeForLoop(self):
         iterator = self.consume(TokenType.IDENTIFIER, "Expect iterator variable name.")
         colon = self.advance()
-        iterable = self.consume(TokenType.IDENTIFIER, "Expect name of iterable object.")
+        iterableVar = None
+        if self.check(TokenType.IDENTIFIER):
+            iterable = self.advance()
+            # iterable = self.consume(TokenType.IDENTIFIER, "Expect name of iterable object.")
+            iterableVar = Expr.Variable(iterable)
+        elif self.check(TokenType.LEFT_BRACKET):
+            iterableVar = self.listExpr()
+        elif self.match(TokenType.STRING):
+            iterableVar = Expr.Literal(String(self.previous().literal))
+        else:
+            raise ParseError(self.peek(), "Expect iterable object.")
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after iteration clause.")
 
         # var __UNUSED__VAR = 0;
@@ -192,7 +202,6 @@ class Parser:
         indexDecl = Stmt.Var(indexToken, colon, indexInit)
 
         # var i = array[0]; (example)
-        iterableVar = Expr.Variable(iterable)
         iteratorInit = Expr.Access(iterableVar, colon, Expr.Literal(float(0)), None)
         iteratorDecl = Stmt.Var(iterator, colon, iteratorInit)
         
