@@ -15,6 +15,7 @@ class Parser:
         # and "whileLoop" when within a while-loop.
         self.loopType = None
         self.loopLevel = 0
+        self.inStructure = False
     
     def parse(self):
         statements = list()
@@ -214,14 +215,21 @@ class Parser:
         iterNextElement = Expr.Assign(iterator, colon, nextElement)
 
         currentLoop = self.loopType
+        previousStruct = self.inStructure
+
+        self.inStructure = True
         self.loopType = "forLoop"
+
         body = self.statement()
+
         self.loopType = currentLoop
+        self.inStructure = previousStruct
 
         body = Stmt.Block([Stmt.Expression(iterNextElement), body, Stmt.Expression(increment)])
         loop = Stmt.While(condition, body)
         full = Stmt.Block([indexDecl, iteratorDecl, loop])
 
+        self.loopLevel -= 1
         return full
 
     def forStatement(self):
@@ -249,9 +257,15 @@ class Parser:
 
         # Set the loop type to "forLoop", then reset once the loop body has been parsed.
         currentLoop = self.loopType
+        previousStruct = self.inStructure
+        
+        self.currentStruct = True
         self.loopType = "forLoop"
+
         body = self.statement()
+
         self.loopType = currentLoop
+        self.inStructure = previousStruct
 
         if increment != None:
             body = Stmt.Block([body, Stmt.Expression(increment)])
@@ -271,10 +285,16 @@ class Parser:
         condition = self.expression()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.")
 
+        previousStruct = self.inStructure
+        self.inStructure = True
+
         thenBranch = self.statement()
         elseBranch = None
         if self.match(TokenType.ELSE):
+            self.inStructure = True
             elseBranch = self.statement()
+
+        self.inStructure = previousStruct
         
         return Stmt.If(condition, thenBranch, elseBranch)
     
@@ -310,7 +330,8 @@ class Parser:
 
         # Report a warning if any code follows a return statement in the same scope.
         if (not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
-            returnWarning(self.peek()).warn()
+            if not self.inStructure:
+                returnWarning(self.peek()).warn()
 
         return Stmt.Return(keyword, value)
 
@@ -336,10 +357,17 @@ class Parser:
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.")
         condition = self.expression()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.")
+        
         currentLoop = self.loopType
+        previousStruct = self.inStructure
+        
+        self.inStructure = True
         self.loopType = "whileLoop"
+
         body = self.statement()
+
         self.loopType = currentLoop
+        self.inStructure = previousStruct
 
         self.loopLevel -= 1
         return Stmt.While(condition, body)
@@ -407,10 +435,15 @@ class Parser:
     def block(self):
         statements = list()
 
+        previousStruct = self.inStructure
+        self.inStructure = False
+
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
             statements.append(self.declaration())
         
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        self.inStructure = previousStruct
+
         return statements
     
     def expression(self):
