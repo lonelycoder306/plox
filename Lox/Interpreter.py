@@ -435,6 +435,8 @@ class Interpreter:
             return object.toString(self)
         if type(object) == list:
             return str(List(object))
+        if type(object) == Reference:
+            return "<" + self.varType(object) + ">"
         
         # Booleans in Lox are all-lowercase, unlike in Python.
         if type(object) == bool:
