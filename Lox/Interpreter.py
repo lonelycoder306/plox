@@ -826,7 +826,10 @@ class Interpreter:
     def visitListExpr(self, expr: Expr.List):
         elements = []
         for element in expr.elements:
-            elements.append(self.evaluate(element))
+            value = self.evaluate(element)
+            if type(value) == Reference:
+                value = value.object
+            elements.append(value)
         return List(elements)
     
     def visitLogicalExpr(self, expr: Expr.Logical):
