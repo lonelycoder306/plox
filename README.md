@@ -25,7 +25,7 @@ The main Lox language implementation supports:
 * Error messages for all interpreter stages (scanning, parsing, resolving, executing).
 
 # Personal Modifications to plox
-This a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.\
+This is a brief list of the changes I've made to the language, including additions and modifications. They're not in any particular order.\
 For a more detailed list with justification (brief or lengthy) for each change, please go to [Justification](./docs/Justification.md).\
 For further instruction on how to make use of some of these features, please go to [Instructions](./docs/Instructions.md).
 * Added a minimal command-line debugger.
