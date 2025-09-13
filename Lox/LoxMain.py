@@ -300,7 +300,7 @@ def test():
     sys.path.append(os.getcwd() +  "\\Testing\\Python Files")
     module = import_module("generateTests")
     generateFunc = getattr(module, "generateTestFiles")
-    generateFunc()
+    generateFunc("tests")
     with open("Testing/testList.txt") as f:
         lines = f.readlines()
         if len(lines) == 0:
