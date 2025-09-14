@@ -15,7 +15,7 @@ class LoxFunction(LoxCallable):
     
     def bind(self, instance):
         environment = Environment(self.closure)
-        environment.define("this", instance)
+        environment.define("this", instance, "VAR")
         method = LoxFunction(self.declaration, environment, self.context)
         return method
     
@@ -30,24 +30,24 @@ class LoxFunction(LoxCallable):
                 param = self.declaration.params[i]
                 if type(param) == Token:
                     if param.type != TokenType.ELLIPSIS:
-                        environment.define(param.lexeme, arguments[i])
+                        environment.define(param.lexeme, arguments[i], "VAR")
                     else:
                         vargs = arguments[i:argLen]
                         break
                 elif type(param) == Expr.Assign:
                     name = param.name
                     value = arguments[i]
-                    environment.define(name.lexeme, value)
+                    environment.define(name.lexeme, value, "VAR")
             # Will never have default parameters and variable-length parameter lists.
             # Any combination including both will throw a parse error.
             if not self.context["variadic"]:
                 for i in range(argLen, paramLen):
                     name = self.declaration.params[i].name
                     value = interpreter.evaluate(self.declaration.params[i].value)
-                    environment.define(name.lexeme, value)
+                    environment.define(name.lexeme, value, "VAR")
         
         if self.context["variadic"]:
-            environment.define("vargs", List(vargs))
+            environment.define("vargs", List(vargs), "VAR")
         
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
