@@ -5,6 +5,7 @@ class Environment:
     def __init__(self, enclosing = None):
         self.enclosing = enclosing
         self.values = dict()
+        self.access = dict()
     
     def get(self, name: Token):
         if name.lexeme in self.values.keys():
@@ -22,6 +23,8 @@ class Environment:
     
     def assign(self, name: Token, value):
         if name.lexeme in self.values.keys():
+            if self.access[name.lexeme] == "FIX":
+                raise RuntimeError(name, f"Fixed variable '{name.lexeme}' cannot be re-assigned.")
             self.values[name.lexeme] = value
             return
         
@@ -31,8 +34,9 @@ class Environment:
         
         raise RuntimeError(name, f"Undefined variable '{name.lexeme}'.")
     
-    def define(self, name, value):
+    def define(self, name, value, access):
         self.values[name] = value
+        self.access[name] = access
 
     def ancestor(self, distance: int):
         environment = self

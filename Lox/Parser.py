@@ -42,7 +42,10 @@ class Parser:
             return self.function("lambda")
         
         if self.match(TokenType.VAR):
-            return self.varDeclaration()
+            return self.varDeclaration("VAR")
+        
+        if self.match(TokenType.FIX):
+            return self.varDeclaration("FIX")
         
         if self.match(TokenType.LIST):
             return self.listDeclaration()
@@ -349,7 +352,7 @@ class Parser:
 
         return Stmt.Return(keyword, value)
 
-    def varDeclaration(self):
+    def varDeclaration(self, access):
         name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
 
         initializer = None
@@ -363,7 +366,7 @@ class Parser:
         if type(initializer) == Expr.List:
             raise ParseError(equals, "Cannot assign list to variable with 'var' modifier.")
 
-        return Stmt.Var(name, equals, initializer)
+        return Stmt.Var(name, equals, initializer, access)
     
     def whileStatement(self):
         self.loopLevel += 1

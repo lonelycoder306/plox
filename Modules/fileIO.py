@@ -584,6 +584,6 @@ class fileFunction(LoxCallable):
 fileRef = LoxClass(None, None, "file", {}, {})
 def fileIOSetUp():
     for function in functions[:4]:
-        fileIO.define(function, fileFunction(function))
+        fileIO.define(function, fileFunction(function), "VAR")
     for function in functions[4:]:
         fileRef.public[function] = fileFunction(function)

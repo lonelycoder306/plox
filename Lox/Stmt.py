@@ -108,10 +108,11 @@ class Stmt:
 			return visitor.visitReturnStmt(self)
 
 	class Var:
-		def __init__(self, name, equals, initializer):
+		def __init__(self, name, equals, initializer, access):
 			self.name = name
 			self.equals = equals
 			self.initializer = initializer
+			self.access = access
 
 		def accept(self, visitor):
 			return visitor.visitVarStmt(self)

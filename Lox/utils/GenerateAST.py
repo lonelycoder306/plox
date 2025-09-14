@@ -53,7 +53,7 @@ StmtClasses = [ "Break      : breakCMD, loopType",
                 "Print      : expression",
                 "Report     : keyword, exception",
                 "Return     : keyword, value",
-                "Var        : name, equals, initializer",
+                "Var        : name, equals, initializer, access",
                 "While      : condition, body"]
 
 import os

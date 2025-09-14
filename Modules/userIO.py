@@ -208,4 +208,4 @@ class IOFunction(LoxCallable):
     
 def userIOSetUp():
     for function in functions:
-        userIO.define(function, IOFunction(function))
+        userIO.define(function, IOFunction(function), "VAR")

@@ -175,4 +175,4 @@ class BuiltinFunction(LoxCallable):
     
 def builtinSetUp():
     for function in functions:
-        builtins.define(function, BuiltinFunction(function))
+        builtins.define(function, BuiltinFunction(function), "VAR")

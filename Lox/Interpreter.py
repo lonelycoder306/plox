@@ -27,7 +27,7 @@ class Interpreter:
         builtinSetUp()
         from BuiltinFunction import builtins
         # Setting up the List() constructor.
-        builtins.define("List", initList)
+        builtins.define("List", initList, "VAR")
         self.builtins = builtins
 
     def interpret(self, statements):
@@ -62,7 +62,7 @@ class Interpreter:
     
     def executeBlock(self, statements, environment: Environment):
         previous = self.environment
-        import State as State
+        import State
         currentCallStack = State.callStack
         try:
             self.environment = environment
@@ -90,7 +90,7 @@ class Interpreter:
         self.executeBlock(stmt.statements, Environment(self.environment))
     
     def visitClassStmt(self, stmt: Stmt.Class):
-        self.environment.define(stmt.name.lexeme, None)
+        self.environment.define(stmt.name.lexeme, None, "VAR")
 
         superclass = None
         if stmt.superclass != None:
@@ -101,7 +101,7 @@ class Interpreter:
         
         if stmt.superclass != None:
             self.environment = Environment(self.environment)
-            self.environment.define("super", superclass)
+            self.environment.define("super", superclass, "VAR")
 
         classMethods = dict()
         for method in stmt.classMethods:
@@ -263,7 +263,7 @@ class Interpreter:
                 else:
                     context["variadic"] = False
             function = LoxFunction(stmt, self.environment, context)
-            self.environment.define(stmt.name.lexeme, function)
+            self.environment.define(stmt.name.lexeme, function, "VAR")
 
     def visitIfStmt(self, stmt: Stmt.If):
         if self.isTruthy(self.evaluate(stmt.condition)):
@@ -286,7 +286,7 @@ class Interpreter:
                 listInstance = copy.deepcopy(listInstance)
             if type(listInstance) != List:
                 raise RuntimeError(stmt.name, "Cannot initialize list with non-list value.")
-        self.environment.define(stmt.name.lexeme, listInstance)
+        self.environment.define(stmt.name.lexeme, listInstance, "VAR")
 
     def visitPrintStmt(self, stmt: Stmt.Print):
         value = self.evaluate(stmt.expression)
@@ -350,7 +350,7 @@ class Interpreter:
         if type(value) == List:
             raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
 
-        self.environment.define(stmt.name.lexeme, value)
+        self.environment.define(stmt.name.lexeme, value, stmt.access)
 
     def visitWhileStmt(self, stmt: Stmt.While):
         self.loopLevel += 1
