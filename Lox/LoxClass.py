@@ -15,9 +15,7 @@ class LoxClass(LoxInstance, LoxCallable):
         instance = LoxInstance(self)
         initializer = self.findMethod("init")
         if initializer != None:
-            instance.fields = instance.private
             initializer.bind(instance).call(interpreter, expr, arguments)
-        instance.fields = instance.public
         return instance
     
     def findMethod(self, nameString, nameToken = None):

@@ -102,10 +102,11 @@ class Expr:
 			return visitor.visitModifyExpr(self)
 
 	class Set:
-		def __init__(self, object, name, value):
+		def __init__(self, object, name, value, access):
 			self.object = object
 			self.name = name
 			self.value = value
+			self.access = access
 
 		def accept(self, visitor):
 			return visitor.visitSetExpr(self)

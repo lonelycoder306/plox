@@ -16,6 +16,8 @@ class Parser:
         self.loopType = None
         self.loopLevel = 0
         self.inStructure = False
+        self.inClass = False
+        self.inInit = False
     
     def parse(self):
         statements = list()
@@ -49,6 +51,13 @@ class Parser:
         
         if self.match(TokenType.LIST):
             return self.listDeclaration()
+        
+        if self.match(TokenType.SAFE):
+            if self.inInit:
+                return self.safeDeclaration()
+            else:
+                raise ParseError(self.previous(),
+                                 "Cannot use modifier 'safe' outside a constructor.")
         
         return self.statement()
             
@@ -95,6 +104,7 @@ class Parser:
         
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
 
+        self.inClass = True
         private = list()
         public = list()
         classMethods = list()
@@ -107,6 +117,7 @@ class Parser:
                 public.append(self.function("method"))
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+        self.inClass = False
 
         return Stmt.Class(name, superclass, private, public, classMethods)
 
@@ -352,6 +363,16 @@ class Parser:
 
         return Stmt.Return(keyword, value)
 
+    def safeDeclaration(self):
+        keyword = self.previous()
+        declaration = self.assignment()
+        if type(declaration) != Expr.Set:
+            raise ParseError(keyword, 
+                               "Cannot use modifier 'safe' outside of field declaration.")
+        declaration.access = "private"
+        self.consume(TokenType.SEMICOLON, "Expect ';' after private field declaration.")
+        return Stmt.Expression(declaration)
+
     def varDeclaration(self, access):
         name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
 
@@ -426,6 +447,9 @@ class Parser:
         if kind != "lambda":
             funcName = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
 
+        prevInit = self.inInit
+        self.inInit = (self.inClass and (funcName.lexeme == "init"))
+
         parameters = None
 
         defaultFound = False
@@ -447,6 +471,8 @@ class Parser:
         # Cannot use f-strings here due to the presence of the { character.
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.")
         body = self.block()
+
+        self.inInit = prevInit
         return Stmt.Function(funcName, parameters, body, defaults)
     
     def block(self):
@@ -534,7 +560,7 @@ class Parser:
                 return Expr.Assign(name, equals, value)
             
             if type(expr) == Expr.Get:
-                return Expr.Set(expr.object, expr.name, value)
+                return Expr.Set(expr.object, expr.name, value, "public")
             
             if type(expr) == Expr.Access:
                 return Expr.Modify(expr, equals, value)
