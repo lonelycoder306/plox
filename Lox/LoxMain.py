@@ -123,7 +123,11 @@ def runPrompt():
         if line == "":
             break
         while line[-1] == "\\":
-            line = line[:-1]
+            # Replace the \ with a space.
+            # Not only removing the \ since that will combine separate lines.
+            # This would cause problems if we don't indent (add a \t separator)
+            # between consequent lines.
+            line = line[:-1] + " "
             line += input("... ")
         run(line)
         import State as State
