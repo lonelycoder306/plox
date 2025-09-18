@@ -36,7 +36,8 @@ class Scanner:
         "safe": TokenType.SAFE,
         "attempt": TokenType.ATTEMPT,
         "handle": TokenType.HANDLE,
-        "report": TokenType.REPORT
+        "report": TokenType.REPORT,
+        "fix": TokenType.FIX
     }
 
     def __init__(self, source, fileName):
@@ -206,7 +207,7 @@ class Scanner:
     def string(self):
         previous = self.source[self.current - 1]
         if previous == '`':
-            pos = 0
+            pos = self.column + 1
             while (self.peek() != '`') and (not self.isAtEnd()):
                 if self.peek() == '\n':
                     self.line += 1
@@ -215,9 +216,9 @@ class Scanner:
                 self.advance()
                 pos += 1
             if self.isAtEnd():
-                raise LexError(self.line, pos - 1, self.fileName, "Unterminated string.")
+                raise LexError(self.line, pos, self.fileName, "Unterminated string.")
         elif previous == '"':
-            pos = self.column
+            pos = self.column + 1 # Skip the ".
             while (self.peek() != '"') and (not self.isAtEnd()):
                 if self.peek() == '\n':
                     break
@@ -239,7 +240,7 @@ class Scanner:
             return False
         if self.source[self.current] != expected:
             return False
-        self.current = self.current + 1
+        self.current += 1
         return True
     
     def peek(self):
