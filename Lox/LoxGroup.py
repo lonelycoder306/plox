@@ -18,7 +18,7 @@ class LoxGroup(LoxInstance):
             raise RuntimeError(name, f"'{name.lexeme}' is not a member of group '{self.name}'.")
     
     def set(self, name: Token, value, access: str):
-        raise RuntimeError(name, "Cannot modify namespace members.")
+        raise RuntimeError(name, "Cannot re-assign namespace members.")
     
     def varType(self):
         return "group"
