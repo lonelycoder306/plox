@@ -52,6 +52,9 @@ class Parser:
         if self.match(TokenType.LIST):
             return self.listDeclaration()
         
+        if self.match(TokenType.GROUP):
+            return self.groupDeclaration()
+        
         if self.match(TokenType.SAFE):
             if self.inInit:
                 return self.safeDeclaration()
@@ -307,6 +310,28 @@ class Parser:
         
         self.loopLevel -= 1
         return body
+    
+    def groupDeclaration(self):
+        groupName = self.consume(TokenType.IDENTIFIER, "Expect group name.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' after group name.")
+        vars = []
+        functions = []
+        classes = []
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
+            blame = self.peek()
+            stmt = self.declaration()
+            if type(stmt) == Stmt.Class:
+                classes.append(stmt)
+            elif type(stmt) == Stmt.Var:
+                vars.append(stmt)
+            elif type(stmt) == Stmt.List:
+                vars.append(stmt)
+            elif type(stmt) == Stmt.Function:
+                functions.append(stmt)
+            else:
+                raise ParseError(blame, "Invalid group member.")
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after group body.")
+        return Stmt.Group(groupName, vars, functions, classes)
 
     def ifStatement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.")

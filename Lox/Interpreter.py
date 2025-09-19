@@ -6,6 +6,7 @@ from LoxCallable import LoxCallable
 from LoxFunction import LoxFunction
 from LoxClass import LoxClass
 from LoxInstance import LoxInstance, InstanceFunction
+from LoxGroup import LoxGroup
 from List import List, initList
 from BuiltinFunction import BuiltinFunction
 from Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
@@ -240,6 +241,20 @@ class Interpreter:
                     context["variadic"] = False
             function = LoxFunction(stmt, self.environment, context)
             self.environment.define(stmt.name.lexeme, function, "VAR")
+    
+    def visitGroupStmt(self, stmt: Stmt.Group):
+        newEnv = Environment(self.environment)
+        previous = self.environment
+        self.environment = newEnv
+        for var in stmt.vars:
+            self.execute(var)
+        for func in stmt.functions:
+            self.execute(func)
+        for klass in stmt.classes:
+            self.execute(klass)
+        group = LoxGroup(stmt.name.lexeme, newEnv)
+        self.environment = previous
+        self.environment.define(stmt.name.lexeme, group, "VAR")
 
     def visitIfStmt(self, stmt: Stmt.If):
         if self.isTruthy(self.evaluate(stmt.condition)):
@@ -409,6 +424,8 @@ class Interpreter:
             return object.toString()
         if type(object) == LoxInstance:
             return object.toString(self)
+        if type(object) == LoxGroup:
+            return object.toString()
         if type(object) == list:
             return str(List(object))
         if type(object) == Reference:

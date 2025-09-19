@@ -67,6 +67,16 @@ class Stmt:
 		def accept(self, visitor):
 			return visitor.visitFunctionStmt(self)
 
+	class Group:
+		def __init__(self, name, vars, functions, classes):
+			self.name = name
+			self.vars = vars
+			self.functions = functions
+			self.classes = classes
+
+		def accept(self, visitor):
+			return visitor.visitGroupStmt(self)
+
 	class If:
 		def __init__(self, condition, thenBranch, elseBranch):
 			self.condition = condition

@@ -205,6 +205,17 @@ class Resolver:
 
         self.resolveFunction(stmt, self.FunctionType.FUNCTION)
     
+    def visitGroupStmt(self, stmt: Stmt.Group):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+
+        for statement in stmt.vars:
+            self.resolve(statement)
+        for statement in stmt.functions:
+            self.resolve(statement)
+        for statement in stmt.classes:
+            self.resolve(statement)
+    
     def visitIfStmt(self, stmt: Stmt.If):
         self.resolve(stmt.condition)
         self.resolve(stmt.thenBranch)

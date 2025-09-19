@@ -37,7 +37,8 @@ class Scanner:
         "attempt": TokenType.ATTEMPT,
         "handle": TokenType.HANDLE,
         "report": TokenType.REPORT,
-        "fix": TokenType.FIX
+        "fix": TokenType.FIX,
+        "group": TokenType.GROUP
     }
 
     def __init__(self, source, fileName):
