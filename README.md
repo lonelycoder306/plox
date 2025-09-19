@@ -65,7 +65,8 @@ For further instruction on how to make use of some of these features, please go 
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
 
 ### Are there any bugs in this implementation?
-Possibly a few. I've tried my best to weed them all out with (hopefully) good solutions. If you do find any issues that I've missed, feel free to make an issue or pull request and I'll be happy to look at it. Feel free to also make non-bug-related suggestions on the implementation, which I might consider merging.
+Possibly a few. I've tried my best to weed them all out with (hopefully) good solutions. If you do find any issues that I've missed, feel free to make an issue or pull request and I'll be happy to look at it. Feel free to also make non-bug-related suggestions on the implementation, which I might consider merging.\
+Any bugs that have been found by myself or others and have yet to be fully resolved will be found (with sufficient information on the bug) in [Bugs](./docs/Bugs.md).
 
 # Further Information
 ...
