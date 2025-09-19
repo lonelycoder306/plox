@@ -328,6 +328,8 @@ class Parser:
                 vars.append(stmt)
             elif type(stmt) == Stmt.Function:
                 functions.append(stmt)
+            elif type(stmt) == Stmt.Group:
+                vars.append(stmt)
             else:
                 raise ParseError(blame, "Invalid group member.")
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after group body.")
