@@ -67,8 +67,8 @@ class fileFunction(LoxCallable):
         self.movepos = True
 
     def bind(self, fileObj):
-        self.fd = fileObj.fields.get("fd", None)
-        self.movepos = fileObj.fields.get("movepos", None)
+        self.fd = fileObj.public.get("fd", None)
+        self.movepos = fileObj.public.get("movepos", None)
     
     def call(self, interpreter, expr, arguments):
         try:
@@ -154,15 +154,15 @@ class fileFunction(LoxCallable):
     def filesize(self, fd, expr): # expr is the expression of the main function, not filesize.
         # If we run the function multiple times, our file cursor will shift forward each time.
         # Thus, we must return to our original position in the file each time.
-        previous = fd.tell()
+        previous = 0
         try:
+            previous = fd.tell()
             fd.seek(0) # Read from the beginning of the file.
             content = fd.read()
+            fd.seek(previous)
             return len(content)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
-        finally:
-            fd.seek(previous)
+            raise RuntimeError(expr.leftParen, "File is closed.")
 
     # File handling.
 
@@ -170,8 +170,8 @@ class fileFunction(LoxCallable):
         try:
             instance = LoxInstance(fileRef)
             open(path.text, "x").close() # Just create the file.
-            instance.fields["fd"] = open(path.text, "r+")
-            instance.fields["movepos"] = movepos
+            instance.public["fd"] = open(path.text, "r+")
+            instance.public["movepos"] = movepos
             return instance
         except FileExistsError:
             raise RuntimeError(expr.rightParen, "File already exists.")
@@ -198,8 +198,8 @@ class fileFunction(LoxCallable):
     def f_fileopen(self, expr, path, movepos = True):
         try:
             instance = LoxInstance(fileRef)
-            instance.fields["fd"] = open(path.text, "r+")
-            instance.fields["movepos"] = movepos
+            instance.public["fd"] = open(path.text, "r+")
+            instance.public["movepos"] = movepos
             return instance
         except FileNotFoundError:
             raise RuntimeError(expr.rightParen, "File does not exist.")
@@ -244,7 +244,7 @@ class fileFunction(LoxCallable):
                 self.fd.seek(previous)
             return String(chars)
         except ValueError: # File is closed.
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     def f_filebytes(self, expr, n: int, delim: bool = False):
         try:
@@ -264,7 +264,7 @@ class fileFunction(LoxCallable):
                 self.fd.seek(previous)
             return nbytes
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     def f_fileword(self, expr):
         try:
@@ -290,7 +290,7 @@ class fileFunction(LoxCallable):
                 self.fd.seek(previous)
             return String(word)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     def f_fileline(self, expr):
         try:
@@ -300,7 +300,7 @@ class fileFunction(LoxCallable):
                 self.fd.seek(previous)
             return String(line.strip())
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     def f_filelines(self, expr, n: int = -1):
         try:
@@ -319,7 +319,7 @@ class fileFunction(LoxCallable):
                 self.fd.seek(previous)
             return List(filelines)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     def f_fileall(self, expr):
         try:
@@ -329,7 +329,7 @@ class fileFunction(LoxCallable):
                 self.fd.seek(previous)
             return String(file)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     # File output.
     
@@ -342,7 +342,7 @@ class fileFunction(LoxCallable):
             else:
                 self.fd.write(string.text)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
         finally:
             if not self.movepos:
                 self.fd.seek(previous)
@@ -361,7 +361,7 @@ class fileFunction(LoxCallable):
                 self.fd.write(string.text)
             self.fd.seek(previous)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
         finally:
             if not self.movepos:
                 self.fd.seek(previous)
@@ -374,7 +374,7 @@ class fileFunction(LoxCallable):
         try:
             self.fd.seek(pos)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
 
     def f_fileskip(self, expr, skip: int):
         if (self.f_filepos(expr) + skip) >= self.filesize(self.fd, expr):
@@ -383,7 +383,7 @@ class fileFunction(LoxCallable):
             position = self.fd.tell()
             self.fd.seek(position + skip)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
 
     def f_filelimits(self, expr, option):
         try:
@@ -393,13 +393,13 @@ class fileFunction(LoxCallable):
                 case "e":
                     self.fd.seek(0,2)
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
     
     def f_filepos(self, expr):
         try:
             return float(self.fd.tell()) # Make sure all our numbers are floats.
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
 
     def f_feof(self, expr) -> bool:
         try:
@@ -410,7 +410,7 @@ class fileFunction(LoxCallable):
             self.fd.seek(previous) # Only return to original position if not at end.
             return False
         except ValueError:
-            raise RuntimeError(expr.rightParen, "File is closed.")
+            raise RuntimeError(expr.leftParen, "File is closed.")
 
     # ------------------------------------------------------------
 
