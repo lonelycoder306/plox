@@ -215,13 +215,13 @@ class Parser:
         # It replaces the actual tokens that should be in many of these nodes.
         # We can't make and use fake tokens since they need to exist in the actual
         # text of the code if reporting occurs.
-        indexDecl = Stmt.Var(indexToken, colon, indexInit)
+        indexDecl = Stmt.Var(indexToken, colon, indexInit, "VAR")
 
         # var i = array[0]; (example)
         iteratorInit = Expr.Access(iterableVar, colon, Expr.Literal(float(0)), None)
         iteratorDecl = None
         if initType == "var":
-            iteratorDecl = Stmt.Var(iterator, colon, iteratorInit)
+            iteratorDecl = Stmt.Var(iterator, colon, iteratorInit, "VAR")
         elif initType == "assign":
             iteratorDecl = Stmt.Expression(Expr.Assign(iterator, colon, iteratorInit))
         
@@ -270,7 +270,7 @@ class Parser:
         elif self.match(TokenType.VAR):
             if self.peekNext().type == TokenType.COLON:
                 return self.rangeForLoop("var")
-            initializer = self.varDeclaration()
+            initializer = self.varDeclaration("VAR")
         else:
             if self.peekNext().type == TokenType.COLON:
                 return self.rangeForLoop("assign")
