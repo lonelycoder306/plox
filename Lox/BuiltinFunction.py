@@ -86,7 +86,7 @@ class BuiltinFunction(LoxCallable):
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
-            callee = expr.leftParen
+            callee = expr.rightParen
         for char in object:
             if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
                 raise RuntimeError(callee, "Invalid input to number().")
@@ -97,7 +97,7 @@ class BuiltinFunction(LoxCallable):
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
-            callee = expr.leftParen
+            callee = expr.rightParen
         validTypes = (String, List)
         if type(object) not in validTypes:
             raise RuntimeError(callee, "Invalid input to length().")
@@ -119,7 +119,7 @@ class BuiltinFunction(LoxCallable):
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
-            callee = expr.leftParen
+            callee = expr.rightParen
         if type(object) != String:
             raise RuntimeError(callee, "strformat() only accepts string arguments.")
         return String(object.text.encode("utf-8").decode("unicode_escape"))
