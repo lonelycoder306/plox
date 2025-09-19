@@ -15,7 +15,11 @@ class Parser:
         # and "whileLoop" when within a while-loop.
         self.loopType = None
         self.loopLevel = 0
+        # To turn off "code after return statement" warnings if braces
+        # aren't used after a control-structure statement.
         self.inStructure = False
+        # To check that we are in a constructor when declaring private
+        # fields.
         self.inClass = False
         self.inInit = False
     
