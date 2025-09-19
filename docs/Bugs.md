@@ -1,5 +1,5 @@
 #### This file will contain any documentation on yet-to-be-fixed bugs in the implementation.
-#### Each bug will be given a descriptive, short title, a description (in words) with some reproducable example(s).
+#### Each bug will be given a descriptive, short title, a description (in words) and some reproducable example(s).
 #### Bugs will be progressively removed from the document as they are fixed.
 #### A bug description may be followed by an optional "Status" section which describes any partial progress (smaller impact, less affected cases, etc.) made on resolving the bug.
 
