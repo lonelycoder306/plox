@@ -209,12 +209,14 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        self.beginScope()
         for statement in stmt.vars:
             self.resolve(statement)
         for statement in stmt.functions:
             self.resolve(statement)
         for statement in stmt.classes:
             self.resolve(statement)
+        self.endScope()
     
     def visitIfStmt(self, stmt: Stmt.If):
         self.resolve(stmt.condition)
