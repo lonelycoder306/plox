@@ -21,6 +21,10 @@ class Resolver:
         # If true, resolving a variable will not mark it as having been "used".
         # Therefore, only assigning to a variable will not be sufficient to avoid a warning (must use the variable somewhere).
         self.inAssign = False
+        # Flag variable marking that we are resolving a declaration in a group.
+        # Variables do not have to be used in a group.
+        # Silence "unused variable" warning.
+        self.inGroup = False
     
     def beginScope(self):
         self.scopes.append(dict())
@@ -41,6 +45,8 @@ class Resolver:
         # Add the token instead of the lexeme in case its fields are required for error-reporting.
         # False = has not been used in this scope; using a list since a tuple is immutable.
         self.localVars[name] = [name.line, False]
+        if self.inGroup:
+            self.localVars[name][1] = True
 
     def define(self, name: Token):
         if len(self.scopes) == 0:
@@ -209,6 +215,8 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        previous = self.inGroup
+        self.inGroup = True
         self.beginScope()
         for statement in stmt.vars:
             self.resolve(statement)
@@ -217,6 +225,7 @@ class Resolver:
         for statement in stmt.classes:
             self.resolve(statement)
         self.endScope()
+        self.inGroup = previous
     
     def visitIfStmt(self, stmt: Stmt.If):
         self.resolve(stmt.condition)
