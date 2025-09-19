@@ -46,6 +46,8 @@ For further instruction on how to make use of some of these features, please go 
 * Added importable library files.
 * Added scoped file imports.
 * Improved error messages (with aesthetic display of error locations when running files).
+    * Fun side-note: the file + line no. combination in the error/warning message can be used to immediately go to the problem location (at least if you're using the integrated terminal in VSCode).
+    * Just hover over that part of the error/warning message until the "Open file in editor" option appears, or press Ctrl + click on that part of the message.
 * Added user-defined exceptions (errors and warnings) and exception-handling.
 * Added full encapsulation for classes.
     * Methods (non-static) can be made private with the 'safe' modifier before the function name.
