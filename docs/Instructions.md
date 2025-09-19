@@ -18,10 +18,10 @@
 * As is also the case with most programming languages, a default parameter's value will be bound to the parameter if no value is passed in its place as an argument when the function is called.
 
 ### File Imports
-All imports are scope, i.e., they follow the same variable binding and shadowing rules as regular objects in the language, and do not apply outside the scope in which the import is made.\
+* All imports are scope, i.e., they follow the same variable binding and shadowing rules as regular objects in the language, and do not apply outside the scope in which the import is made.\
 **Note:** Imports are done by accessing files through particular paths. For them to work, the interpreter ***must*** be run from within the project's root directory.
 
-There are three main import directives supported:
+* There are three main import directives supported:
 1. GetMod
     * This is used for modules (currently: userIO, fileIO).
     * This will make all functions and methods within these modules available for use.
@@ -36,6 +36,27 @@ There are three main import directives supported:
     * Passing non-Lox files will raise an error.
     * The path to the file must be passed.
     * Example: ```GetFile "FileDir/Example.lox";```.
+
+### Groups/Namespaces
+* A group/namespace in this context is simply a scope for certain variables. Since Lox has first-class functions and classes, a variable here can be any declared object, such as a regular variable, a list object, a function, or a class.
+* To declare a group, use the below syntax:\
+  ```
+  group GroupName
+  {
+    [declaration 1...];
+    [declaration 2...];
+    [declaration 3...];
+    [...]
+  }
+  ```
+* To access a particular group member, simply use the same syntax for accessing a field off a class instance:
+  ```
+  print GroupName.Variable;
+  GroupName.Function();
+  var x = GroupName.Class();
+  ```
+* A group may only contain declarations. No other statements may be placed within a group (though they can off course be present in the bodies of function or class group members).
+* Once a group is defined, its class members (even if uninitialized) cannot be reassigned. However, if they are modifiable (e.g., lists), they can still be modified after the group is defined.
 
 ### IO
 * Input/output operations in this implementation can be split into user IO (covered in [this file](./userIO.md)) and file IO (covered in [this file](./fileIO.md)).
