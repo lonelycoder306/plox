@@ -4,13 +4,13 @@ class Error
     {
         if(type(message) != "<string>")
         {
-            perror("Exception error: Error constructor only accepts string arguments.");
+            perror("Exception error: Error constructor only accepts a string message.");
             return;
         }
 
         if (code != nil and type(code) != "<string>")
         {
-            perror("Exception error: Error constructor only accepts string arguments.");
+            perror("Exception error: Error constructor only accepts a string code.");
             return;
         }
         
