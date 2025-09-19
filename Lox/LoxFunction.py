@@ -19,7 +19,7 @@ class LoxFunction(LoxCallable):
         method = LoxFunction(self.declaration, environment, self.context)
         return method
     
-    def call(self, interpreter, expr, arguments):
+    def setParams(self, interpreter, arguments):
         environment = Environment(self.closure)
         vargs = []
 
@@ -45,6 +45,11 @@ class LoxFunction(LoxCallable):
                     name = self.declaration.params[i].name
                     value = interpreter.evaluate(self.declaration.params[i].value)
                     environment.define(name.lexeme, value, "VAR")
+        
+        return (environment, vargs)
+    
+    def call(self, interpreter, expr, arguments):
+        environment, vargs = self.setParams(interpreter, arguments)
         
         if self.context["variadic"]:
             environment.define("vargs", List(vargs), "VAR")
