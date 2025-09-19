@@ -89,6 +89,23 @@ class Interpreter:
     def visitBlockStmt(self, stmt: Stmt.Block):
         self.executeBlock(stmt.statements, Environment(self.environment))
     
+    def methodSetUp(self, methodDict: list):
+        newDict = {}
+        for method in methodDict:
+            variadic = False
+            if (method.params != None) and len(method.params) != 0:
+                if ((type(method.params[-1]) == Token) and
+                    (method.params[-1].type == TokenType.ELLIPSIS)):
+                    variadic = True
+            context = {"isMethod": True, 
+                       "isInitializer": False, 
+                       "class": None, # Temporarily.
+                       "safe": False,
+                       "variadic": variadic}
+            function = LoxFunction(method, self.environment, context)
+            newDict[method.name.lexeme] = function
+        return newDict
+
     def visitClassStmt(self, stmt: Stmt.Class):
         self.environment.define(stmt.name.lexeme, None, "VAR")
 
@@ -103,55 +120,14 @@ class Interpreter:
             self.environment = Environment(self.environment)
             self.environment.define("super", superclass, "VAR")
 
-        classMethods = dict()
-        for method in stmt.classMethods:
-            variadic = False
-            if (method.params != None) and len(method.params) != 0:
-                if ((type(method.params[-1]) == Token) and
-                    (method.params[-1].type == TokenType.ELLIPSIS)):
-                    variadic = True
-            context = {"isMethod": True, 
-                       "isInitializer": False, 
-                       "class": None, # Temporarily.
-                       "safe": False,
-                       "variadic": variadic}
-            function = LoxFunction(method, self.environment, context)
-            classMethods[method.name.lexeme] = function
+        classMethods = self.methodSetUp(stmt.classMethods)
         
         metaclass = LoxClass(None, superclass, f"{stmt.name.lexeme} metaclass", {}, classMethods)
         for method in metaclass.public.values():
             method.context["class"] = metaclass
 
-        private = dict()
-        public = dict()
-
-        for method in stmt.private:
-            variadic = False
-            if (method.params != None) and len(method.params) != 0:
-                if ((type(method.params[-1]) == Token) and
-                    (method.params[-1].type == TokenType.ELLIPSIS)):
-                    variadic = True
-            context = {"isMethod": True, 
-                       "isInitializer": False, 
-                       "class": None, # Temporarily.
-                       "safe": True,
-                       "variadic": variadic}
-            function = LoxFunction(method, self.environment, context)
-            private[method.name.lexeme] = function
-        
-        for method in stmt.public:
-            variadic = False
-            if (method.params != None) and len(method.params) != 0:
-                if ((type(method.params[-1]) == Token) and
-                    (method.params[-1].type == TokenType.ELLIPSIS)):
-                    variadic = True
-            context = {"isMethod": True, 
-                       "isInitializer": (method.name.lexeme == "init"), 
-                       "class": None, # Temporarily.
-                       "safe": False,
-                       "variadic": variadic}
-            function = LoxFunction(method, self.environment, context)
-            public[method.name.lexeme] = function
+        private = self.methodSetUp(stmt.private)
+        public = self.methodSetUp(stmt.public)
 
         klass = LoxClass(metaclass, superclass, stmt.name.lexeme, private, public)
         for method in klass.private.values():
