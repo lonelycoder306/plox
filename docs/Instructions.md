@@ -57,6 +57,30 @@
   ```
 * A group may only contain declarations. No other statements may be placed within a group (though they can off course be present in the bodies of function or class group members).
 * Once a group is defined, its class members (even if uninitialized) cannot be reassigned. However, if they are modifiable (e.g., lists), they can still be modified after the group is defined.
+* Group members can be used inside other group members. For example, the following works as expected:
+  ```
+  group A
+  {
+    var x = 1;
+    fun show() {print x;}
+  }
+
+  A.show(); // Prints 1.
+  ```
+* Declarations and statements inside groups still follow lexical scoping. Thus, in the previous example, the ```x``` in ```show()``` always resolves to the variable ```x``` declared just above it.
+* Though perhaps not recommended for good, readable code, it is allowed to nest groups. Access to group members works the same way. As an example:
+  ```
+  group A
+  {
+    group B
+    {
+        var x = 1;
+    }
+  }
+
+  print A.B.x; // Prints 1.
+  print B.x; // Error! "B" is undefined.
+  ```
 
 ### IO
 * Input/output operations in this implementation can be split into user IO (covered in [this file](./userIO.md)) and file IO (covered in [this file](./fileIO.md)).
