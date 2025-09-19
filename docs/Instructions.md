@@ -39,7 +39,7 @@
 
 ### Groups/Namespaces
 * A group/namespace in this context is simply a scope for certain variables. Since Lox has first-class functions and classes, a variable here can be any declared object, such as a regular variable, a list object, a function, or a class.
-* To declare a group, use the below syntax:\
+* To declare a group, use the below syntax:
   ```
   group GroupName
   {
