@@ -567,16 +567,24 @@ class Interpreter:
             token = expr.callee.name
         # Function object is being accessed from a list
         # or as a field.
-        elif (type(expr) == Expr.Get) or (type(expr) == Expr.Access):
+        elif (type(expr.callee) == Expr.Get) or (type(expr.callee) == Expr.Access):
             # LoxFunction object (and not a lambda).
             if ((type(callee) == LoxFunction) 
                 and (callee.declaration.name != None)):
                 token = callee.declaration.name
+            elif (type(callee) == LoxClass):
+                if type(expr.callee) == Expr.Get:
+                    token = expr.callee.name
+                else:
+                    # Closest name we can get (name of the list containing the function).
+                    token = expr.callee.object
         funcData = {}
         if token != None:
             funcData = {"name": token.lexeme,
                         "file": token.fileName,
                         "line": token.line}
+            if type(callee) == LoxClass:
+                funcData["name"] += " constructor"
         else:
             # Closest token we can get.
             token = expr.leftParen
