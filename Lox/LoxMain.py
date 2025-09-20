@@ -325,7 +325,7 @@ def clean():
 
 def main():
     if len(sys.argv) > 2:
-        sys.stderr.write("Usage: plox [script]\n")
+        sys.stderr.write("Usage: plox [option or script]\n")
         sys.exit(64)
     elif len(sys.argv) == 2:
         if testMode:
