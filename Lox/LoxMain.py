@@ -10,11 +10,13 @@ fileName = None
 testMode = False
 cleanMode = False
 errorMode = False
+noLinePos = False
 linePrint = True
 if len(sys.argv) == 2:
     if sys.argv[1] == "-test":
         testMode = True
         linePrint = False
+        noLinePos = True
     if sys.argv[1] == "-clean":
         cleanMode = True
         linePrint = False
@@ -23,6 +25,12 @@ if len(sys.argv) == 2:
         linePrint = False
     else:
         fileName = sys.argv[1]
+if len(sys.argv) == 3:
+    if ((sys.argv[1] == "-error") and
+        (sys.argv[2] == "-linepos")):
+        errorMode = True
+        linePrint = False
+        noLinePos = True
 
 interpreter = Interpreter()
 
@@ -183,7 +191,7 @@ def report(error: BaseError, where: str):
     
     import State
     # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
-    if State.debugMode:
+    if (State.debugMode or noLinePos):
         sys.stderr.write(f'error{where}: {message}\n')
         return
 
@@ -214,11 +222,6 @@ def report(error: BaseError, where: str):
 
 def warn(warning):
     import State
-    line = warning.token.line
-    column = warning.token.column
-    lexemeLen = len(warning.token.lexeme)
-    file = warning.token.fileName
-
     # All warnings that we have (thus far) are given based on
     # static analysis of the code, while debug mode is only
     # on at runtime.
@@ -227,7 +230,16 @@ def warn(warning):
     if State.debugMode:
         return
 
-    fileText = "" if (file == None) else f"\"{file}\""
+    line = warning.token.line
+    column = warning.token.column
+    lexemeLen = len(warning.token.lexeme)
+    file = warning.token.fileName
+
+    if noLinePos:
+        sys.stderr.write(f'Warning: {warning.message}')
+        return
+
+    fileText = "" if (file == "_REPL_") else f"\"{file}\", "
     if lexemeLen == 1: 
         sys.stderr.write(f'Warning [{fileText}line {line}, {column}]: ' + warning.message)
     else:
@@ -311,10 +323,7 @@ def clean():
                         sys.stderr.write(f"Error cleaning test file {path}:\n{str(error)}")
 
 def main():
-    if len(sys.argv) > 2:
-        sys.stderr.write("Usage: plox [option or script]\n")
-        sys.exit(64)
-    elif len(sys.argv) == 2:
+    if len(sys.argv) == 2:
         if testMode:
             test()
         elif cleanMode:
@@ -324,8 +333,13 @@ def main():
         else:
             fileNameCheck(fileName)
             runFile(fileName)
-    else:
+    elif (len(sys.argv) == 3 and errorMode):
         runPrompt()
+    elif len(sys.argv) == 1:
+        runPrompt()
+    else:
+        sys.stderr.write("Usage: plox [option or script]\n")
+        sys.exit(64)
 
 if __name__ == "__main__":
     main()
