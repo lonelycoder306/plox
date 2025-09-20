@@ -9,28 +9,23 @@ from Error import BaseError, ScanError, ParseError, StaticError, RuntimeError
 fileName = None
 testMode = False
 cleanMode = False
-errorMode = False
-noLinePos = False
-linePrint = True
+Error = False # True if "-error" or "-linepos" options have been used.
+linePos = False # True if line-position info should be printed.
+linePrint = False # True if error lines should be printed.
 if len(sys.argv) == 2:
     if sys.argv[1] == "-test":
         testMode = True
-        linePrint = False
-        noLinePos = True
     if sys.argv[1] == "-clean":
         cleanMode = True
-        linePrint = False
+    if sys.argv[1] == "-linepos":
+        Error = True
+        linePos = True
     if sys.argv[1] == "-error":
-        errorMode = True
-        linePrint = False
+        Error = True
+        linePos = True
+        linePrint = True
     else:
         fileName = sys.argv[1]
-if len(sys.argv) == 3:
-    if ((sys.argv[1] == "-error") and
-        (sys.argv[2] == "-linepos")):
-        errorMode = True
-        linePrint = False
-        noLinePos = True
 
 interpreter = Interpreter()
 
@@ -182,6 +177,7 @@ def error(error: BaseError):
 # the formation of any tokens in the first place.
 # Length = 0 -> token = EOF (no significant column value).
 def report(error: BaseError, where: str):
+    # Scan errors are different since there are no tokens whose fields we can use.
     line = error.line if (type(error) == ScanError) else error.token.line
     column = error.column if (type(error) == ScanError) else error.token.column
     message = error.message
@@ -191,7 +187,7 @@ def report(error: BaseError, where: str):
     
     import State
     # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
-    if (State.debugMode or noLinePos):
+    if (State.debugMode or not linePos):
         sys.stderr.write(f'error: {message}\n')
         return
 
@@ -199,7 +195,6 @@ def report(error: BaseError, where: str):
     if lexerFile == None:
         lexemeLen = len(error.token.lexeme)
 
-    # Scan errors are different since there are no tokens whose fields we can use.
     file = lexerFile or error.token.fileName or "_REPL_"
     fileText = "" if (file == "_REPL_") else f"\"{file}\", "
     if lexemeLen == 0:
@@ -235,7 +230,7 @@ def warn(warning):
     lexemeLen = len(warning.token.lexeme)
     file = warning.token.fileName
 
-    if noLinePos:
+    if not linePos:
         sys.stderr.write(f'Warning: {warning.message}')
         return
 
@@ -323,20 +318,18 @@ def clean():
                         sys.stderr.write(f"Error cleaning test file {path}:\n{str(error)}")
 
 def main():
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 1:
+        runPrompt()
+    elif len(sys.argv) == 2:
         if testMode:
             test()
         elif cleanMode:
             clean()
-        elif errorMode:
+        elif Error:
             runPrompt()
         else:
             fileNameCheck(fileName)
             runFile(fileName)
-    elif (len(sys.argv) == 3 and errorMode):
-        runPrompt()
-    elif len(sys.argv) == 1:
-        runPrompt()
     else:
         sys.stderr.write("Usage: plox [option or script]\n")
         sys.exit(64)
