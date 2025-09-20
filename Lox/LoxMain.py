@@ -26,6 +26,8 @@ if len(sys.argv) == 2:
         linePrint = True
     else:
         fileName = sys.argv[1]
+        linePos = True
+        linePrint = True
 
 interpreter = Interpreter()
 
@@ -142,25 +144,25 @@ def runPrompt():
         if line == "":
             break
         if line[-1] == "\\":
-            lines.append(line[:-1])
+            lines.append(line[:-1].replace("\t", "    "))
         else:
-            lines.append(line)
+            lines.append(line.replace("\t", "    "))
         while line[-1] == "\\":
             # Replace the \ with a newline.
             # Not only removing the \ since that will combine separate lines.
             # This would cause problems if we don't indent (add a \t separator)
             # between consequent lines.
             line = line[:-1] + "\n"
-            originalLen = len(line)
-            line += input("... ")
-            if line[-1] == "\\":
-                newLine = line[originalLen:-1]
-            else:
-                newLine = line[originalLen]
+            newLine = input("... ")
+            line += newLine
+            if newLine[-1] == "\\":
+                newLine = newLine[:-1]
+            newLine = newLine.replace("\t", "    ")
             if (newLine != "") and (newLine != "\n"):
                 lines.append(newLine)
         import State
         State.fileLines["_REPL_"] = lines
+        line = line.replace("\t", "    ")
         run(line)
         if not State.debugMode:
             State.hadError = False
@@ -173,9 +175,6 @@ def error(error: BaseError):
     else:
         report(error, " at '" + error.token.lexeme + "'")
 
-# Scan errors are treated differently since they are issued before 
-# the formation of any tokens in the first place.
-# Length = 0 -> token = EOF (no significant column value).
 def report(error: BaseError, where: str):
     # Scan errors are different since there are no tokens whose fields we can use.
     line = error.line if (type(error) == ScanError) else error.token.line
@@ -197,6 +196,7 @@ def report(error: BaseError, where: str):
 
     file = lexerFile or error.token.fileName or "_REPL_"
     fileText = "" if (file == "_REPL_") else f"\"{file}\", "
+    # Length = 0 -> token = EOF (no significant column value).
     if lexemeLen == 0:
         sys.stderr.write(f'error{where} [{fileText}line {line}]: {message}\n')
         if linePrint:
