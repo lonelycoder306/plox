@@ -240,7 +240,16 @@ def warn(warning):
     column = warning.token.column
     lexemeLen = len(warning.token.lexeme)
     file = warning.token.fileName
-    fileText = "" if ((file == None) or State.debugMode) else f"\"{file}\""
+
+    # All warnings that we have (thus far) are given based on
+    # static analysis of the code, while debug mode is only
+    # on at runtime.
+    # Thus, there would be no point altering the warnings to
+    # fit the debugger.
+    if State.debugMode:
+        return
+
+    fileText = "" if (file == None) else f"\"{file}\""
     if lexemeLen == 1: 
         sys.stderr.write(f'Warning [{fileText}line {line}, {column}]: ' + warning.message)
     else:
