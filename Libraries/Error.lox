@@ -14,9 +14,9 @@ class Error
             return;
         }
         
-        this.message = message;
-        this.code = code;
-        this.halt = halt;
+        safe this.message = message;
+        safe this.code = code;
+        safe this.halt = halt;
     }
 
     show()
