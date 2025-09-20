@@ -415,9 +415,6 @@ class Parser:
         
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
 
-        if type(initializer) == Expr.List:
-            raise ParseError(equals, "Cannot assign list to variable with 'var' modifier.")
-
         return Stmt.Var(name, equals, initializer, access)
     
     def whileStatement(self):
