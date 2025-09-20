@@ -167,14 +167,6 @@ def tError(error: ParseError | StaticError): #tError: token-error
     else:
         report(error, error.token.line, error.token.column, " at '" + error.token.lexeme + "'", error.message)
 
-# Nested if blocks are mainly checking two things:
-# 1) If there is a file name (no file name = REPL being used).
-# 2) If the token the error was found at contains multiple 
-# characters or not.
-# If it does, the error message will contain the exact area 
-# (beginning and ending) containing the token.
-# If it doesn't, the error message will contain only the column 
-# containing the (single-character) token.
 # Scan errors are treated differently since they are issued before 
 # the formation of any tokens in the first place.
 # Length = 0 -> token = EOF (no significant column value).
