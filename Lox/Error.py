@@ -1,38 +1,31 @@
 from Token import Token
 
-class LexError(Exception):
+class BaseError(Exception):
+    def show(self):
+        from LoxMain import error
+        error(self)
+
+class ScanError(BaseError):
     def __init__(self, line: int, column: int, file: str, message: str):
         self.line = line
         self.column = column
         self.file = file
         self.message = message
-    def show(self):
-        from LoxMain import lError
-        lError(self)
 
-class ParseError(Exception):
+class ParseError(BaseError):
     def __init__(self, token: Token, message: str):
         self.token = token
         self.message = message
-    def show(self):
-        from LoxMain import tError
-        tError(self)
 
-class StaticError(Exception):
+class StaticError(BaseError):
     def __init__(self, token: Token, message: str):
         self.token = token
         self.message = message
-    def show(self):
-        from LoxMain import tError
-        tError(self)
 
-class RuntimeError(Exception):
+class RuntimeError(BaseError):
     def __init__(self, token: Token, message: str):
         self.token = token
         self.message = message
-    def show(self):
-        from LoxMain import runtimeError
-        runtimeError(self)
 
 # Not actual errors.
 class BreakError(Exception):

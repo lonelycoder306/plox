@@ -4,7 +4,7 @@ from Scanner import Scanner
 from Parser import Parser
 from Interpreter import Interpreter
 from Resolver import Resolver
-from Error import ScanError, ParseError, StaticError, RuntimeError
+from Error import BaseError, ScanError, ParseError, StaticError, RuntimeError
 
 fileName = None
 testMode = False
@@ -162,22 +162,26 @@ def runPrompt():
         if not State.debugMode:
             State.hadError = False
 
-def lError(error: ScanError): #lError: line-error
-    report(error, error.line, error.column, "", error.message, error.file)
-
-def tError(error: ParseError | StaticError): #tError: token-error
-    if error.token.type == TokenType.EOF:
-        report(error, error.token.line, error.token.column, " at end", error.message)
+def error(error: BaseError):
+    if type(error) == ScanError:
+        report(error, "")
+    elif error.token.type == TokenType.EOF:
+        report(error, " at end")
     else:
-        report(error, error.token.line, error.token.column, " at '" + error.token.lexeme + "'", error.message)
+        report(error, " at '" + error.token.lexeme + "'")
 
 # Scan errors are treated differently since they are issued before 
 # the formation of any tokens in the first place.
 # Length = 0 -> token = EOF (no significant column value).
-def report(error, line, column, where, message, lexerFile = None):
-    sys.stderr.write(error.__class__.__name__[:-5] + " ")
-    import State
+def report(error: BaseError, where: str):
+    line = error.line if (type(error) == ScanError) else error.token.line
+    column = error.column if (type(error) == ScanError) else error.token.column
+    message = error.message
+    lexerFile = error.file if (type(error) == ScanError) else None
 
+    sys.stderr.write(error.__class__.__name__[:-5] + " ")
+    
+    import State
     # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
     if State.debugMode:
         sys.stderr.write(f'error{where}: {message}\n')
@@ -189,7 +193,7 @@ def report(error, line, column, where, message, lexerFile = None):
 
     # Scan errors are different since there are no tokens whose fields we can use.
     file = lexerFile or error.token.fileName or "_REPL_"
-    fileText = "" if (file == "_REPL_") else f"\"{file}\" "
+    fileText = "" if (file == "_REPL_") else f"\"{file}\", "
     if lexemeLen == 0:
         sys.stderr.write(f'error{where} [{fileText}line {line}]: {message}\n')
         if linePrint:
@@ -203,36 +207,10 @@ def report(error, line, column, where, message, lexerFile = None):
         if linePrint:
             printErrorLine(line, file, column, column + lexemeLen - 1)
 
-    State.hadError = True
-
-def runtimeError(error: RuntimeError):
-    import State
-    line = error.token.line
-    column = error.token.column
-    lexemeLen = len(error.token.lexeme)
-    file = error.token.fileName or "_REPL_"
-    fileText = "" if (file == "_REPL_") else f"\"{file}\", "
-
-    if State.debugMode:
-        sys.stderr.write(f'Runtime error: {error.message}\n')
-        return
-
-    # We only print a file name if there is one
-    # and we aren't in the debugger.
-    if lexemeLen == 0:
-        sys.stderr.write(f'Runtime error [{fileText}line {line}]: {error.message}\n')
-        if linePrint:
-            printErrorLine(line, file)
-    elif lexemeLen == 1:
-        sys.stderr.write(f'Runtime error [{fileText}line {line}, {column}]: {error.message}\n')
-        if linePrint:
-            printErrorLine(line, file, column, column)
+    if type(error) == RuntimeError:
+        State.hadRuntimeError = True
     else:
-        sys.stderr.write(f'Runtime error [{fileText}line {line}, {column}-{column + lexemeLen - 1}]: {error.message}\n')
-        if linePrint:
-            printErrorLine(line, file, column, column + lexemeLen - 1)
-
-    State.hadRuntimeError = True
+        State.hadError = True
 
 def warn(warning):
     import State
