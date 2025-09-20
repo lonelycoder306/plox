@@ -5,6 +5,7 @@ Features to implement:
 - step (Execute current line and stop at next one; if current line contains a function call, enter the function.)
 - next (Execute current line and stop at next one; if current line contains a function call, evaluate the call and go to the next line; do not step into the function.)
 - continue (Continue executing until breakpoint, end, or error is reached.) DONE.
+- out (Step out of the current executing function, if any, while executing the remainder of its body.)
 3) Inspect variables in scope (values and current local/global variables). DONE.
 4) Show current line being executed and call stack.
 5) Evaluating expressions (possibly involving variables) on the fly. DONE.
@@ -19,7 +20,7 @@ class CLISwitch(Exception):
     pass
 
 from Error import StopError
-import State as State
+import State
 class breakpointStop(Exception):
     def __init__(self, interpreter, environment, expr):
         self.breakpoints = []
@@ -30,7 +31,8 @@ class breakpointStop(Exception):
         # Commands -> Do X with Y as argument(s).
         self.instructions = {"c": "continue",
                              "s": "step",
-                             "n": "next", 
+                             "n": "next",
+                             "o": "out", 
                              "q": "quit",
                              "r": "repl",
                              "l": "list",
@@ -61,7 +63,8 @@ class breakpointStop(Exception):
 
         while not self.quit:
             print("(debug)", end = " ")
-            prompt = input("")
+            # .strip() so the debugger doesn't choke on whitespace input.
+            prompt = input("").strip()
             if prompt == "":
                 break
             else:
@@ -79,7 +82,7 @@ class breakpointStop(Exception):
                     choice = self.commands.get(choice, choice)
                     self.debugCommand(choice, arguments)
                 else:
-                    print("Not a valid command/instruction.")
+                    print("Not a valid command/instruction. Type 'help' for a list of valid commands/instructions.")
         State.debugMode = False
 
     def debugInstruction(self, choice):
@@ -88,10 +91,10 @@ class breakpointStop(Exception):
                 self.quit = True
                 return
             case "step":
-                pass
                 return
             case "next":
-                pass
+                return
+            case "out":
                 return
             case "repl":
                 # Cannot be reset.
@@ -120,20 +123,22 @@ class breakpointStop(Exception):
                 self.displayHelp()
     
     def displayHelp(self):
-        print("Available commands:")
-        print("c(ontinue) - Exit debugger and continue execution until breakpoint, error, or end is reached.")
-        print("s(tep) - Go to the next line, and enter the function if it is a function call.")
-        print("n(ext) - Go to the next line, and evaluate (but do not enter) the function if it is a function call.")
-        print("r(epl) - End debug session and file execution and open a prompt shell.")
-        print("q(uit) - Exit the debugger and conclude all code execution.")
-        print("l(ist) - Display lines surrounding current breakpoint.")
-        print("st(ack) - Display call-stack.")
-        print("log - Display trace-log for the file up until the current breakpoint.")
-        print("")
-        print("Available instructions:")
-        print("v(alue) [l/local or g/global] (expr) - Prints the value of the given expression within the given scope.")
-        print("vars [l/local or g/global] - Displays all the variables in the specified scope with their values.")
-        print("b*reak) [line #] - Adds a breakpoint at the given line (if the line has yet to be passed).")
+        print(
+'''Available commands:
+        h(elp)      - Display this help screen.
+        c(ontinue)  - Exit debugger and continue execution until breakpoint, error, or end is reached.
+        s(tep)      - Go to the next line, and enter the function if it is a function call.
+        n(ext)      - Go to the next line, and evaluate (but do not enter) the function if it is a function call.
+        r(epl)      - End debug session and file execution and open a prompt shell.
+        q(uit)      - Exit the debugger and conclude all code execution.
+        l(ist)      - Display lines surrounding current breakpoint.
+        st(ack)     - Display call-stack.
+        log         - Display trace-log for the file up until the current breakpoint.
+
+Available instructions:
+        v(alue) [l/local or g/global] (expr)    - Prints the value of the given expression within the given scope.
+        vars [l/local or g/global]              - Displays all the variables in the specified scope with their values.
+        break [line #]                          - Adds a breakpoint at the given line (if the line has yet to be passed).''')
 
     def debugCommand(self, command, arguments):
         match command:
