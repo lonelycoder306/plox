@@ -9,6 +9,7 @@ from Error import ScanError, ParseError, StaticError, RuntimeError
 fileName = None
 testMode = False
 cleanMode = False
+errorMode = False
 linePrint = True
 if len(sys.argv) == 2:
     if sys.argv[1] == "-test":
@@ -16,6 +17,9 @@ if len(sys.argv) == 2:
         linePrint = False
     if sys.argv[1] == "-clean":
         cleanMode = True
+        linePrint = False
+    if sys.argv[1] == "-error":
+        errorMode = True
         linePrint = False
     else:
         fileName = sys.argv[1]
@@ -181,7 +185,7 @@ def report(error, line, column, where, message, lexerFile = None):
 
     lexemeLen = 1
     if lexerFile == None:
-        len(error.token.lexeme)
+        lexemeLen = len(error.token.lexeme)
 
     # Scan errors are different since there are no tokens whose fields we can use.
     file = lexerFile or error.token.fileName or "_REPL_"
@@ -258,19 +262,14 @@ def printErrorLine(line: int, file: str, start = None, end = None):
         start -= (prevLineLen - newLineLen)
         end -= (prevLineLen - newLineLen)
         sys.stderr.write(f"{line} |\t{printLine}\n")
-        space = " "
         # Fill space before second vertical bar to align with above line.
-        sys.stderr.write(space.ljust(len(str(line)) + 1, " "))
-        sys.stderr.write("|\t")
-        sys.stderr.write(" " * (start - 1))
+        sys.stderr.write(" ".ljust(len(str(line)) + 1, " "))
+        sys.stderr.write("|\t" + (" " * (start - 1)))
         sys.stderr.write("^" * (end - start + 1) + '\n')
     else:
         sys.stderr.write(f"{line} |\t{printLine}\n")
-        space = " "
-        sys.stderr.write(space.ljust(len(str(line)) + 1, " "))
-        sys.stderr.write("|\t")
-        sys.stderr.write(" " * newLineLen)
-        sys.stderr.write("^\n")
+        sys.stderr.write(" ".ljust(len(str(line)) + 1, " "))
+        sys.stderr.write("|\t" + (" " * newLineLen) + "^\n")
     sys.stderr.flush()
 
 def fileNameCheck(path):
@@ -333,6 +332,8 @@ def main():
             test()
         elif cleanMode:
             clean()
+        elif errorMode:
+            runPrompt()
         else:
             fileNameCheck(fileName)
             runFile(fileName)
