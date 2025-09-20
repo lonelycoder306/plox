@@ -111,6 +111,7 @@ class Parser:
         
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
 
+        previousClass = self.inClass
         self.inClass = True
         private = list()
         public = list()
@@ -124,7 +125,7 @@ class Parser:
                 public.append(self.function("method"))
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
-        self.inClass = False
+        self.inClass = previousClass
 
         return Stmt.Class(name, superclass, private, public, classMethods)
 
