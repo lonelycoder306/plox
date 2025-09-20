@@ -149,6 +149,16 @@ class Interpreter:
     def visitContinueStmt(self, stmt: Stmt.Continue):
         raise ContinueError(stmt.continueCMD, stmt.loopType)
 
+    def excClassHelper(self, excClass: LoxClass, excs: list[str]):
+        if excClass.name in excs:
+            return True
+        else:
+            while excClass.superclass != None:
+                excClass = excClass.superclass
+                if excClass.name in excs:
+                    return True
+            return False
+
     def visitErrorStmt(self, stmt: Stmt.Error):
         errors = []
         if stmt.errors != None:
@@ -157,12 +167,13 @@ class Interpreter:
             try:
                 self.execute(stmt.body)
             except UserError as e:
-                if e.error.klass.name in errors:
+                #if e.error.klass.name in errors:
+                if self.excClassHelper(e.error.klass, errors):
                     self.execute(stmt.handler)
                 else:
                     raise
             except UserWarning as w:
-                if w.warning.klass.name in errors:
+                if self.excClassHelper(w.warning.klass, errors):
                     self.execute(stmt.handler)
                 else:
                     raise
@@ -287,7 +298,7 @@ class Interpreter:
             return
         print(self.stringify(value))
 
-    def exceptClassHelper(self, klass: LoxClass):
+    def reportClassHelper(self, klass: LoxClass):
         if klass.name == "Error":
             return (True, "Error")
         elif klass.name == "Warning":
@@ -306,7 +317,7 @@ class Interpreter:
         if type(exception) != LoxInstance:
             raise RuntimeError(stmt.keyword, 
                                "Cannot report an exception on non-exception object.")
-        check = self.exceptClassHelper(exception.klass)
+        check = self.reportClassHelper(exception.klass)
         if not check[0]:
             raise RuntimeError(stmt.keyword, 
                                "Cannot report an exception on non-exception object.")
