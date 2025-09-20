@@ -1,5 +1,5 @@
 from Token import Token, TokenType
-from Error import LexError
+from Error import ScanError
 
 class Scanner:
     source = str()
@@ -53,7 +53,7 @@ class Scanner:
             self.start = self.current
             try:
                 self.scanToken()
-            except LexError as error:
+            except ScanError as error:
                 error.show()
         self.tokens.append(Token(TokenType.EOF, "", None, self.line, self.column, self.fileName))
         return self.tokens
@@ -144,7 +144,7 @@ class Scanner:
                             self.advance()
                         self.advance() # Avoids adding an extra advance() in each block.
                     if count != 0:
-                        raise LexError(self.line, self.column, self.fileName, "Unterminated comment block.")
+                        raise ScanError(self.line, self.column, self.fileName, "Unterminated comment block.")
                 
                 elif self.match('='):
                     self.addToken(TokenType.SLASH_EQUALS)
@@ -178,7 +178,7 @@ class Scanner:
                 elif c.isalpha() or c == '_':
                     self.identifier()
                 else:
-                    raise LexError(self.line, self.column, self.fileName, "Unexpected character.")
+                    raise ScanError(self.line, self.column, self.fileName, "Unexpected character.")
     
     def identifier(self):
         while self.peek().isalnum() or self.peek() == '_':
@@ -217,7 +217,7 @@ class Scanner:
                 self.advance()
                 pos += 1
             if self.isAtEnd():
-                raise LexError(self.line, pos, self.fileName, "Unterminated string.")
+                raise ScanError(self.line, pos, self.fileName, "Unterminated string.")
         elif previous == '"':
             pos = self.column + 1 # Skip the ".
             while (self.peek() != '"') and (not self.isAtEnd()):
@@ -227,7 +227,7 @@ class Scanner:
                 pos += 1
             # Use peek, not match, or otherwise the ; gets skipped.
             if (self.isAtEnd()) or (self.peek() != '"'):
-                raise LexError(self.line, pos, self.fileName, "Unterminated string.")
+                raise ScanError(self.line, pos, self.fileName, "Unterminated string.")
         # The closing ".
         self.advance()
         
