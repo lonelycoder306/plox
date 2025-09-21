@@ -17,6 +17,8 @@ callStack = list()
 traceLog = list()
 breakpoints = []
 
+replDebug = False
+
 # For access to private fields within methods.
 inMethod = False
 currentClass = None

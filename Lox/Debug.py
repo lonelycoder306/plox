@@ -29,24 +29,26 @@ class breakpointStop(Exception):
         # Implementing them as dictionaries allows us to make easier match-case structures later.
         # Instructions -> Do X.
         # Commands -> Do X with Y as argument(s).
-        self.instructions = {"c": "continue",
-                             "s": "step",
-                             "n": "next",
-                             "o": "out", 
-                             "q": "quit",
-                             "r": "repl",
-                             "l": "list",
-                             "st": "stack",
+        self.instructions = {"c":   "continue",
+                             "s":   "step",
+                             "n":   "next",
+                             "o":   "out", 
+                             "q":   "quit",
+                             "r":   "repl",
+                             "l":   "list",
+                             "st":  "stack",
                              "log": "log",
-                             "h": "help"}
-        self.commands = {"v": "value",
-                         "vars": "vars",
-                         "b": "break"}
+                             "h":   "help",
+                             "loc": "locals",
+                             "gl":  "globals"}
+        self.commands = {"v":       "value",
+                         "b":       "break"}
         self.token = expr.callee.name
         self.quit = False # Continue debug prompt so long as this is false.
 
     def debugStart(self):
-        State.debugMode = True # Will turn off some features or specifications in our interpreter.
+        # Will turn off some features or specifications in our interpreter.
+        State.debugMode = True
         if not State.inAFile:
             print("No debug breakpoint option for command-line interpreter.")
             return
@@ -121,6 +123,18 @@ class breakpointStop(Exception):
                     print(f"(\"{func["file"]}\", {func["line"]}): {func["name"]}")
             case "help":
                 self.displayHelp()
+            case "locals":
+                variables = self.environment.values
+                print("Objects in current scope:")
+                for var in variables:
+                    value = self.interpreter.stringify(variables[var])
+                    print(f"{var}: {value}")
+            case "globals":
+                variables = self.interpreter.globals.values
+                print("Objects in global scope:")
+                for var in variables:
+                    value = self.interpreter.stringify(variables[var])
+                    print(f"{var}: {value}")
     
     def displayHelp(self):
         print(
@@ -134,10 +148,11 @@ class breakpointStop(Exception):
         l(ist)      - Display lines surrounding current breakpoint.
         st(ack)     - Display call-stack.
         log         - Display trace-log for the file up until the current breakpoint.
+        loc(als)    - Display all the variables/objects declared in the current scope.
+        gl(obals)   - Display all the variables/objects declared in the global scope.
 
 Available instructions:
         v(alue) [l/local or g/global] (expr)    - Prints the value of the given expression within the given scope.
-        vars [l/local or g/global]              - Displays all the variables in the specified scope with their values.
         break [line #]                          - Adds a breakpoint at the given line (if the line has yet to be passed).''')
 
     def debugCommand(self, command, arguments):
@@ -192,28 +207,6 @@ Available instructions:
             finally:
                 self.interpreter.environment = prevEnv
     
-    def comm_vars(self, arguments):
-        if len(arguments) == 0:
-            print("No arguments provided.")
-            return
-        elif len(arguments) > 1:
-            print("Too many arguments.")
-            return
-        if arguments[0] == "local":
-            variables = self.environment.values
-            print("Objects in current scope:")
-            for var in variables:
-                value = self.interpreter.stringify(variables[var])
-                print(f"{var}: {value}")
-        elif arguments[0] == "global":
-            variables = self.interpreter.globals.values
-            print("Objects in global scope:")
-            for var in variables:
-                value = self.interpreter.stringify(variables[var])
-                print(f"{var}: {value}")
-        else:
-            print("Invalid argument.")
-    
     def comm_break(self, arguments):
         if len(arguments) == 0:
             print("No line provided.")
@@ -232,3 +225,64 @@ Available instructions:
             else:
                 print("Invalid input type. Type is: positive integer.")
                 return
+
+class replDebugger():
+    '''
+    To add:
+    - watch [...]
+    - unwatch [...]
+    - check [...]
+    - uncheck [...]
+    - exit
+    '''
+
+    def __init__(self, interpreter):
+        self.interpreter = interpreter
+        self.instructions = {}
+        self.commands = {}
+        self.watches = []
+        self.checks = []
+        self.exit = False
+
+    def runDebugger(self):
+        State.replDebug = True
+        
+        while not self.exit:
+            print("(ldb)", end = " ")
+            prompt = input("").strip()
+            if prompt == "":
+                continue
+            else:
+                prompt = prompt.split()
+                choice = prompt[0].strip()
+                arguments = [x.strip() for x in prompt[1:]]
+            
+        State.replDebug = False
+    
+    def addWatch(self, expr):
+        self.watches.append(expr)
+
+    def runWatches(self):
+        from Scanner import Scanner
+        from Parser import Parser
+        statement = ""
+        for watch in self.watches:
+            statement += f"print \"{watch}: \" + ({watch});"
+        tokens = Scanner(statement, None).scanTokens()
+        statements = Parser(tokens).parse()
+
+        self.interpreter.interpret(statements)
+    
+    def addCheck(self, expr):
+        self.checks.append(expr)
+    
+    def runChecks(self):
+        from Scanner import Scanner
+        from Parser import Parser
+        statement = ""
+        for check in self.checks:
+            statement += f"{check};"
+        tokens = Scanner(statement, None).scanTokens()
+        statements = Parser(tokens).parse()
+
+        self.interpreter.interpret(statements)

@@ -36,7 +36,7 @@ the builtins environment.
 
 builtins = Environment()
 functions = ["clock", "type", "string", "number", "length", "copy",
-            "strformat", "perror", "arity", "reference", "breakpoint"]
+            "strformat", "perror", "arity", "reference", "breakpoint", "debug"]
 
 class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str):
@@ -69,6 +69,9 @@ class BuiltinFunction(LoxCallable):
             return self.b_reference(arguments[0])
         if self.mode == "breakpoint":
             self.b_breakpoint(interpreter, expr)
+            return ()
+        if self.mode == "debug":
+            self.b_debug(interpreter)
             return ()
     
     def b_clock(self):
@@ -145,6 +148,10 @@ class BuiltinFunction(LoxCallable):
     def b_breakpoint(self, interpreter, expr):
         from Debug import breakpointStop
         breakpointStop(interpreter, interpreter.environment, expr).debugStart()
+    
+    def b_debug(self, interpreter):
+        from Debug import replDebugger
+        replDebugger(interpreter).runDebugger()
 
     def arity(self):
         if self.mode == "clock":
@@ -168,7 +175,11 @@ class BuiltinFunction(LoxCallable):
         if self.mode == "reference":
             return [1,1]
         if self.mode == "breakpoint":
-            return [0,0] # breakpointStop's constructor takes one argument, but the user breakpoint() function takes none.
+            return [0,0] # breakpointStop's constructor takes one argument, 
+                         # but the user breakpoint() function takes none.
+        if self.mode == "debug":
+            return [0,0]
+        
 
     def toString(self):
         return "<native fn>"
