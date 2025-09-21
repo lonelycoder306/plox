@@ -44,3 +44,37 @@ show();
 // 2
 // 3
 ```
+
+## Bug 2 - Incorrect Resolving for Function-Object Parameters in Lists
+### Description
+If a function object (whether declared as a regular function or a lambda) is stored in a list, and happens to have parameters with the same name as the list it is stored in, any calls to that function from within the list will make resolve the parameter to the list, ignoring any arguments/input.
+#### Location: Unknown
+### Example(s)
+Example 1:
+```
+fun show(a)
+{
+    print a;
+}
+list a = [show];
+a[0](1);
+// Should print: 1
+// Actually prints: [<fn show>] (i.e., the list a)
+```
+
+Example 2:
+```
+fun show(a, b)
+{
+    print a;
+    print b;
+}
+list a = [show];
+a[0](1,2);
+// Should print:
+// 1
+// 2
+// Actually prints:
+// [<fn show>]
+// 2
+```
