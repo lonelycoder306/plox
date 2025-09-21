@@ -60,6 +60,7 @@ For further instruction on how to make use of some of these features, please go 
 * Added declarations for variadic functions.
 * Added support for range-for loops.
 * Added namepaces (called "groups").
+* Added fixed-value variables.
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
