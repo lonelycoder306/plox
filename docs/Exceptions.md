@@ -16,7 +16,7 @@ The ```Error``` class offers two important functions:
 1. ```init(message, halt = true, code = nil)```
    * This is the constructor for the ```Error``` class.
    * ```message``` is the primary error message that you wish to be printed when that error is reported. Since it is specific to each error object, it can be made unique to that particular error.
-   * ```halt``` is a parameter that instructs the interpreter to either abort all code execution (if ```halt``` is true) or only execution of the current block (if ```halt``` is false).
+   * ```halt``` is a parameter that instructs the interpreter to either abort all code execution (if ```halt``` is true) or only execution of the current block (if ```halt``` is false) once/if the error is hit.
    * ```code``` is an introductory phrase that can be used to give a brief description of the error or its type (in reality it can be any string the user wishes to put there). If left as nil, no code is printed.
    * Example usage:
      ```
