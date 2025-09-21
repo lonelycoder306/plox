@@ -12,6 +12,10 @@ Due to the constantly changing nature of this project, there may be some changes
 * Modules - Additional Python files that can be "hooked up" to the interpreter at runtime with the ```GetMod``` directive.
 * docs - Project documentation.
 
+# Requirements
+To use the interpreter itself, all that is required is a Python version >= 3.10.\
+However, some particular external features (like the testing option) may require other tools. To review those, please consult [brief requirements](./requirements.in) and [detailed requirements](./requirements.txt).
+
 # Regular Features of plox
 The main Lox language implementation supports:
 * REPL prompt and file-execution options.
