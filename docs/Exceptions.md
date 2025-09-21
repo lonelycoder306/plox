@@ -67,3 +67,4 @@ handle
     [What to do if any of these errors occurs above...]
   ```
   (The ... is only to illustrate that any number of error types can be placed between the parentheses.)
+  * This syntax will handle all errors of the listed types, as well as all errors whose types are classes derived from them (thus, any errors whose type classes inherit from ErrorType1, ErrorType2, etc. will also be handled).
