@@ -55,7 +55,7 @@ For further instruction on how to make use of some of these features, please go 
 * Added user-defined exceptions (errors and warnings) and exception-handling.
 * Added full encapsulation for classes.
     * Methods (non-static) can be made private with the 'safe' modifier before the function name.
-    * Any field declared in the constructor is made private.
+    * Fields declared in the constructor can also be made private with the 'safe' modifier at the beginning.
 * Added support for nested multi-line comments (/**/ syntax).
 * Added (C-syntax) 'break' and 'continue' commands.
 * Modified string literal form to distinguish between single-line and multi-line strings.
