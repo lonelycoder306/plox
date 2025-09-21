@@ -62,8 +62,6 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 ### ```gl(obals)```
 * Displays all the variables/objects declared in the global scope.
 
-#### **Note:** 
-
 ## Debugger Commands
 #### Parts between parentheses (if any) in command names may be ommitted when using the command.
 
