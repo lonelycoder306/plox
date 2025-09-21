@@ -56,6 +56,14 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 ### ```h(elp)```
 * Provides a help screen displaying all the supported instructions and commands with their functionality and syntax.
 
+### ```loc(als)```
+* Displays all the variables/objects *declared* within the current scope.
+
+### ```gl(obals)```
+* Displays all the variables/objects declared in the global scope.
+
+#### **Note:** 
+
 ## Debugger Commands
 #### Parts between parentheses (if any) in command names may be ommitted when using the command.
 
@@ -79,15 +87,6 @@ Commands can accept any context-appropriate arguments, though the arguments cann
 * Examples:
     * ```v l a```
     * ```value global (x*2)+1```
-
-### ```vars```
-* Argument #: 1
-* Argument Form:
-    * A scope modifier (```local``` or ```global``` strictly).
-* Prints out all the variables defined within the specified scope.
-* **Note:** the ```local``` option will only show variables *declared* within the local scope, not those that are in scope but declared outside it.
-* Example:
-    * ```vars global```
 
 ### ```b(reak)```
 * Argument #: any number
