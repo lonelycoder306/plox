@@ -27,7 +27,7 @@
        list b = a;
        ```
     3. The ```List()``` constructor.\
-       The constructor can accept five arguments:
+       The constructor can accept five argument types:
        * No argument &rarr; The constructor will return an empty List object.
        * A list literal &rarr; The constructor will return a List object containing the same elements as the passed list.
        * A List object &rarr; The constructor will return a **copy** of the passed List object.
