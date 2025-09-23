@@ -162,8 +162,6 @@ def runPrompt():
         import State
         State.fileLines["_REPL_"] = lines
         line = line.replace("\t", "    ")
-        print(lines)
-        print(line)
         run(line)
         if not State.debugMode:
             State.hadError = False
