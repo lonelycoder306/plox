@@ -1,5 +1,6 @@
 from Error import RuntimeError
 from LoxFunction import LoxFunction
+from Expr import Expr
 
 class LoxInstance:
     def __init__(self, klass):
@@ -58,7 +59,16 @@ class LoxInstance:
     def toString(self, interpreter, expr = None, arguments = []):
         method = self.klass.findMethod("_str")
         if method != None:
-            return method.bind(self).call(interpreter, expr, arguments)
+            if method.arity() != [0,0]:
+                token = method.declaration.params[0]
+                if type(token) == Expr.Assign:
+                    token = token.name
+                raise RuntimeError(token, "_str method must take no arguments.")
+            string = method.bind(self).call(interpreter, expr, arguments)
+            if type(string) == tuple:
+                raise RuntimeError(method.declaration.name, 
+                                   "_str method does not return a string.")
+            return string
         return f"<{self.klass.name} instance>"
 
     def varType(self):
