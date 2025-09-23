@@ -395,6 +395,8 @@ class Interpreter:
                 return "boolean"
             case bytes():
                 return "bytes"
+            case list(): # In case an internal function passes an actual list.
+                return "list"
             case List():
                 return "list"
             case Reference():
@@ -475,11 +477,11 @@ class Interpreter:
             value = self.environment.getAt(distance, name)
             return value
         else:
-            if name.lexeme in self.globals.values.keys():
+            if name.lexeme in self.environment.values.keys():
+                return self.environment.get(name)
+            elif name.lexeme in self.globals.values.keys():
                 return self.globals.get(name)
-            elif name.lexeme in self.builtins.values.keys():
-                return self.builtins.get(name)
-            return self.environment.get(name)
+            return self.builtins.get(name)
     
     def checkIndices(self, expr, object, start, end):
         length = len(object)
@@ -696,6 +698,44 @@ class Interpreter:
             self.globals.assign(expr.name, value)
         return value
 
+    def comparison(self, left, right, expr: Expr.Binary):
+        if ((type(left) == LoxInstance) and
+            (type(right) == LoxInstance)):
+                if left.klass.name == right.klass.name:
+                    value = left.compare(right, self, expr)
+                    if type(value) != tuple:
+                        return value
+                elif ((expr.operator.type != TokenType.BANG_EQUAL) and
+                      (expr.operator.type != TokenType.EQUAL_EQUAL)):
+                    raise RuntimeError(expr.operator, 
+                                       "Cannot compute inequality between" \
+                                       " objects from different classes.")
+
+        match expr.operator.type:
+            case TokenType.GREATER:
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left > right)
+            case TokenType.GREATER_EQUAL:
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left >= right)
+            case TokenType.LESS:
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left < right)
+            case TokenType.LESS_EQUAL:
+                if ((type(left) == type(right) == float) or 
+                (type(left) == type(right) == str)):
+                    return (left <= right)
+            case TokenType.BANG_EQUAL:
+                return ((type(left) != type(right)) or (left != right))
+            case TokenType.EQUAL_EQUAL:
+                return ((type(left) == type(right)) and (left == right))
+        
+        raise RuntimeError(expr.operator,
+            f"Cannot compute inequality between ({self.varType(left)}) and ({self.varType(right)}).")
+
     def visitBinaryExpr(self, expr: Expr.Binary):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
@@ -708,31 +748,11 @@ class Interpreter:
         elif type(right) == String:
             right = right.text
 
+        compareTypes = [TokenType.GREATER, TokenType.GREATER_EQUAL,
+                        TokenType.LESS, TokenType.LESS_EQUAL,
+                        TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL]
+
         match expr.operator.type:
-            case TokenType.GREATER:
-                if ((type(left) == type(right) == float) or 
-                (type(left) == type(right) == str)):
-                    return (left > right)
-                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
-            case TokenType.GREATER_EQUAL:
-                if ((type(left) == type(right) == float) or 
-                (type(left) == type(right) == str)):
-                    return (left >= right)
-                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
-            case TokenType.LESS:
-                if ((type(left) == type(right) == float) or 
-                (type(left) == type(right) == str)):
-                    return (left < right)
-                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
-            case TokenType.LESS_EQUAL:
-                if ((type(left) == type(right) == float) or 
-                (type(left) == type(right) == str)):
-                    return (left <= right)
-                raise RuntimeError(expr.operator, "Operands must be strings or numbers.")
-            case TokenType.BANG_EQUAL:
-                return (type(left) != type(right) or (left != right))
-            case TokenType.EQUAL_EQUAL:
-                return (type(left) == type(right) and (left == right))
             case TokenType.MINUS:
                 self.checkNumberOperands(expr.operator, left, right)
                 return (float(left) - float(right))
@@ -755,6 +775,8 @@ class Interpreter:
                 self.checkNumberOperands(expr.operator, left, right)
                 # Note: Python evaluates 0^0 as 1.
                 return (float(left) ** float(right))
+            case _ if expr.operator.type in compareTypes:
+                return self.comparison(left, right, expr)
 
     def visitCallExpr(self, expr: Expr.Call):
         callee = self.evaluate(expr.callee)
