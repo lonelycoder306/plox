@@ -143,10 +143,9 @@ def runPrompt():
         line = input("")
         if line == "":
             break
-        if line[-1] == "\\":
-            lines.append(line[:-1].replace("\t", "    "))
-        else:
-            lines.append(line.replace("\t", "    "))
+        # Remove trailing whitespace or \, and replace tabs
+        # with four spaces.
+        lines.append(line.strip("\\").replace("\t", "    ").rstrip())
         while line[-1] == "\\":
             # Replace the \ with a newline.
             # Not only removing the \ since that will combine separate lines.
@@ -155,14 +154,16 @@ def runPrompt():
             line = line[:-1] + "\n"
             newLine = input("... ")
             line += newLine
-            if newLine[-1] == "\\":
-                newLine = newLine[:-1]
-            newLine = newLine.replace("\t", "    ")
-            if (newLine != "") and (newLine != "\n"):
+            newLine = newLine.strip("\\").replace("\t", "    ").rstrip()
+            if newLine != "":
                 lines.append(newLine)
+            else:
+                break
         import State
         State.fileLines["_REPL_"] = lines
         line = line.replace("\t", "    ")
+        print(lines)
+        print(line)
         run(line)
         if not State.debugMode:
             State.hadError = False
