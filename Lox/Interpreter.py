@@ -350,7 +350,8 @@ class Interpreter:
             value = copy.deepcopy(value)
 
         if type(value) == List:
-            raise RuntimeError(stmt.equals, "Cannot assign list to variable with 'var' modifier.")
+            raise RuntimeError(stmt.equals,
+                               "Cannot assign list to variable with 'var' or 'fix' modifiers.")
 
         self.environment.define(stmt.name.lexeme, value, stmt.access)
 
@@ -460,7 +461,7 @@ class Interpreter:
         return text
     
     def lookUpVariable(self, name: Token, expr: Expr):
-        import State as State
+        import State
         if State.debugMode:
             if name.lexeme in self.builtins.values.keys():
                 return self.builtins.get(name)
