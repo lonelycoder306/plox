@@ -185,9 +185,17 @@ def report(error: BaseError, where: str):
     
     import State
     # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
-    if (State.debugMode or not linePos):
+    if State.debugMode:
         sys.stderr.write(f'error: {message}\n')
         State.debugError = True
+        return
+
+    if not linePos:
+        sys.stderr.write(f'error: {message}\n')
+        if type(error) == RuntimeError:
+            State.hadRuntimeError = True
+        else:
+            State.hadError = True
         return
 
     lexemeLen = 1
