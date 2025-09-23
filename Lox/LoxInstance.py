@@ -1,6 +1,7 @@
 from Error import RuntimeError
 from LoxFunction import LoxFunction
 from Expr import Expr
+from Token import TokenType
 
 class LoxInstance:
     def __init__(self, klass):
@@ -73,6 +74,40 @@ class LoxInstance:
 
     def varType(self):
         return self.klass.name + " instance"
+
+    def compareMethodStr(self, expr: Expr.Binary):
+        match expr.operator.type:
+            case TokenType.GREATER:
+                return "_gt"
+            case TokenType.GREATER_EQUAL:
+                return "_ge"
+            case TokenType.LESS:
+                return "_lt"
+            case TokenType.LESS_EQUAL:
+                return "_le"
+            case TokenType.BANG_EQUAL:
+                return "_ne"
+            case TokenType.EQUAL_EQUAL:
+                return "_eq"
+
+    def compare(self, other, interpreter, expr: Expr.Binary):
+        methodTitle = self.compareMethodStr(expr)
+        method = self.klass.findMethod(methodTitle)
+        if method != None:
+            if method.arity() != [1,1]:
+                token = method.declaration.name
+                if len(method.declaration.params) != 0:
+                    token = method.declaration.params[0]
+                if type(token) == Expr.Assign:
+                    token = token.name
+                raise RuntimeError(token, f"{methodTitle} method must take no arguments.")
+            value = method.bind(self).call(interpreter, expr, [other])
+            if type(value) != bool:
+                raise RuntimeError(method.declaration.name, 
+                                   f"{methodTitle} method does not return a Boolean value.")
+            return value
+        else:
+            return ()
 
 from LoxCallable import LoxCallable
 class InstanceFunction(LoxCallable):
