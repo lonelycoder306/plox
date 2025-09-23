@@ -187,7 +187,13 @@ Available instructions:
                 from Scanner import Scanner
                 from Parser import Parser
                 tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
+                if State.debugError:
+                    State.debugError = False # Reset.
+                    return
                 statements = Parser(tokens).parse()
+                if State.debugError:
+                    State.debugError = False
+                    return
 
                 self.interpreter.environment = self.interpreter.globals
                 self.interpreter.interpret(statements)
@@ -200,7 +206,13 @@ Available instructions:
                 from Scanner import Scanner
                 from Parser import Parser
                 tokens = Scanner(f"print {arguments[1]};", None).scanTokens()
+                if State.debugError:
+                    State.debugError = False
+                    return
                 statements = Parser(tokens).parse()
+                if State.debugError:
+                    State.debugError = False
+                    return
 
                 self.interpreter.environment = self.environment
                 self.interpreter.interpret(statements)

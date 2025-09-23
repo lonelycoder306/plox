@@ -187,6 +187,7 @@ def report(error: BaseError, where: str):
     # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
     if (State.debugMode or not linePos):
         sys.stderr.write(f'error: {message}\n')
+        State.debugError = True
         return
 
     lexemeLen = 1

@@ -13,6 +13,7 @@ fileLines = dict()
 inAFile = False # Whether or not we are running a file or command-line prompts.
 switchCLI = False # Whether or not to end file execution and switch to terminal CLI.
 debugMode = False # Whether or not we are in a debug session (will alter format of error-reporting).
+debugError = False
 callStack = list()
 traceLog = list()
 breakpoints = []
