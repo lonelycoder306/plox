@@ -413,6 +413,8 @@ class Parser:
         if self.match(TokenType.EQUAL):
             equals = self.previous()
             initializer = self.expression()
+        elif access == "FIX":
+            raise ParseError(self.peek(), "Must provide initializer to fixed variable.")
         
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
 
