@@ -166,7 +166,6 @@ class Resolver:
 
         for method in stmt.classMethods:
             self.beginScope()
-            dummyThis = Token(TokenType.THIS, "this", str("this"), 0, 0, None)
             self.declare(dummyThis)
             self.define(dummyThis)
             self.localVars[dummyThis][1] = True
