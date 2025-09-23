@@ -60,17 +60,12 @@ a[0](1);
 
 Example 2:
 ```
-fun show(a, b)
+fun show(a)
 {
     print a;
-    print b;
 }
 list a = [show];
-a[0](1,2);
-// Should print:
-// 1
-// 2
-// Actually prints:
-// [<fn show>]
-// 2
+a[0](1);
+// Should print: 1
+// Actually prints: [<fn show>]
 ```
