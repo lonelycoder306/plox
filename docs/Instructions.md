@@ -37,6 +37,19 @@
     * The path to the file must be passed.
     * Example: ```GetFile "FileDir/Example.lox";```.
 
+### Fixed-Value Variables
+* To declare a fixed value variable, simply use the ```fix``` modifier in place of ```var```, as below:
+  ```
+  fix x = 1;
+  ```
+* As is the case in other languages with this feature, you can access this variable freely. However, attempting to assign to it after it has been declared will result in an error:
+  ```
+  fix x = 1;
+  x = 2; // Error! Fixed variable 'x' cannot be re-assigned.
+  ```
+* A fixed variable must be provided with an initializer. Not providing one will result in an error.
+* Currently, only regular variables can be made fixed, leaving behind lists and fields. This may be extended in the future.
+
 ### Groups/Namespaces
 * A group/namespace in this context is simply a scope for certain variables. Since Lox has first-class functions and classes, a variable here can be any declared object, such as a regular variable, a list object, a function, or a class.
 * To declare a group, use the below syntax:
