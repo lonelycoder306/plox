@@ -115,8 +115,6 @@ class Scanner:
                 self.addToken(TokenType.MOD)
             case '^':
                 self.addToken(TokenType.POWER)
-            case '_':
-                self.addToken(TokenType.UNDERSCORE)
             
             case '!':
                 self.addToken(TokenType.BANG_EQUAL if self.match('=') else TokenType.BANG)

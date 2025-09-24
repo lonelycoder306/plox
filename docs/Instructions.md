@@ -156,12 +156,12 @@
     is 2:
         print 2; // This will also run.
   ```
-* To add a default case (which will unconditionally run *if no prior case matches*), simply put an _ in place of the case value:
+* To add a default case (which will unconditionally run *if no prior case matches*), simply put an ? in place of the case value:
   ```
   match (1)
     is 2:
         print 2;
-    is _:
+    is ?:
         // This will run if no prior case matches.
         print "No match.";
 * Some notes:

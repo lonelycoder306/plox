@@ -377,7 +377,7 @@ class Parser:
         cases = []
         default = None
         while self.match(TokenType.IS):
-            if self.match(TokenType.UNDERSCORE):
+            if self.match(TokenType.Q_MARK):
                 self.consume(TokenType.COLON, "Expect ':' after case value.")
                 stmt = self.declaration()
                 fallthrough = False # No fallthrough after default.
