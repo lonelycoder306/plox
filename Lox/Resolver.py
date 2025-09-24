@@ -241,8 +241,8 @@ class Resolver:
     def visitMatchStmt(self, stmt: Stmt.Match):
         self.resolve(stmt.value)
         for case in stmt.cases:
-            self.resolve(case[0]) # Value.
-            self.resolve(case[1]) # Statement.
+            self.resolve(case["value"]) # Value.
+            self.resolve(case["stmt"]) # Statement.
     
     def visitPrintStmt(self, stmt: Stmt.Print):
         self.resolve(stmt.expression)

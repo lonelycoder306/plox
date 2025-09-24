@@ -41,7 +41,8 @@ class Scanner:
         "group": TokenType.GROUP,
         "match": TokenType.MATCH,
         "is": TokenType.IS,
-        "fallthrough": TokenType.FALLTHROUGH
+        "fallthrough": TokenType.FALLTHROUGH,
+        "end": TokenType.END
     }
 
     def __init__(self, source, fileName):

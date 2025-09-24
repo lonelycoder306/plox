@@ -380,16 +380,34 @@ class Parser:
             if self.match(TokenType.Q_MARK):
                 self.consume(TokenType.COLON, "Expect ':' after case value.")
                 stmt = self.declaration()
-                fallthrough = False # No fallthrough after default.
-                default = (None, stmt, fallthrough)
+                default = {
+                            "value": None, 
+                            "stmt": stmt,
+                            "fall": fallthrough,
+                            "end": end
+                          }
                 break
             caseValue = self.expression()
             self.consume(TokenType.COLON, "Expect ':' after case value.")
             caseStmt = self.declaration()
             fallthrough = False
+            end = False
             if self.match(TokenType.FALLTHROUGH):
+                if self.match(TokenType.END):
+                    raise ParseError(self.previous(),
+                                     "Cannot end directly after fallthrough.")
                 fallthrough = True
-            cases.append((caseValue, caseStmt, fallthrough))
+            elif self.match(TokenType.END):
+                if self.match(TokenType.FALLTHROUGH):
+                    raise ParseError(self.previous(),
+                                     "Cannot put 'fallthrough' after 'end'.")
+                end = True
+            cases.append({
+                          "value": caseValue,
+                          "stmt": caseStmt,
+                          "fall": fallthrough,
+                          "end": end
+                        })
 
         return Stmt.Match(matchValue, cases, default)
     

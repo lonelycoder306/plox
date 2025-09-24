@@ -156,6 +156,18 @@
     is 2:
         print 2; // This will also run.
   ```
+* To exit from fallthrough (in case you only which to run a certain number of consecutive cases), add the keyword ```end``` at the end of the case you wish to stop after:
+  ```
+  match (1)
+    is 1:
+        print 1; // This will run.
+        fallthrough
+    is 2:
+        print 2; // This will also run.
+        end // Fallthrough ends here.
+    is 3:
+        print 3; // This does not run.
+  ```
 * To add a default case (which will unconditionally run *if no prior case matches*), simply put an ? in place of the case value:
   ```
   match (1)

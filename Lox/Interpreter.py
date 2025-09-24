@@ -293,24 +293,28 @@ class Interpreter:
     def visitMatchStmt(self, stmt: Stmt.Match):
         matchValue = self.evaluate(stmt.value)
         branchHit = False
+        endHit = False
         for i, case in enumerate(stmt.cases):
-            caseValue = self.evaluate(case[0])
+            caseValue = self.evaluate(case["value"])
             if matchValue == caseValue: # Should be fixed for custom-type objects.
                 branchHit = True
-                self.execute(case[1]) # Statement.
-                if case[2]: # Fallthrough.
+                self.execute(case["stmt"]) # Statement.
+                if case["fall"]: # Fallthrough.
                     for j in range (i+1, len(stmt.cases)):
-                        self.execute(stmt.cases[j][1]) # Run each statement.
-                    if stmt.default != None:
-                        self.execute(stmt.default[1]) # Run default statement as well.
+                        self.execute(stmt.cases[j]["stmt"]) # Run each statement.
+                        if stmt.cases[j]["end"]:
+                            endHit = True
+                            break
+                    if (not endHit) and (stmt.default != None):
+                        self.execute(stmt.default["stmt"]) # Run default statement as well.
                 break
-        if not branchHit:
-            if stmt.default != None:
-                self.execute(stmt.default[1]) # Run the default statement.
+        if (not branchHit) and (stmt.default != None):
+            self.execute(stmt.default["stmt"]) # Run the default statement.
 
     def visitPrintStmt(self, stmt: Stmt.Print):
         value = self.evaluate(stmt.expression)
-        # Prevent method from printing nil for void functions when they are called in an expression statement.
+        # Prevent method from printing nil for void functions 
+        # when they are called in an expression statement.
         # No return value -> implicitly return None -> prints "nil".
         if (self.ExprStmt) and (type(value) == tuple):
             return
