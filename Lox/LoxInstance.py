@@ -2,6 +2,8 @@ from Error import RuntimeError
 from LoxFunction import LoxFunction
 from Expr import Expr
 from Token import TokenType
+from String import String
+import State
 
 class LoxInstance:
     def __init__(self, klass):
@@ -10,7 +12,6 @@ class LoxInstance:
         self.public = dict()
 
     def verifyClass(self, klass):
-        import State as State
         while klass != None:
             if klass == State.currentClass:
                 return True
@@ -18,8 +19,6 @@ class LoxInstance:
         return False
 
     def get(self, name):
-        import State as State
-
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
                 return self.private[name.lexeme]
@@ -41,8 +40,6 @@ class LoxInstance:
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
     def set(self, name, value, access):
-        import State as State
-
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
                 self.private[name.lexeme] = value
@@ -66,7 +63,7 @@ class LoxInstance:
                     token = token.name
                 raise RuntimeError(token, "_str method must take no arguments.")
             string = method.bind(self).call(interpreter, expr, arguments)
-            if type(string) == tuple:
+            if type(string) != String:
                 raise RuntimeError(method.declaration.name, 
                                    "_str method does not return a string.")
             return string
