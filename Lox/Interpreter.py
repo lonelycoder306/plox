@@ -303,6 +303,7 @@ class Interpreter:
                         self.execute(stmt.cases[j][1]) # Run each statement.
                     if stmt.default != None:
                         self.execute(stmt.default[1]) # Run default statement as well.
+                break
         if not branchHit:
             if stmt.default != None:
                 self.execute(stmt.default[1]) # Run the default statement.
