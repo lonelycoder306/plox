@@ -237,6 +237,12 @@ class Resolver:
         if stmt.initializer != None:
             self.resolve(stmt.initializer)
         self.define(stmt.name)
+
+    def visitMatchStmt(self, stmt: Stmt.Match):
+        self.resolve(stmt.value)
+        for case in stmt.cases:
+            self.resolve(case[0]) # Value.
+            self.resolve(case[1]) # Statement.
     
     def visitPrintStmt(self, stmt: Stmt.Print):
         self.resolve(stmt.expression)

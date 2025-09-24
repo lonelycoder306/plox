@@ -94,6 +94,15 @@ class Stmt:
 		def accept(self, visitor):
 			return visitor.visitListStmt(self)
 
+	class Match:
+		def __init__(self, value, cases, default):
+			self.value = value
+			self.cases = cases
+			self.default = default
+
+		def accept(self, visitor):
+			return visitor.visitMatchStmt(self)
+
 	class Print:
 		def __init__(self, expression):
 			self.expression = expression

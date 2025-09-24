@@ -289,6 +289,23 @@ class Interpreter:
             if type(listInstance) != List:
                 raise RuntimeError(stmt.name, "Cannot initialize list with non-list value.")
         self.environment.define(stmt.name.lexeme, listInstance, "VAR")
+    
+    def visitMatchStmt(self, stmt: Stmt.Match):
+        matchValue = self.evaluate(stmt.value)
+        branchHit = False
+        for i, case in enumerate(stmt.cases):
+            caseValue = self.evaluate(case[0])
+            if matchValue == caseValue: # Should be fixed for custom-type objects.
+                branchHit = True
+                self.execute(case[1]) # Statement.
+                if case[2]: # Fallthrough.
+                    for j in range (i+1, len(stmt.cases)):
+                        self.execute(stmt.cases[j][1]) # Run each statement.
+                    if stmt.default != None:
+                        self.execute(stmt.default[1]) # Run default statement as well.
+        if not branchHit:
+            if stmt.default != None:
+                self.execute(stmt.default[1]) # Run the default statement.
 
     def visitPrintStmt(self, stmt: Stmt.Print):
         value = self.evaluate(stmt.expression)

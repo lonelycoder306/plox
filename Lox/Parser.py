@@ -69,28 +69,30 @@ class Parser:
         return self.statement()
             
     def statement(self):
+        if self.match(TokenType.ATTEMPT):
+            return self.errorStatement()
         if self.match(TokenType.BREAK):
             return self.breakStatement()
         if self.match(TokenType.CONTINUE):
             return self.continueStatement()
         if self.match(TokenType.FOR):
             return self.forStatement()
+        if self.match(TokenType.GET):
+            return self.fetchStatement()
         if self.match(TokenType.IF):
             return self.ifStatement()
+        if self.match(TokenType.MATCH):
+            return self.matchStruct()
         if self.match(TokenType.PRINT):
             return self.printStatement()
+        if self.match(TokenType.REPORT):
+            return self.reportStatement()
         if self.match(TokenType.RETURN):
             return self.returnStatement()
         if self.match(TokenType.WHILE):
             return self.whileStatement()
         if self.match(TokenType.LEFT_BRACE):
             return Stmt.Block(self.block())
-        if self.match(TokenType.GET):
-            return self.fetchStatement()
-        if self.match(TokenType.ATTEMPT):
-            return self.errorStatement()
-        if self.match(TokenType.REPORT):
-            return self.reportStatement()
 
         return self.expressionStatement()
 
@@ -367,6 +369,29 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after list declaration.")
             
         return Stmt.List(name, initializer)
+    
+    def matchStruct(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' before match value.")
+        matchValue = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' before match value.")
+        cases = []
+        default = None
+        while self.match(TokenType.IS):
+            if self.match(TokenType.UNDERSCORE):
+                self.consume(TokenType.COLON, "Expect ':' after case value.")
+                stmt = self.declaration()
+                fallthrough = False # No fallthrough after default.
+                default = (None, stmt, fallthrough)
+                break
+            caseValue = self.expression()
+            self.consume(TokenType.COLON, "Expect ':' after case value.")
+            caseStmt = self.declaration()
+            fallthrough = False
+            if self.match(TokenType.FALLTHROUGH):
+                fallthrough = True
+            cases.append((caseValue, caseStmt, fallthrough))
+
+        return Stmt.Match(matchValue, cases, default)
     
     def printStatement(self):
         value = self.expression()
