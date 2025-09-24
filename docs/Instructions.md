@@ -129,6 +129,50 @@
      ```
 * The iterable object can be a list, a string, or anything that evaluates to either of those.
 
+### Match-Is Structure
+* To write a match-is structure, use the following syntax:
+  ```
+  match ([expr])
+    is [value 1]:
+        [statement]
+    is [value 2]:
+        [statement]
+  ```
+* If the expr between () matches any of the listed values, the statement below the is-statement will be executed.
+* If (for some reason) a value is repeated in another is-statement, only the first will be run. In other words, once the structure finds a match, it will terminate (by default).
+  ```
+  match (1)
+    is 1:
+        print 1; // Only this one will run.
+    is 1:
+        print 2;
+  ```
+* The match-is structure does not have fallthrough behaviour enabled by default. To enable fallthrough behavior, simply add the keyword ```fallthrough``` at the end of the case that you wish fallthrough to occur after (assuming the case hits a match):
+  ```
+  match (1)
+    is 1:
+        print 1; // This will run.
+        fallthrough
+    is 2:
+        print 2; // This will also run.
+  ```
+* To add a default case (which will unconditionally run *if no prior case matches*), simply put an _ in place of the case value:
+  ```
+  match (1)
+    is 2:
+        print 2;
+    is _:
+        // This will run if no prior case matches.
+        print "No match.";
+* Some notes:
+  * It is necessary to place whatever the match expression is between parentheses.\
+    Parentheses are entirely optional for any of the cases below it.
+  * The ```fallthrough``` keyword is ***not*** followed by a semicolon. 
+  * The ```fallthrough``` keyword should always be at the *end* of the case. If the statement following the check (```is [expr]:```) is a block, keep the keyword *outside* the block.
+  * The default case (if any) will also run if fallthrough behavior is enabled.
+  * There is no issue in excluding the default case altogether. This will not result in any warnings or errors.
+* Since the structure internally uses comparison to verify a case-hit, the usability of the structure for complex, custom-type objects remains a work in progress.
+
 ### Testing and Clean-up
 * The tests check expected output and error messages for a wide number of different test cases which check multiple features, including edge cases.
 * The tests rely on pre-written test and expected output files, which can be found in the "Testing" directory (currently hidden). 
