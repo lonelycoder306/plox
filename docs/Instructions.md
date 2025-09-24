@@ -184,8 +184,28 @@
   ```plox -clean```
 * **Note:** The file "testList.txt" and any files in the "Tests" child directory should ***not*** be deleted for the testing option to work.
 
+### User-Defined Comparison Operators
+* Users can overload the main comparison operators (==, !=, >, >=, <, <=) for their own custom classes by adding the following methods to their classes with the class-specific definition for these operators:
+
+  |   Operator   |     Method     |
+  |:------------:|:--------------:|
+  |   ```==```   |    ```_eq```   |
+  |   ```!=```   |    ```_ne```   |
+  |   ```>```    |    ```_gt```   |
+  |   ```>=```   |    ```_ge```   |
+  |   ```<```    |    ```_lt```   |
+  |   ```<=```   |    ```_le```   |
+* These methods *must* return a Boolean value, or an error will result.\
+  They must also each take a single argument, which will be the RHS of the comparison expression.
+* The appropriate method will only run if two instances of the same class are being compared; otherwise, they will not be used, and an error will result if the operator is an inequality operator (since the instances cannot be compared with such an operator).
+* If a particular method is not defined, the interpreter will default to the built-in comparison operators.
+
 ### User-Defined Errors and Warnings
 * As with other topics here, user-defined errors and warnings need a dedicated treatment, and are thus covered separately in [Exceptions](./Exceptions.md).
+
+### User-Defined Print Output for Classes
+* If users wish to have custom output be printed if a person attempts to print an instance of their custom class, they can define the ```_str``` method in their class.
+* The method must take *no* parameters and must return a string, or an error will result.
 
 ### Variadic Functions
 * To declare a variadic function, simply put ```...``` where the variable list of arguments should start, like so:\

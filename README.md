@@ -65,6 +65,8 @@ For further instruction on how to make use of some of these features, please go 
 * Added support for range-for loops.
 * Added namepaces (called "groups").
 * Added fixed-value variables.
+* Added support for user-defined printing functions on user-defined classes.
+* Added support for user-defined comparison operators on user-defined classes.
 * Added unique switch-/match-case ("match-is") structure with modifiable fallthrough behavior.
 
 # Brief Q&A
