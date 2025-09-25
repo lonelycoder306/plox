@@ -90,6 +90,8 @@ class BuiltinFunction(LoxCallable):
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
             callee = expr.rightParen
+        if type(object) != String:
+            raise RuntimeError(callee, "Invalid input to number().")
         for char in object.text:
             if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
                 raise RuntimeError(callee, "Invalid input to number().")
