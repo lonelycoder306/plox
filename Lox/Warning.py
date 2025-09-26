@@ -4,7 +4,7 @@ from Token import Token
 class returnWarning(Warning):
     def __init__(self, token: Token):
         self.token = token # The token appearing after the return statement.
-        self.message = f"code found after return statement (will be ignored).\n"
+        self.message = "code found after return statement (will be ignored).\n"
     def warn(self):
         from LoxMain import warn
         warn(self)
@@ -12,7 +12,7 @@ class returnWarning(Warning):
 class unusedWarning(Warning):
     def __init__(self, token: Token):
         self.token = token
-        self.message = f"unused local variable found.\n"
+        self.message = "unused local variable found.\n"
     def warn(self):
         from LoxMain import warn
         warn(self)
