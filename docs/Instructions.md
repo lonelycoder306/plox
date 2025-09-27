@@ -181,6 +181,9 @@
     Parentheses are entirely optional for any of the cases below it.
   * The ```fallthrough``` keyword is ***not*** followed by a semicolon. 
   * The ```fallthrough``` keyword should always be at the *end* of the case. If the statement following the check (```is [expr]:```) is a block, keep the keyword *outside* the block.
+  * The ```end``` keyword follows similar rules.
+  * The ```fallthrough``` and ```end``` keywords should not be combined (in any order) within a single case.\
+    Both combinations will result in errors.
   * The default case (if any) will also run if fallthrough behavior is enabled.
   * There is no issue in excluding the default case altogether. This will not result in any warnings or errors.
 * Since the structure internally uses comparison to verify a case-hit, the usability of the structure for complex, custom-type objects remains a work in progress.
