@@ -1,8 +1,6 @@
-# File only exists to avoid making any global error variables in LoxMain.py
-# Global variables led to severe bugs and wrong hadError or hadRuntimeError variables being modified.
-# Fixed with the use of this file.
+# File to handle multiple shared ("global") variables across interpreter files.
 
-# For handling command-line arguments to the interpreter.
+# For handling command-line arguments to the interpreter (used in LoxMain).
 fileName = None
 testMode = False
 cleanMode = False
