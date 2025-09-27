@@ -1,4 +1,7 @@
-def defineAST(directory, classes, file):
+from io import TextIOWrapper
+import os
+
+def defineAST(directory: str, classes: list[str], file: TextIOWrapper) -> None:
     file.write(f"class {directory}:\n")
 
     for entry in classes:
@@ -57,8 +60,6 @@ StmtClasses = [ "Break      : breakCMD, loopType",
                 "Return     : keyword, value",
                 "Var        : name, equals, initializer, access",
                 "While      : condition, body"]
-
-import os
 
 scriptDir = os.path.dirname(__file__) # scriptDir = 'Lox/utils'
 
