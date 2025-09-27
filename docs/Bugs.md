@@ -69,3 +69,22 @@ a[0](1);
 // Should print: 1
 // Actually prints: [<fn show>]
 ```
+### Status
+The main bug here has been resolved. The fix consisted of switching the variable resolving so that we fetch values from the current environment before searching the global scope. Doing the opposite (which is what originally occurred) would lead to the problem above, since we resolve to the global list ```a``` (in the above example) rather than the local parameter variable. The look-up code snippet (as of writing this):
+``` python
+if distance != None:
+    value = self.environment.getAt(distance, name)
+    return value
+else:
+    if name.lexeme in self.environment.values.keys():
+        return self.environment.get(name)
+    elif name.lexeme in self.globals.values.keys():
+        return self.globals.get(name)
+    return self.builtins.get(name)
+```
+However, there are still issues with this solution, since any local variable (even in the current environment) should have a distance other than None associated with the variable expression containing it. Thus, if our static resolving code is working correctly, we should expect that the below if-clause be obsolete, since it searches the current environment directly (even though the check above it should already do this indirectly):
+``` python
+if name.lexeme in self.environment.values.keys():
+    return self.environment.get(name)
+```
+The deeper issue here has yet to be located/diagnosed.
