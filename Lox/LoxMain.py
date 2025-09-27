@@ -15,12 +15,12 @@ linePrint = False # True if error lines should be printed.
 if len(sys.argv) == 2:
     if sys.argv[1] == "-test":
         testMode = True
-    if sys.argv[1] == "-clean":
+    elif sys.argv[1] == "-clean":
         cleanMode = True
-    if sys.argv[1] == "-linepos":
+    elif sys.argv[1] == "-linepos":
         Error = True
         linePos = True
-    if sys.argv[1] == "-error":
+    elif sys.argv[1] == "-error":
         Error = True
         linePos = True
         linePrint = True
