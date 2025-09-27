@@ -2,6 +2,14 @@
 # Global variables led to severe bugs and wrong hadError or hadRuntimeError variables being modified.
 # Fixed with the use of this file.
 
+# For handling command-line arguments to the interpreter.
+fileName = None
+testMode = False
+cleanMode = False
+Error = False # True if "-error" or "-linepos" options have been used.
+linePos = False # True if line-position info should be printed.
+linePrint = False # True if error lines should be printed.
+
 # For error-handling.
 hadError = False # If a lex error, parse error, or resolve error occurred during their respective stages.
 hadRuntimeError = False # If a runtime error occurred during the interpreter stage.

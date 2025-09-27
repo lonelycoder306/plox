@@ -5,35 +5,11 @@ from Parser import Parser
 from Interpreter import Interpreter
 from Resolver import Resolver
 from Error import BaseError, ScanError, ParseError, StaticError, RuntimeError
-
-fileName = None
-testMode = False
-cleanMode = False
-Error = False # True if "-error" or "-linepos" options have been used.
-linePos = False # True if line-position info should be printed.
-linePrint = False # True if error lines should be printed.
-if len(sys.argv) == 2:
-    if sys.argv[1] == "-test":
-        testMode = True
-    elif sys.argv[1] == "-clean":
-        cleanMode = True
-    elif sys.argv[1] == "-linepos":
-        Error = True
-        linePos = True
-    elif sys.argv[1] == "-error":
-        Error = True
-        linePos = True
-        linePrint = True
-    else:
-        fileName = sys.argv[1]
-        linePos = True
-        linePrint = True
+import State
 
 interpreter = Interpreter()
 
 def run(source, fileName = "_REPL_"):
-    import State
-
     scanner = Scanner(source, fileName)
     tokens = scanner.scanTokens()
 
@@ -97,7 +73,6 @@ def piping(path: str, baseName: str):
         sys.stdout = fd
 
 def runFile(path, baseName = None):
-    import State
     State.inAFile = True
 
     try:
@@ -107,9 +82,9 @@ def runFile(path, baseName = None):
             State.fileLines[path] = lineList
         with open(path, "r") as file:
             content = file.read()
-        if testMode:
+        if State.testMode:
             piping(path, baseName)
-        if testMode and ("Error" in path):
+        if State.testMode and ("Error" in path):
             for line in State.fileLines[path]:
                 # We run each line separately so errors for each line
                 # do not affect the next line running.
@@ -123,7 +98,7 @@ def runFile(path, baseName = None):
         sys.stderr.write(f"Could not run. File not found: {error.filename}.\n")
         sys.exit(66)
 
-    if not testMode:
+    if not State.testMode:
         if State.hadError:
             sys.exit(65)
         
@@ -159,7 +134,6 @@ def runPrompt():
                 lines.append(newLine)
             else:
                 break
-        import State
         State.fileLines["_REPL_"] = lines
         line = line.replace("\t", "    ")
         run(line)
@@ -182,15 +156,14 @@ def report(error: BaseError, where: str):
     lexerFile = error.file if (type(error) == ScanError) else None
 
     sys.stderr.write(error.__class__.__name__[:-5] + " ")
-    
-    import State
+
     # In debug mode, we treat commands as REPL prompts (and accordingly for error reporting).
     if State.debugMode:
         sys.stderr.write(f'error: {message}\n')
         State.debugError = True
         return
 
-    if not linePos:
+    if not State.linePos:
         sys.stderr.write(f'error: {message}\n')
         if type(error) == RuntimeError:
             State.hadRuntimeError = True
@@ -207,15 +180,15 @@ def report(error: BaseError, where: str):
     # Length = 0 -> token = EOF (no significant column value).
     if lexemeLen == 0:
         sys.stderr.write(f'error{where} [{fileText}line {line}]: {message}\n')
-        if linePrint:
+        if State.linePrint:
             printErrorLine(line, file)
     elif lexemeLen == 1:
         sys.stderr.write(f'error{where} [{fileText}line {line}, {column}]: {message}\n')
-        if linePrint:
+        if State.linePrint:
             printErrorLine(line, file, column, column)
     else:
         sys.stderr.write(f'error{where} [{fileText}line {line}, {column}-{column + lexemeLen - 1}]: {message}\n')
-        if linePrint:
+        if State.linePrint:
             printErrorLine(line, file, column, column + lexemeLen - 1)
 
     if type(error) == RuntimeError:
@@ -224,7 +197,6 @@ def report(error: BaseError, where: str):
         State.hadError = True
 
 def warn(warning):
-    import State
     # All warnings that we have (thus far) are given based on
     # static analysis of the code, while debug mode is only
     # on at runtime.
@@ -238,7 +210,7 @@ def warn(warning):
     lexemeLen = len(warning.token.lexeme)
     file = warning.token.fileName
 
-    if not linePos:
+    if not State.linePos:
         sys.stderr.write(f'Warning: {warning.message}')
         return
 
@@ -251,7 +223,6 @@ def warn(warning):
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
 def printErrorLine(line: int, file: str, start = None, end = None):
-    import State
     # rstrip used so a potential newline at the end of a line does not impact our error message.
     printLine = State.fileLines[file][line - 1].rstrip('\n') # -1 since line is minimum 1.
     # Strip all the whitespace on the left-side of the line, and record 
@@ -325,19 +296,38 @@ def clean():
                 except OSError as error:
                         sys.stderr.write(f"Error cleaning test file {path}:\n{str(error)}")
 
+def stateSetUp():
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-test":
+            State.testMode = True
+        elif sys.argv[1] == "-clean":
+            State.cleanMode = True
+        elif sys.argv[1] == "-linepos":
+            State.Error = True
+            State.linePos = True
+        elif sys.argv[1] == "-error":
+            State.Error = True
+            State.linePos = True
+            State.linePrint = True
+        else:
+            State.fileName = sys.argv[1]
+            State.linePos = True
+            State.linePrint = True
+
 def main():
+    stateSetUp()
     if len(sys.argv) == 1:
         runPrompt()
     elif len(sys.argv) == 2:
-        if testMode:
+        if State.testMode:
             test()
-        elif cleanMode:
+        elif State.cleanMode:
             clean()
-        elif Error:
+        elif State.Error:
             runPrompt()
         else:
-            fileNameCheck(fileName)
-            runFile(fileName)
+            fileNameCheck(State.fileName)
+            runFile(State.fileName)
     else:
         sys.stderr.write("Usage: plox [option or script]\n")
         sys.exit(64)
