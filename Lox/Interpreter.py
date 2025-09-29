@@ -1,26 +1,31 @@
-from Token import Token, TokenType
-from Expr import Expr
-from Stmt import Stmt
-from Environment import Environment
-from LoxCallable import LoxCallable
-from LoxFunction import LoxFunction
-from LoxClass import LoxClass
-from LoxInstance import LoxInstance, InstanceFunction
-from LoxGroup import LoxGroup
-from List import List, initList
+from typing import Any, NoReturn
+
 from BuiltinFunction import BuiltinFunction
-from Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
-from Warning import UserWarning
+import copy
 from Debug import CLISwitch
-from String import String
+from Environment import Environment
+from Error import RuntimeError, BreakError, ContinueError, Return, StopError, UserError
+from Expr import Expr
+from List import List, initList
+from LoxCallable import LoxCallable
+from LoxClass import LoxClass
+from LoxFunction import LoxFunction
+from LoxGroup import LoxGroup
+from LoxInstance import LoxInstance, InstanceFunction
 from Reference import Reference
+import State
+from Stmt import Stmt
+from String import String
+import sys
+from Token import Token, TokenType
+from Warning import UserWarning
 
 class Interpreter:
-    def __init__(self):
+    def __init__(self) -> None:
         self.globals = Environment()
         self.environment = self.globals
         self.loopLevel = 0
-        self.locals = dict()
+        self.locals: dict[Expr.Variable, int] = {}
         self.ExprStmt = False
 
         # Setting up built-in functions in global scope.
@@ -31,19 +36,18 @@ class Interpreter:
         builtins.define("List", initList, "VAR")
         self.builtins = builtins
 
-    def interpret(self, statements):
+    def interpret(self, statements: list[Stmt]) -> None:
         try:
             for statement in statements:
                 try:
                     self.execute(statement)
-                except UserError as error:
-                    error.show(self)
-                    if error.error.private["halt"] == True:
+                except UserError as exception:
+                    exception.show(self)
+                    if exception.error.private["halt"] == True:
                         return
                 except UserWarning as warning:
                     warning.show(self)
         except RecursionError:
-            import sys
             sys.stderr.write("Recursion error: Recursion limit exceeded.\n")
             return
         except RuntimeError as error: # Stops all execution.
@@ -51,23 +55,20 @@ class Interpreter:
         except StopError:
             return
         except CLISwitch:
-            import State
             State.switchCLI = True
             return
     
-    def resolve(self, expr: Expr.Variable, depth: int):
+    def resolve(self, expr: Expr.Variable, depth: int) -> None:
         self.locals[expr] = depth
     
-    def execute(self, stmt):
-        return stmt.accept(self)
+    def execute(self, stmt: Stmt) -> None:
+        stmt.accept(self)
     
-    def executeBlock(self, statements, environment: Environment):
+    def executeBlock(self, statements: list[Stmt], environment: Environment):
         previous = self.environment
-        import State
         currentCallStack = State.callStack
         try:
             self.environment = environment
-            import copy
             State.callStack = copy.deepcopy(State.callStack)
 
             for statement in statements:
@@ -84,14 +85,14 @@ class Interpreter:
     # Making it a Parse Error rather than a Runtime Error avoids the case where 'break' and 'continue' are
     # placed inside the block after a false condition; 
     # the program will never run those statements, so no error gets raised (despite it being bad code).
-    def visitBreakStmt(self, stmt: Stmt.Break):
+    def visitBreakStmt(self, stmt: Stmt.Break) -> NoReturn:
         raise BreakError(stmt.breakCMD, stmt.loopType)
 
-    def visitBlockStmt(self, stmt: Stmt.Block):
+    def visitBlockStmt(self, stmt: Stmt.Block) -> None:
         self.executeBlock(stmt.statements, Environment(self.environment))
     
-    def methodSetUp(self, methodDict: list):
-        newDict = {}
+    def methodSetUp(self, methodDict: list[Stmt.Function]) -> dict[str, LoxFunction]:
+        newDict: dict[str, LoxFunction] = {}
         for method in methodDict:
             variadic = False
             if (method.params != None) and len(method.params) != 0:
@@ -107,7 +108,7 @@ class Interpreter:
             newDict[method.name.lexeme] = function
         return newDict
 
-    def visitClassStmt(self, stmt: Stmt.Class):
+    def visitClassStmt(self, stmt: Stmt.Class) -> None:
         self.environment.define(stmt.name.lexeme, None, "VAR")
 
         superclass = None
@@ -146,10 +147,10 @@ class Interpreter:
 
         self.environment.assign(stmt.name, klass)
 
-    def visitContinueStmt(self, stmt: Stmt.Continue):
+    def visitContinueStmt(self, stmt: Stmt.Continue) -> NoReturn:
         raise ContinueError(stmt.continueCMD, stmt.loopType)
 
-    def excClassHelper(self, excClass: LoxClass, excs: list[str]):
+    def excClassHelper(self, excClass: LoxClass, excs: list[str]) -> bool:
         if excClass.name in excs:
             return True
         else:
@@ -159,8 +160,8 @@ class Interpreter:
                     return True
             return False
 
-    def visitErrorStmt(self, stmt: Stmt.Error):
-        errors = []
+    def visitErrorStmt(self, stmt: Stmt.Error) -> None:
+        errors: list[str] = []
         if stmt.errors != None:
             for error in stmt.errors:
                 errors.append(error.name.lexeme)
@@ -194,7 +195,7 @@ class Interpreter:
             except (UserError, UserWarning, RuntimeError, RecursionError):
                 self.execute(stmt.handler)
 
-    def visitExpressionStmt(self, stmt: Stmt.Expression):
+    def visitExpressionStmt(self, stmt: Stmt.Expression) -> None:
         prevState = self.ExprStmt
         self.ExprStmt = True
 
@@ -212,14 +213,13 @@ class Interpreter:
         
         self.ExprStmt = prevState
     
-    def visitFetchStmt(self, stmt: Stmt.Fetch):
+    def visitFetchStmt(self, stmt: Stmt.Fetch) -> None:
         mode = stmt.mode.lexeme[3:]
         name = stmt.name.lexeme[1:-1]
         match mode:
             case "Mod":
                 try:
                     import os
-                    import sys
                     from importlib import import_module
                     sys.path.append(os.getcwd() + "/Modules")
                     module = import_module(f"{name}")
@@ -235,7 +235,7 @@ class Interpreter:
             case "File":
                 pass
 
-    def visitFunctionStmt(self, stmt: Stmt.Function):
+    def visitFunctionStmt(self, stmt: Stmt.Function) -> None:
         # Check that function is not an unassigned lambda (do nothing if it is).
         if stmt.name != None:
             context = {"isMethod": False,
@@ -253,7 +253,7 @@ class Interpreter:
             function = LoxFunction(stmt, self.environment, context)
             self.environment.define(stmt.name.lexeme, function, "VAR")
     
-    def visitGroupStmt(self, stmt: Stmt.Group):
+    def visitGroupStmt(self, stmt: Stmt.Group) -> None:
         newEnv = Environment(self.environment)
         previous = self.environment
         self.environment = newEnv
@@ -267,13 +267,13 @@ class Interpreter:
         self.environment = previous
         self.environment.define(stmt.name.lexeme, group, "VAR")
 
-    def visitIfStmt(self, stmt: Stmt.If):
+    def visitIfStmt(self, stmt: Stmt.If) -> None:
         if self.isTruthy(self.evaluate(stmt.condition)):
             self.execute(stmt.thenBranch)
         elif stmt.elseBranch != None:
             self.execute(stmt.elseBranch)
 
-    def visitListStmt(self, stmt: Stmt.List):
+    def visitListStmt(self, stmt: Stmt.List) -> None:
         # We could make uninitialized lists remain undefined,
         # but it seems more fitting to simply initialize them by default
         # to an empty list, particularly since list variables cannot
@@ -284,13 +284,12 @@ class Interpreter:
             if type(listInstance) == Reference:
                 listInstance = listInstance.object
             else:
-                import copy
                 listInstance = copy.deepcopy(listInstance)
             if type(listInstance) != List:
                 raise RuntimeError(stmt.name, "Cannot initialize list with non-list value.")
         self.environment.define(stmt.name.lexeme, listInstance, "VAR")
     
-    def visitMatchStmt(self, stmt: Stmt.Match):
+    def visitMatchStmt(self, stmt: Stmt.Match) -> None:
         matchValue = self.evaluate(stmt.value)
         branchHit = False
         endHit = False
@@ -311,7 +310,7 @@ class Interpreter:
         if (not branchHit) and (stmt.default != None):
             self.execute(stmt.default["stmt"]) # Run the default statement.
 
-    def visitPrintStmt(self, stmt: Stmt.Print):
+    def visitPrintStmt(self, stmt: Stmt.Print) -> None:
         value = self.evaluate(stmt.expression)
         # Prevent method from printing nil for void functions 
         # when they are called in an expression statement.
@@ -320,7 +319,7 @@ class Interpreter:
             return
         print(self.stringify(value))
 
-    def reportClassHelper(self, klass: LoxClass):
+    def reportClassHelper(self, klass: LoxClass) -> tuple:
         if klass.name == "Error":
             return (True, "Error")
         elif klass.name == "Warning":
@@ -334,7 +333,7 @@ class Interpreter:
                     return (True, "Warning")
             return (False, None)
 
-    def visitReportStmt(self, stmt: Stmt.Report):
+    def visitReportStmt(self, stmt: Stmt.Report) -> NoReturn:
         exception = self.evaluate(stmt.exception)
         if type(exception) != LoxInstance:
             raise RuntimeError(stmt.keyword, 
@@ -348,14 +347,14 @@ class Interpreter:
         elif check[1] == "Warning":
             raise UserWarning(exception, stmt.exception)
 
-    def visitReturnStmt(self, stmt: Stmt.Return):
+    def visitReturnStmt(self, stmt: Stmt.Return) -> NoReturn:
         value = ()
         if stmt.value != None:
             value = self.evaluate(stmt.value)
         
         raise Return(value)
 
-    def visitVarStmt(self, stmt: Stmt.Var):
+    def visitVarStmt(self, stmt: Stmt.Var) -> None:
         # Default value will be a tuple containing only None.
         # Reasoning: Since Lox does not support tuples, a user cannot assign this value to a variable (whether intentionally or otherwise).
         # Thus, if this is the value of a variable we are checking, then the variable must be uninitialized in the user's code.
@@ -377,7 +376,7 @@ class Interpreter:
 
         self.environment.define(stmt.name.lexeme, value, stmt.access)
 
-    def visitWhileStmt(self, stmt: Stmt.While):
+    def visitWhileStmt(self, stmt: Stmt.While) -> None:
         self.loopLevel += 1
         while self.isTruthy(self.evaluate(stmt.condition)):
             try:
@@ -392,19 +391,19 @@ class Interpreter:
                     self.evaluate(stmt.body.statements[-1])
         self.loopLevel -= 1
     
-    def checkNumberOperand(self, operator, operand):
+    def checkNumberOperand(self, operator: Token, operand: Any) -> None:
         if type(operand) == float:
             return
         
         raise RuntimeError(operator, "Operand must be a number.")
     
-    def checkNumberOperands(self, operator, left, right):
+    def checkNumberOperands(self, operator: Token, left: Any, right: Any) -> None:
         if (type(left) == float) and (type(right) == float):
             return
         
         raise RuntimeError(operator, "Operands must be numbers.")
     
-    def varType(self, object):
+    def varType(self, object) -> str:
         # To check if variable holds a datetime.time 
         # object (return value of clock()).
         from datetime import time
@@ -484,8 +483,7 @@ class Interpreter:
 
         return text
     
-    def lookUpVariable(self, name: Token, expr: Expr):
-        import State
+    def lookUpVariable(self, name: Token, expr: Expr.Variable) -> Any | None:
         if State.debugMode:
             if name.lexeme in self.builtins.values.keys():
                 return self.builtins.get(name)
@@ -505,7 +503,8 @@ class Interpreter:
                 return self.globals.get(name)
             return self.builtins.get(name)
     
-    def checkIndices(self, expr, object, start, end):
+    def checkIndices(self, expr: Expr.Access, object: Any, 
+                     start: float, end: float) -> bool | None:
         length = len(object)
         # Start index is too negative (goes beyond the beginning).
         if start < (-1*length):
@@ -524,7 +523,8 @@ class Interpreter:
                 raise RuntimeError(expr.operator, "End index out of bounds.")
         return True
     
-    def accessElements(self, object, start, end, expr: Expr.Access):
+    def accessElements(self, object: Any, start: Any, 
+                       end: Any, expr: Expr.Access) -> Any | None:
         if (type(start) != float) or (int(start) != start):
             raise RuntimeError(expr.operator, "Start index must be an integer.")
         
@@ -534,17 +534,15 @@ class Interpreter:
 
         if type(object) == String:
             object = object.text
-            length = len(object)
         elif type(object) == List:
             object = object.array
-            length = len(object)
         if self.checkIndices(expr, object, start, end):
             if end == None: # Only accessing a single element.
                 return object[int(start)]
             else: # Possibly accessing a range.
                 return object[int(start) : int(end) + 1]
     
-    def plus(self, expr, left, right):
+    def plus(self, expr: Expr.Binary, left, right) -> List | float | String | None:
         if (type(left) == list) and (type(right) == list):
             return List(left + right)
 
@@ -563,7 +561,8 @@ class Interpreter:
         
         raise RuntimeError(expr.operator, "Cannot add given operands.")
     
-    def star(self, expr, left, right):
+    def star(self, expr: Expr.Binary, left: Any, 
+             right: Any) -> String | str | float | None:
         if type(left) == str:
             if type(right) == float:
                 if int(right) == right:
@@ -596,8 +595,7 @@ class Interpreter:
         
         raise RuntimeError(expr.operator, "Invalid product.")
     
-    def manageStack(self, expr, callee):
-        import State as State
+    def manageStack(self, expr: Expr.Call, callee: LoxCallable) -> None:
         token = None
         if type(expr.callee) == Expr.Variable:
             token = expr.callee.name
@@ -635,7 +633,7 @@ class Interpreter:
         State.callStack.insert(0, funcData)
         State.traceLog.insert(0, funcData)
     
-    def modifyString(self, mod, value, expr):
+    def modifyString(self, mod: String, value: Any, expr: Expr.Modify) -> None:
         start = self.evaluate(expr.part.start)
         end = None
         if expr.part.end != None:
@@ -660,7 +658,7 @@ class Interpreter:
             string = "".join(tempList)
         mod.text = string
     
-    def modifyList(self, mod, value, expr):
+    def modifyList(self, mod: List, value: Any, expr: Expr.Modify) -> None:
         start = self.evaluate(expr.part.start)
         end = None
         if expr.part.end != None:
@@ -680,10 +678,10 @@ class Interpreter:
                 value = value.array
                 mod.array[int(start) : int(end) + 1] = value
     
-    def evaluate(self, expr):
+    def evaluate(self, expr: Expr) -> Any:
         return expr.accept(self)
     
-    def visitAccessExpr(self, expr: Expr.Access):
+    def visitAccessExpr(self, expr: Expr.Access) -> String | List | Any | None:
         object = self.evaluate(expr.object)
         start = self.evaluate(expr.start)
         end = None
@@ -705,7 +703,7 @@ class Interpreter:
         else:
             raise RuntimeError(expr.operator, "Member access only for strings and lists.")
 
-    def visitAssignExpr(self, expr: Expr.Assign):
+    def visitAssignExpr(self, expr: Expr.Assign) -> Any:
         value = self.evaluate(expr.value)
         if type(value) == Reference:
             value = value.object
@@ -720,7 +718,7 @@ class Interpreter:
             self.globals.assign(expr.name, value)
         return value
 
-    def comparison(self, left, right, expr: Expr.Binary):
+    def comparison(self, left, right, expr: Expr.Binary) -> bool | None:
         if ((type(left) == LoxInstance) and
             (type(right) == LoxInstance)):
                 if left.klass.name == right.klass.name:
@@ -758,7 +756,7 @@ class Interpreter:
         raise RuntimeError(expr.operator,
             f"Cannot compute inequality between ({self.varType(left)}) and ({self.varType(right)}).")
 
-    def visitBinaryExpr(self, expr: Expr.Binary):
+    def visitBinaryExpr(self, expr: Expr.Binary) -> float | bool | None:
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
         if type(left) == List:
@@ -800,7 +798,7 @@ class Interpreter:
             case _ if expr.operator.type in compareTypes:
                 return self.comparison(left, right, expr)
 
-    def visitCallExpr(self, expr: Expr.Call):
+    def visitCallExpr(self, expr: Expr.Call) -> Any:
         callee = self.evaluate(expr.callee)
 
         arguments = list()
@@ -838,7 +836,7 @@ class Interpreter:
         
         return callee.call(self, expr, arguments)
 
-    def visitCommaExpr(self, expr: Expr.Comma):
+    def visitCommaExpr(self, expr: Expr.Comma) -> Any:
         expressions = expr.expressions
         expressionNumber = len(expressions)
         for i in range(0, expressionNumber - 1):
@@ -846,7 +844,7 @@ class Interpreter:
         
         return self.evaluate(expressions[-1])
     
-    def visitGetExpr(self, expr: Expr.Get):
+    def visitGetExpr(self, expr: Expr.Get) -> Any | None:
         object = self.evaluate(expr.object)
         if (isinstance(object, LoxInstance)) or (type(object) == List):
             result = object.get(expr.name)
@@ -857,11 +855,11 @@ class Interpreter:
         
         raise RuntimeError(expr.name, "Only instances have properties.")
 
-    def visitGroupingExpr(self, expr: Expr.Grouping):
+    def visitGroupingExpr(self, expr: Expr.Grouping) -> Any:
         return self.evaluate(expr.expression)
 
     # Lambdas can all be given default name None since they are accessed by index in the parameter/argument list, not by name.
-    def visitLambdaExpr(self, expr: Expr.Lambda):
+    def visitLambdaExpr(self, expr: Expr.Lambda) -> LoxFunction:
         lambdaDeclaration = Stmt.Function(None, expr.params, expr.body, expr.defaults)
         context = {"isMethod": False,
                    "isInitializer": False,
@@ -877,10 +875,10 @@ class Interpreter:
                 context["variadic"] = False
         return LoxFunction(lambdaDeclaration, self.environment, context)
 
-    def visitLiteralExpr(self, expr: Expr.Literal):
+    def visitLiteralExpr(self, expr: Expr.Literal) -> float | String | bool:
         return expr.value
     
-    def visitListExpr(self, expr: Expr.List):
+    def visitListExpr(self, expr: Expr.List) -> List:
         elements = []
         for element in expr.elements:
             value = self.evaluate(element)
@@ -889,7 +887,7 @@ class Interpreter:
             elements.append(value)
         return List(elements)
     
-    def visitLogicalExpr(self, expr: Expr.Logical):
+    def visitLogicalExpr(self, expr: Expr.Logical) -> Any:
         left = self.evaluate(expr.left)
 
         if expr.operator.type == TokenType.OR:
@@ -901,7 +899,7 @@ class Interpreter:
         
         return self.evaluate(expr.right)
     
-    def visitModifyExpr(self, expr: Expr.Modify):
+    def visitModifyExpr(self, expr: Expr.Modify) -> Any | None:
         value = self.evaluate(expr.value)
 
         validObjTypes = (Expr.Variable, Expr.Get, Expr.Access)
@@ -919,7 +917,7 @@ class Interpreter:
             self.modifyList(mod, value, expr)
         return value
     
-    def visitSetExpr(self, expr: Expr.Set):
+    def visitSetExpr(self, expr: Expr.Set) -> Any | None:
         object = self.evaluate(expr.object)
 
         if (isinstance(object, LoxInstance)):
@@ -932,7 +930,7 @@ class Interpreter:
         
         raise RuntimeError(expr.name, "Only instances have modifiable fields.")
 
-    def visitSuperExpr(self, expr: Expr.Super):
+    def visitSuperExpr(self, expr: Expr.Super) -> Any | None:
         distance = self.locals.get(expr, None)
         dummySuper = Token(TokenType.SUPER, "super", "super",
                            0, 0, None)
@@ -949,15 +947,15 @@ class Interpreter:
         return method.bind(object)
     
     # Ternary implementation my own.
-    def visitTernaryExpr(self, expr: Expr.Ternary):
+    def visitTernaryExpr(self, expr: Expr.Ternary) -> Any:
         if self.isTruthy(self.evaluate(expr.condition)):
             return self.evaluate(expr.trueBranch)
         return self.evaluate(expr.falseBranch)
     
-    def visitThisExpr(self, expr: Expr.This):
+    def visitThisExpr(self, expr: Expr.This) -> Any | None:
         return self.lookUpVariable(expr.keyword, expr)
 
-    def visitUnaryExpr(self, expr: Expr.Unary):
+    def visitUnaryExpr(self, expr: Expr.Unary) -> bool | float:
         right = self.evaluate(expr.right)
 
         match expr.operator.type:
@@ -967,5 +965,5 @@ class Interpreter:
                 self.checkNumberOperand(expr.operator, right)
                 return -1 * float(right)
 
-    def visitVariableExpr(self, expr: Expr.Variable):
+    def visitVariableExpr(self, expr: Expr.Variable) -> Any | None:
         return self.lookUpVariable(expr.name, expr)

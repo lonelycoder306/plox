@@ -5,11 +5,12 @@ from Parser import Parser
 from Interpreter import Interpreter
 from Resolver import Resolver
 from Error import BaseError, ScanError, ParseError, StaticError, RuntimeError
+import os
 import State
 
 interpreter = Interpreter()
 
-def run(source, fileName = "_REPL_"):
+def run(source: str, fileName: str = "_REPL_") -> None:
     scanner = Scanner(source, fileName)
     tokens = scanner.scanTokens()
 
@@ -55,7 +56,7 @@ def run(source, fileName = "_REPL_"):
         #     termios.tcflush(sys.stdin, termios.TCIFLUSH)
         runPrompt()
 
-def piping(path: str, baseName: str):
+def piping(path: str, baseName: str) -> None:
     if "Error" in path:
         # To re-direct errors to the given file as well.
         fd = None # For scope purposes.
@@ -72,7 +73,7 @@ def piping(path: str, baseName: str):
             fd = open(f"Testing/Output/{baseName}Output.txt", "w+")
         sys.stdout = fd
 
-def runFile(path, baseName = None):
+def runFile(path: str, baseName: str | None = None) -> None:
     State.inAFile = True
 
     try:
@@ -111,7 +112,7 @@ def runFile(path, baseName = None):
         State.hadError = False
         State.hadRuntimeError = False
 
-def runPrompt():
+def runPrompt() -> None:
     while True:
         lines = []
         print(">>>", end = " ")
@@ -140,7 +141,7 @@ def runPrompt():
         if not State.debugMode:
             State.hadError = False
 
-def error(error: BaseError):
+def error(error: BaseError) -> None:
     if type(error) == ScanError:
         report(error, "")
     elif error.token.type == TokenType.EOF:
@@ -148,7 +149,7 @@ def error(error: BaseError):
     else:
         report(error, " at '" + error.token.lexeme + "'")
 
-def report(error: BaseError, where: str):
+def report(error: BaseError, where: str) -> None:
     # Scan errors are different since there are no tokens whose fields we can use.
     line = error.line if (type(error) == ScanError) else error.token.line
     column = error.column if (type(error) == ScanError) else error.token.column
@@ -196,7 +197,7 @@ def report(error: BaseError, where: str):
     else:
         State.hadError = True
 
-def warn(warning):
+def warn(warning) -> None:
     # All warnings that we have (thus far) are given based on
     # static analysis of the code, while debug mode is only
     # on at runtime.
@@ -222,7 +223,8 @@ def warn(warning):
 
 # Not available for REPL (why add it?).
 # Start and end set to None initially in case of error being at end of line.
-def printErrorLine(line: int, file: str, start = None, end = None):
+def printErrorLine(line: int, file: str, start: int | None = None, 
+                    end: int | None = None) -> None:
     # rstrip used so a potential newline at the end of a line does not impact our error message.
     printLine = State.fileLines[file][line - 1].rstrip('\n') # -1 since line is minimum 1.
     # Strip all the whitespace on the left-side of the line, and record 
@@ -245,15 +247,13 @@ def printErrorLine(line: int, file: str, start = None, end = None):
         sys.stderr.write("|\t" + (" " * newLineLen) + "^\n")
     sys.stderr.flush()
 
-def fileNameCheck(path):
+def fileNameCheck(path: str) -> None:
     if (len(path) < 4) or (path[-4:] != ".lox"):
         sys.stderr.write("Invalid lox file.\n")
         sys.exit(64) # Same issue (bad usage), so same exit code.
 
-def test():
+def test() -> None:
     from importlib import import_module
-    import os
-    import sys
     sys.path.append(os.getcwd() +  "\\Testing\\Python Files")
     module = import_module("generateTests")
     generateFunc = getattr(module, "generateTestFiles")
@@ -273,9 +273,8 @@ def test():
             fileNameCheck(path)
             runFile(path, line[:-4])
 
-def clean():
-    import os
-    lines = list()
+def clean() -> None:
+    lines: list[str] = []
     with open("Testing/testList.txt") as f:
         lines = f.readlines()
         for line in lines:
@@ -296,7 +295,7 @@ def clean():
                 except OSError as error:
                         sys.stderr.write(f"Error cleaning test file {path}:\n{str(error)}")
 
-def stateSetUp():
+def stateSetUp() -> None:
     if len(sys.argv) == 2:
         if sys.argv[1] == "-test":
             State.testMode = True
@@ -314,7 +313,7 @@ def stateSetUp():
             State.linePos = True
             State.linePrint = True
 
-def main():
+def main() -> None:
     stateSetUp()
     if len(sys.argv) == 1:
         runPrompt()

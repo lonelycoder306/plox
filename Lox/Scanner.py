@@ -1,9 +1,11 @@
+from typing import Any
+
 from Token import Token, TokenType
 from Error import ScanError
 
 class Scanner:
     source = str()
-    tokens = list()
+    tokens: list[Token] = []
     fileName = str()
     start = 0
     current = 0
@@ -45,11 +47,11 @@ class Scanner:
         "end": TokenType.END
     }
 
-    def __init__(self, source, fileName):
+    def __init__(self, source: str, fileName: str) -> None:
         self.source = source
         self.fileName = fileName
 
-    def scanTokens(self):
+    def scanTokens(self) -> list[Token]:
         # Reset the list to be empty so that it is ready for each new line/file.
         self.tokens = []
         while not self.isAtEnd():
@@ -62,7 +64,7 @@ class Scanner:
         self.tokens.append(Token(TokenType.EOF, "", None, self.line, self.column, self.fileName))
         return self.tokens
 
-    def scanToken(self):
+    def scanToken(self) -> None:
         c = self.advance()
         self.column += 1
 
@@ -184,7 +186,7 @@ class Scanner:
                 else:
                     raise ScanError(self.line, self.column, self.fileName, "Unexpected character.")
     
-    def identifier(self):
+    def identifier(self) -> None:
         while self.peek().isalnum() or self.peek() == '_':
             self.advance()
         
@@ -197,7 +199,7 @@ class Scanner:
         # -1 to only make it move to the end of the token, not beyond it (it is already on the first character of the token).
         self.column += len(self.tokens[-1].lexeme) - 1
     
-    def number(self):
+    def number(self) -> None:
         while self.peek().isdigit():
             self.advance()
         # Look for a fractional part.
@@ -209,7 +211,7 @@ class Scanner:
         self.addToken(TokenType.NUMBER, float(self.source[self.start:self.current]))
         self.column += len(self.tokens[-1].lexeme) - 1
     
-    def string(self):
+    def string(self) -> None:
         previous = self.source[self.current - 1]
         if previous == '`':
             pos = self.column + 1
@@ -240,7 +242,7 @@ class Scanner:
         self.addToken(TokenType.STRING, value)
         self.column += len(self.tokens[-1].lexeme) - 1
     
-    def match(self, expected):
+    def match(self, expected) -> bool:
         if self.isAtEnd():
             return False
         if self.source[self.current] != expected:
@@ -248,25 +250,25 @@ class Scanner:
         self.current += 1
         return True
     
-    def peek(self):
+    def peek(self) -> str:
         if self.isAtEnd():
             return ""
         return self.source[self.current]
     
-    def peekNext(self):
+    def peekNext(self) -> str:
         if (self.current + 1 >= len(self.source)):
             return ""
         return self.source[self.current + 1]
 
-    def isAtEnd(self):
+    def isAtEnd(self) -> bool:
         return self.current >= len(self.source)
     
-    def advance(self):
+    def advance(self) -> str:
         self.current += 1
         return self.source[self.current - 1]
     
     # Combined both functions into one to avoid overloading.
     # Used default parameter values instead.
-    def addToken(self, type, literal = None):
+    def addToken(self, type: TokenType, literal: Any | None = None) -> None:
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line, self.column, self.fileName))

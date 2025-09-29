@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Any, TYPE_CHECKING, Never
+
 from LoxCallable import LoxCallable
 from Expr import Expr
 from Stmt import Stmt
@@ -6,20 +9,26 @@ from Error import Return
 from Token import Token, TokenType
 from List import List
 
+if TYPE_CHECKING:
+    from Interpreter import Interpreter
+    from LoxFunction import LoxFunction
+    from LoxInstance import LoxInstance
+
 class LoxFunction(LoxCallable):
     def __init__(self, declaration: Stmt.Function, closure: Environment, 
-                 context: dict):
+                 context: dict) -> None:
         self.declaration = declaration
         self.closure = closure
         self.context = context
     
-    def bind(self, instance):
+    def bind(self, instance: LoxInstance) -> LoxFunction:
         environment = Environment(self.closure)
         environment.define("this", instance, "VAR")
         method = LoxFunction(self.declaration, environment, self.context)
         return method
     
-    def setParams(self, interpreter, arguments):
+    def setParams(self, interpreter: Interpreter, 
+                    arguments: list[Any]) -> tuple[Environment, list[Any]]:
         environment = Environment(self.closure)
         vargs = []
 
@@ -48,7 +57,7 @@ class LoxFunction(LoxCallable):
         
         return (environment, vargs)
     
-    def call(self, interpreter, expr, arguments):
+    def call(self, interpreter, expr, arguments) -> Any | tuple | None:
         environment, vargs = self.setParams(interpreter, arguments)
         
         if self.context["variadic"]:
@@ -85,7 +94,7 @@ class LoxFunction(LoxCallable):
         
         return ()
     
-    def arity(self):
+    def arity(self) -> list[int]:
         max = len(self.declaration.params)
         min = max - self.declaration.defaults
         if self.context["variadic"]:
@@ -93,10 +102,10 @@ class LoxFunction(LoxCallable):
             max = 256
         return [min, max]
     
-    def isGetter(self):
+    def isGetter(self) -> bool:
         return (self.declaration.params == None)
     
-    def toString(self):
+    def toString(self) -> str:
         if self.declaration.name == None:
             return "<lambda>"
         elif self.context["isMethod"]:

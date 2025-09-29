@@ -7,16 +7,16 @@ from Interpreter import Interpreter
 from Warning import unusedWarning
 
 class Resolver:
-    def __init__(self, interpreter: Interpreter):
+    def __init__(self, interpreter: Interpreter) -> None:
         self.interpreter = interpreter
-        self.scopes = list()
+        self.scopes: list[dict[Token, bool]] = []
         self.FunctionType = Enum('FunctionType', 'NONE, FUNCTION, LAMBDA, INITIALIZER, METHOD')
         self.classType = Enum('classType', 'NONE, CLASS, SUBCLASS')
         self.currentFunction = self.FunctionType.NONE
         self.currentClass = self.classType.NONE
         # Will record all the defined variables (until they are used) and their line of declaration.
         # Once the variable is used somewhere, it is removed from the dictionary.
-        self.localVars = dict()
+        self.localVars: dict[Token, tuple[int, bool]] = {}
         # Flag variable marking that we are resolving an assignment expression.
         # If true, resolving a variable will not mark it as having been "used".
         # Therefore, only assigning to a variable will not be sufficient to avoid a warning (must use the variable somewhere).
@@ -26,13 +26,13 @@ class Resolver:
         # Silence "unused variable" warning.
         self.inGroup = False
     
-    def beginScope(self):
+    def beginScope(self) -> None:
         self.scopes.append(dict())
     
-    def endScope(self):
+    def endScope(self) -> None:
         self.scopes.pop()
     
-    def declare(self, name: Token):
+    def declare(self, name: Token) -> None:
         if len(self.scopes) == 0:
             return
         
@@ -48,13 +48,13 @@ class Resolver:
         if self.inGroup:
             self.localVars[name][1] = True
 
-    def define(self, name: Token):
+    def define(self, name: Token) -> None:
         if len(self.scopes) == 0:
             return
         
         self.scopes[-1][name] = True
 
-    def resolve(self, target: Expr | Stmt | list[Stmt]):
+    def resolve(self, target: Expr | Stmt | list[Stmt]) -> None:
         if type(target) == list:
             for statement in target:
                 self.resolve(statement)
@@ -64,7 +64,7 @@ class Resolver:
             except StaticError as error:
                 error.show()
     
-    def resolveLocal(self, expr: Expr, name: Token):
+    def resolveLocal(self, expr: Expr.Variable, name: Token) -> None:
         size = len(self.scopes)
 
         for i in range(size - 1, -1, -1): # -1 increment to iterate in reverse
@@ -77,7 +77,7 @@ class Resolver:
                         self.localVars[key][1] = True
                     return
     
-    def resolveFunction(self, function: Stmt.Function, funcType):
+    def resolveFunction(self, function: Stmt.Function, funcType) -> None:
         enclosingFunction = self.currentFunction
         self.currentFunction = funcType
 
@@ -95,7 +95,7 @@ class Resolver:
 
         self.currentFunction = enclosingFunction
     
-    def resolveLambda(self, expr: Expr.Lambda, lambdaType):
+    def resolveLambda(self, expr: Expr.Lambda, lambdaType) -> None:
         enclosingLambda = self.currentFunction
         self.currentFunction = lambdaType
 
@@ -112,7 +112,7 @@ class Resolver:
 
         self.currentFunction = enclosingLambda
 
-    def varWarnings(self, varList: dict):
+    def varWarnings(self, varList: dict) -> None:
         # Filter out any variables that have been used.
         varList = {x:varList[x] for x in varList if varList[x][1] != True}
 
@@ -123,15 +123,15 @@ class Resolver:
         for var in varList:
             unusedWarning(var).warn()
     
-    def visitBreakStmt(self, stmt: Stmt.Break):
+    def visitBreakStmt(self, stmt: Stmt.Break) -> None:
         pass
     
-    def visitBlockStmt(self, stmt: Stmt.Block):
+    def visitBlockStmt(self, stmt: Stmt.Block) -> None:
         self.beginScope()
         self.resolve(stmt.statements)
         self.endScope()
     
-    def visitClassStmt(self, stmt: Stmt.Class):
+    def visitClassStmt(self, stmt: Stmt.Class) -> None:
         enclosingClass = self.currentClass
         self.currentClass = self.classType.CLASS
 
@@ -191,26 +191,26 @@ class Resolver:
 
         self.currentClass = enclosingClass
     
-    def visitContinueStmt(self, stmt: Stmt.Continue):
+    def visitContinueStmt(self, stmt: Stmt.Continue) -> None:
         pass
 
-    def visitErrorStmt(self, stmt: Stmt.Error):
+    def visitErrorStmt(self, stmt: Stmt.Error) -> None:
         self.resolve(stmt.body)
         self.resolve(stmt.handler)
 
-    def visitExpressionStmt(self, stmt: Stmt.Expression):
+    def visitExpressionStmt(self, stmt: Stmt.Expression) -> None:
         self.resolve(stmt.expression)
     
-    def visitFetchStmt(self, stmt: Stmt.Fetch):
+    def visitFetchStmt(self, stmt: Stmt.Fetch) -> None:
         pass
     
-    def visitFunctionStmt(self, stmt: Stmt.Function):
+    def visitFunctionStmt(self, stmt: Stmt.Function) -> None:
         self.declare(stmt.name)
         self.define(stmt.name)
 
         self.resolveFunction(stmt, self.FunctionType.FUNCTION)
     
-    def visitGroupStmt(self, stmt: Stmt.Group):
+    def visitGroupStmt(self, stmt: Stmt.Group) -> None:
         self.declare(stmt.name)
         self.define(stmt.name)
 
@@ -226,31 +226,31 @@ class Resolver:
         self.endScope()
         self.inGroup = previous
     
-    def visitIfStmt(self, stmt: Stmt.If):
+    def visitIfStmt(self, stmt: Stmt.If) -> None:
         self.resolve(stmt.condition)
         self.resolve(stmt.thenBranch)
         if stmt.elseBranch != None:
             self.resolve(stmt.elseBranch)
     
-    def visitListStmt(self, stmt: Stmt.List):
+    def visitListStmt(self, stmt: Stmt.List) -> None:
         self.declare(stmt.name)
         if stmt.initializer != None:
             self.resolve(stmt.initializer)
         self.define(stmt.name)
 
-    def visitMatchStmt(self, stmt: Stmt.Match):
+    def visitMatchStmt(self, stmt: Stmt.Match) -> None:
         self.resolve(stmt.value)
         for case in stmt.cases:
             self.resolve(case["value"]) # Value.
             self.resolve(case["stmt"]) # Statement.
     
-    def visitPrintStmt(self, stmt: Stmt.Print):
+    def visitPrintStmt(self, stmt: Stmt.Print) -> None:
         self.resolve(stmt.expression)
     
-    def visitReportStmt(self, stmt: Stmt.Report):
+    def visitReportStmt(self, stmt: Stmt.Report) -> None:
         self.resolve(stmt.exception)
 
-    def visitReturnStmt(self, stmt: Stmt.Return):
+    def visitReturnStmt(self, stmt: Stmt.Return) -> None:
         if self.currentFunction == self.FunctionType.NONE:
             raise StaticError(stmt.keyword, "Cannot return from top-level code.")
         
@@ -260,72 +260,72 @@ class Resolver:
                                    "Cannot return a value from an initializer.")
             self.resolve(stmt.value)
     
-    def visitVarStmt(self, stmt: Stmt.Var):
+    def visitVarStmt(self, stmt: Stmt.Var) -> None:
         self.declare(stmt.name)
         if stmt.initializer != None:
             self.resolve(stmt.initializer)
         self.define(stmt.name)
     
-    def visitWhileStmt(self, stmt: Stmt.While):
+    def visitWhileStmt(self, stmt: Stmt.While) -> None:
         self.resolve(stmt.condition)
         self.resolve(stmt.body)
 
-    def visitAccessExpr(self, expr: Expr.Access):
+    def visitAccessExpr(self, expr: Expr.Access) -> None:
         self.resolve(expr.start)
         if expr.end != None:
             self.resolve(expr.end)
         self.resolve(expr.object)
 
-    def visitAssignExpr(self, expr: Expr.Assign):
+    def visitAssignExpr(self, expr: Expr.Assign) -> None:
         self.resolve(expr.value)
 
         self.inAssign = True
         self.resolveLocal(expr, expr.name)
         self.inAssign = False
     
-    def visitBinaryExpr(self, expr: Expr.Binary):
+    def visitBinaryExpr(self, expr: Expr.Binary) -> None:
         self.resolve(expr.left)
         self.resolve(expr.right)
     
-    def visitCallExpr(self, expr: Expr.Call):
+    def visitCallExpr(self, expr: Expr.Call) -> None:
         self.resolve(expr.callee)
 
         for argument in expr.arguments:
             self.resolve(argument)
         
-    def visitCommaExpr(self, expr: Expr.Comma):
+    def visitCommaExpr(self, expr: Expr.Comma) -> None:
         for expression in expr.expressions:
             self.resolve(expression)
     
-    def visitGetExpr(self, expr: Expr.Get):
+    def visitGetExpr(self, expr: Expr.Get) -> None:
         self.resolve(expr.object)
     
-    def visitGroupingExpr(self, expr: Expr.Grouping):
+    def visitGroupingExpr(self, expr: Expr.Grouping) -> None:
         self.resolve(expr.expression)
     
-    def visitLambdaExpr(self, expr: Expr.Lambda):
+    def visitLambdaExpr(self, expr: Expr.Lambda) -> None:
         self.resolveLambda(expr, self.FunctionType.LAMBDA)
 
-    def visitListExpr(self, expr: Expr.List):
+    def visitListExpr(self, expr: Expr.List) -> None:
         for element in expr.elements:
             self.resolve(element)
     
-    def visitLiteralExpr(self, expr: Expr.Literal):
+    def visitLiteralExpr(self, expr: Expr.Literal) -> None:
         pass
 
-    def visitLogicalExpr(self, expr: Expr.Logical):
+    def visitLogicalExpr(self, expr: Expr.Logical) -> None:
         self.resolve(expr.left)
         self.resolve(expr.right)
     
-    def visitModifyExpr(self, expr: Expr.Modify):
+    def visitModifyExpr(self, expr: Expr.Modify) -> None:
         self.resolve(expr.value)
         self.resolve(expr.part)
     
-    def visitSetExpr(self, expr: Expr.Set):
+    def visitSetExpr(self, expr: Expr.Set) -> None:
         self.resolve(expr.value)
         self.resolve(expr.object)
     
-    def visitSuperExpr(self, expr: Expr.Super):
+    def visitSuperExpr(self, expr: Expr.Super) -> None:
         if self.currentClass == self.classType.NONE:
             raise StaticError(expr.keyword, 
                                "Can't use 'super' outside of a class.")
@@ -335,21 +335,21 @@ class Resolver:
         
         self.resolveLocal(expr, expr.keyword)
     
-    def visitTernaryExpr(self, expr: Expr.Ternary):
+    def visitTernaryExpr(self, expr: Expr.Ternary) -> None:
         self.resolve(expr.condition)
         self.resolve(expr.trueBranch)
         self.resolve(expr.falseBranch)
     
-    def visitThisExpr(self, expr: Expr.This):
+    def visitThisExpr(self, expr: Expr.This) -> None:
         if self.currentClass == self.classType.NONE:
             raise StaticError(expr.keyword, "Cannot use 'this' outside of a class.")
 
         self.resolveLocal(expr, expr.keyword)
     
-    def visitUnaryExpr(self, expr: Expr.Unary):
+    def visitUnaryExpr(self, expr: Expr.Unary) -> None:
         self.resolve(expr.right)
     
-    def visitVariableExpr(self, expr: Expr.Variable):
+    def visitVariableExpr(self, expr: Expr.Variable) -> None:
         if len(self.scopes) != 0:
             # Check that variable in expression is declared (but not yet defined) in current scope.
             scope = self.scopes[-1]

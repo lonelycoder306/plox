@@ -1,24 +1,34 @@
+from __future__ import annotations
+from typing import Any, TYPE_CHECKING, Literal, Never
+
 from Error import RuntimeError
+from List import List
 from LoxFunction import LoxFunction
 from Expr import Expr
 from Token import TokenType
 from String import String
 import State
 
-class LoxInstance:
-    def __init__(self, klass):
-        self.klass = klass
-        self.private = dict()
-        self.public = dict()
+if TYPE_CHECKING:
+    from Interpreter import Interpreter
+    from LoxClass import LoxClass
+    from LoxInstance import LoxInstance
+    from Token import Token
 
-    def verifyClass(self, klass):
+class LoxInstance:
+    def __init__(self, klass: LoxClass) -> None:
+        self.klass = klass
+        self.private: dict[str, Any] = {}
+        self.public: dict[str, Any] = {}
+
+    def verifyClass(self, klass: LoxClass) -> bool:
         while klass != None:
             if klass == State.currentClass:
                 return True
             klass = klass.superclass
         return False
 
-    def get(self, name):
+    def get(self, name: Token) -> Any | LoxFunction:
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
                 return self.private[name.lexeme]
@@ -39,7 +49,7 @@ class LoxInstance:
         
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
-    def set(self, name, value, access):
+    def set(self, name: Token, value: Any, access: str):
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
                 self.private[name.lexeme] = value
@@ -54,7 +64,8 @@ class LoxInstance:
         elif access == "public":
             self.public[name.lexeme] = value
     
-    def toString(self, interpreter, expr = None, arguments = []):
+    def toString(self, interpreter: Interpreter, 
+                    expr: None = None, arguments: list = []) -> String | str:
         method = self.klass.findMethod("_str")
         if method != None:
             if method.arity() != [0,0]:
@@ -69,10 +80,10 @@ class LoxInstance:
             return string
         return f"<{self.klass.name} instance>"
 
-    def varType(self):
+    def varType(self) -> str:
         return self.klass.name + " instance"
 
-    def compareMethodStr(self, expr: Expr.Binary):
+    def compareMethodStr(self, expr: Expr.Binary) -> str:
         match expr.operator.type:
             case TokenType.GREATER:
                 return "_gt"
@@ -87,7 +98,8 @@ class LoxInstance:
             case TokenType.EQUAL_EQUAL:
                 return "_eq"
 
-    def compare(self, other, interpreter, expr: Expr.Binary):
+    def compare(self, other: LoxInstance, interpreter: Interpreter, 
+                    expr: Expr.Binary) -> bool | tuple:
         methodTitle = self.compareMethodStr(expr)
         method = self.klass.findMethod(methodTitle)
         if method != None:
@@ -108,14 +120,15 @@ class LoxInstance:
 
 from LoxCallable import LoxCallable
 class InstanceFunction(LoxCallable):
-    def __init__(self, mode: str):
-        self.mode = mode
-        self.instance = None
+    def __init__(self, mode: str) -> None:
+        self.mode: str = mode
+        self.instance: LoxInstance | None = None
     
-    def bind(self, instance: LoxInstance):
+    def bind(self, instance: LoxInstance) -> None:
         self.instance = instance
 
-    def call(self, interpreter, expr, arguments):
+    def call(self, interpreter: Interpreter, expr: Expr, 
+                arguments: list[Any]) -> List | tuple | None:
         if self.instance == None:
             # Expr is a Call Expr.
             # The Call Expr's callee is a Get Expr.
@@ -125,31 +138,29 @@ class InstanceFunction(LoxCallable):
 
         match self.mode:
             case "_fieldList":
-                return self.i_fieldList(interpreter, expr, arguments)
+                return self.i_fieldList()
             case "_methodList":
-                return self.i_methodList(interpreter, expr, arguments)
+                return self.i_methodList()
             case "_fields":
-                self.i_fields(interpreter, expr, arguments)
+                self.i_fields(interpreter)
                 return ()
             case "_methods":
-                self.i_methods(interpreter, expr, arguments)
+                self.i_methods(interpreter)
                 return ()
     
-    def i_fieldList(self, interpreter, expr, arguments):
+    def i_fieldList(self) -> List:
         privates = list(self.instance.private.keys())
         publics = list(self.instance.public.keys())
         array = publics + privates
-        from List import List
         return List(array)
 
-    def i_methodList(self, interpreter, expr, arguments):
+    def i_methodList(self) -> List:
         privates = list(self.instance.klass.private.keys())
         publics = list(self.instance.klass.public.keys())
         array = list(privates + publics)
-        from List import List
         return List(array)
 
-    def i_fields(self, interpreter, expr, arguments):
+    def i_fields(self, interpreter: Interpreter) -> None:
         privates = self.instance.private
         for field in privates.keys():
             print(f"{field}: private")
@@ -160,7 +171,7 @@ class InstanceFunction(LoxCallable):
             value = interpreter.stringify(publics[field])
             print(f"{field}: {value}")
     
-    def i_methods(self, interpreter, expr, arguments):
+    def i_methods(self, interpreter: Interpreter) -> None:
         private = self.instance.klass.private
         for method in private.keys():
             value = interpreter.stringify(private[method])
@@ -170,7 +181,7 @@ class InstanceFunction(LoxCallable):
             value = interpreter.stringify(public[method])
             print(f"{method}: {value}")
     
-    def arity(self):
+    def arity(self) -> list[int]:
         match self.mode:
             case "_fieldList":
                 return [0,0]
@@ -181,5 +192,5 @@ class InstanceFunction(LoxCallable):
             case "_methods":
                 return [0,0]
     
-    def toString(self):
+    def toString(self) -> str:
         return f"<native method {self.mode}>"

@@ -1,3 +1,5 @@
+from typing import Any
+
 from Token import TokenType, Token
 from Expr import Expr
 from Stmt import Stmt
@@ -6,14 +8,12 @@ from Warning import returnWarning
 from String import String
 
 class Parser:
-    tokens = list()
-    current = 0
-
-    def __init__(self, tokens):
+    def __init__(self, tokens: list[Token]) -> None:
+        self.current = 0
         self.tokens = tokens
         # Will be None when not in a loop, "forLoop" when within a for-loop, 
         # and "whileLoop" when within a while-loop.
-        self.loopType = None
+        self.loopType: str | None = None
         self.loopLevel = 0
         # To turn off "code after return statement" warnings if braces
         # aren't used after a control-structure statement.
@@ -23,7 +23,7 @@ class Parser:
         self.inClass = False
         self.inInit = False
     
-    def parse(self):
+    def parse(self) -> list[Stmt]:
         statements = list()
         while not self.isAtEnd():
             try:
@@ -34,7 +34,7 @@ class Parser:
         
         return statements
     
-    def declaration(self):
+    def declaration(self) -> Stmt:
         # Moved the try-catch block from here to parse() instead.
         # Avoid the inclusion of None-value declarations in the statement list.
 
@@ -68,7 +68,7 @@ class Parser:
         
         return self.statement()
             
-    def statement(self):
+    def statement(self) -> Stmt:
         if self.match(TokenType.ATTEMPT):
             return self.errorStatement()
         if self.match(TokenType.BREAK):
@@ -96,14 +96,14 @@ class Parser:
 
         return self.expressionStatement()
 
-    def breakStatement(self):
+    def breakStatement(self) -> Stmt.Break:
         breakToken = self.previous()
         if self.loopLevel == 0:
             raise ParseError(breakToken, "Cannot have 'break' outside loop.")
         self.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.")
         return Stmt.Break(breakToken, self.loopType)
     
-    def classDeclaration(self):
+    def classDeclaration(self) -> Stmt.Class:
         name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
 
         superclass = None
@@ -131,14 +131,14 @@ class Parser:
 
         return Stmt.Class(name, superclass, private, public, classMethods)
 
-    def continueStatement(self):
+    def continueStatement(self) -> Stmt.Continue:
         continueToken = self.previous()
         if self.loopLevel == 0:
             raise ParseError(continueToken, "Cannot have 'continue' outside loop.")
         self.consume(TokenType.SEMICOLON, "Expect ';' after 'break'.")
         return Stmt.Continue(continueToken, self.loopType)
 
-    def errorStatement(self):
+    def errorStatement(self) -> Stmt.Error:
         body = self.declaration()
         self.consume(TokenType.HANDLE, "Attempt statement must have a handler.")
         errors = None
@@ -153,7 +153,7 @@ class Parser:
         handler = self.declaration()
         return Stmt.Error(body, errors, handler)
     
-    def fetchStatement(self):
+    def fetchStatement(self) -> Stmt.Fetch:
         mode = self.previous()
         name = None
         if (mode.lexeme[3:] == "Lib"):
@@ -199,7 +199,7 @@ class Parser:
 
         return Stmt.Fetch(mode, name)
 
-    def rangeForLoop(self, initType):
+    def rangeForLoop(self, initType) -> Stmt.Block:
         iterator = self.consume(TokenType.IDENTIFIER, "Expect iterator variable name.")
         colon = self.advance()
         iterableVar = None
@@ -268,7 +268,7 @@ class Parser:
         self.loopLevel -= 1
         return full
 
-    def forStatement(self):
+    def forStatement(self) -> Stmt.While | Stmt.Block:
         self.loopLevel += 1
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
 
@@ -318,7 +318,7 @@ class Parser:
         self.loopLevel -= 1
         return body
     
-    def groupDeclaration(self):
+    def groupDeclaration(self) -> Stmt.Group:
         groupName = self.consume(TokenType.IDENTIFIER, "Expect group name.")
         self.consume(TokenType.LEFT_BRACE, "Expect '{' after group name.")
         vars = []
@@ -342,7 +342,7 @@ class Parser:
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after group body.")
         return Stmt.Group(groupName, vars, functions, classes)
 
-    def ifStatement(self):
+    def ifStatement(self) -> Stmt.If:
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.")
         condition = self.expression()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.")
@@ -360,7 +360,7 @@ class Parser:
         
         return Stmt.If(condition, thenBranch, elseBranch)
     
-    def listDeclaration(self):
+    def listDeclaration(self) -> Stmt.List:
         name = self.consume(TokenType.IDENTIFIER, "Expect list name.")
 
         initializer = None
@@ -370,7 +370,7 @@ class Parser:
             
         return Stmt.List(name, initializer)
     
-    def matchStruct(self):
+    def matchStruct(self) -> Stmt.Match:
         self.consume(TokenType.LEFT_PAREN, "Expect '(' before match value.")
         matchValue = self.expression()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' before match value.")
@@ -411,18 +411,18 @@ class Parser:
 
         return Stmt.Match(matchValue, cases, default)
     
-    def printStatement(self):
+    def printStatement(self) -> Stmt.Print:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Stmt.Print(value)
     
-    def reportStatement(self):
+    def reportStatement(self) -> Stmt.Report:
         keyword = self.previous()
         error = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after error report.")
         return Stmt.Report(keyword, error)
 
-    def returnStatement(self):
+    def returnStatement(self) -> Stmt.Return:
         keyword = self.previous()
 
         value = None
@@ -438,7 +438,7 @@ class Parser:
 
         return Stmt.Return(keyword, value)
 
-    def safeDeclaration(self):
+    def safeDeclaration(self) -> Stmt.Expression:
         keyword = self.previous()
         declaration = self.assignment()
         if type(declaration) != Expr.Set:
@@ -448,7 +448,7 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after private field declaration.")
         return Stmt.Expression(declaration)
 
-    def varDeclaration(self, access):
+    def varDeclaration(self, access) -> Stmt.Var:
         name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
 
         initializer = None
@@ -463,7 +463,7 @@ class Parser:
 
         return Stmt.Var(name, equals, initializer, access)
     
-    def whileStatement(self):
+    def whileStatement(self) -> Stmt.While:
         self.loopLevel += 1
 
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.")
@@ -484,12 +484,13 @@ class Parser:
         self.loopLevel -= 1
         return Stmt.While(condition, body)
     
-    def expressionStatement(self):
+    def expressionStatement(self) -> Stmt.Expression:
         expr = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Stmt.Expression(expr)
     
-    def addParameter(self, parameters, defaultFound, defaults, variadic):
+    def addParameter(self, parameters: list[Any], defaultFound: bool, 
+                        defaults: int, variadic: bool) -> tuple[bool, int, bool]:
         if len(parameters) >= 255:
             raise ParseError(self.peek(), "Can't have more than 255 parameters.")
         if self.match(TokenType.ELLIPSIS):
@@ -513,7 +514,7 @@ class Parser:
             parameters.append(name)
         return (defaultFound, defaults, variadic)
 
-    def function(self, kind):
+    def function(self, kind) -> Stmt.Function:
         # Default in case of unassigned lambda.
         funcName = None
 
@@ -549,7 +550,7 @@ class Parser:
         self.inInit = prevInit
         return Stmt.Function(funcName, parameters, body, defaults)
     
-    def block(self):
+    def block(self) -> list[Stmt]:
         statements = list()
 
         previousStruct = self.inStructure
@@ -563,10 +564,10 @@ class Parser:
 
         return statements
     
-    def expression(self):
+    def expression(self) -> Expr:
         return self.comma()
 
-    def comma(self):
+    def comma(self) -> Expr:
         expressions = list()
 
         expr = self.lambdaExpr()
@@ -590,7 +591,7 @@ class Parser:
     since its visit method returns an expression, and it would be unwise to mix 
     statement classes and expression-returning visit methods.
     '''
-    def lambdaExpr(self):
+    def lambdaExpr(self) -> Expr:
         if self.match(TokenType.FUN):
             self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'fun' keyword.")
 
@@ -614,7 +615,7 @@ class Parser:
         
         return self.assignment()
     
-    def assignment(self):
+    def assignment(self) -> Expr:
         # For +=, -=, *=, and /= operators.
         validTypes = (TokenType.PLUS_EQUALS,
                        TokenType.MINUS_EQUALS,
@@ -667,7 +668,7 @@ class Parser:
         
         return expr
     
-    def orExpr(self):
+    def orExpr(self) -> Expr:
         expr = self.andExpr()
 
         while self.match(TokenType.OR):
@@ -677,7 +678,7 @@ class Parser:
         
         return expr
     
-    def andExpr(self):
+    def andExpr(self) -> Expr:
         expr = self.ternary()
 
         while self.match(TokenType.AND):
@@ -688,7 +689,7 @@ class Parser:
         return expr
     
     # Ternary implementation my own.
-    def ternary(self):
+    def ternary(self) -> Expr:
         expr = self.equality()
 
         while self.match(TokenType.Q_MARK):
@@ -700,7 +701,7 @@ class Parser:
         
         return expr
 
-    def equality(self):
+    def equality(self) -> Expr:
         expr = self.comparison()
 
         while self.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
@@ -710,7 +711,7 @@ class Parser:
         
         return expr
     
-    def comparison(self):
+    def comparison(self) -> Expr:
         expr = self.term()
 
         while self.match(TokenType.GREATER, TokenType.GREATER_EQUAL, 
@@ -721,7 +722,7 @@ class Parser:
         
         return expr
     
-    def term(self):
+    def term(self) -> Expr:
         expr = self.factor()
 
         while self.match(TokenType.MINUS, TokenType.PLUS):
@@ -731,7 +732,7 @@ class Parser:
         
         return expr
     
-    def factor(self):
+    def factor(self) -> Expr:
         expr = self.unary()
 
         # Added the modulus operator (same precedence as * and /).
@@ -742,7 +743,7 @@ class Parser:
         
         return expr
     
-    def unary(self):
+    def unary(self) -> Expr:
         if self.match(TokenType.BANG, TokenType.MINUS):
             operator = self.previous()
             right = self.unary()
@@ -750,7 +751,7 @@ class Parser:
         
         return self.exponent()
     
-    def exponent(self):
+    def exponent(self) -> Expr:
         expr = self.call()
 
         while self.match(TokenType.POWER):
@@ -761,7 +762,7 @@ class Parser:
         
         return expr
     
-    def finishCall(self, callee):
+    def finishCall(self, callee) -> Expr.Call:
         arguments = list()
 
         leftParen = self.previous()
@@ -780,7 +781,7 @@ class Parser:
 
         return Expr.Call(callee, leftParen, rightParen, arguments)
     
-    def call(self):
+    def call(self) -> Expr:
         expr = self.primary()
 
         while True:
@@ -801,7 +802,7 @@ class Parser:
         
         return expr
     
-    def listExpr(self):
+    def listExpr(self) -> Expr.List | None:
         if self.match(TokenType.LEFT_BRACKET):
             operator = self.previous()
             elements = []
@@ -818,7 +819,7 @@ class Parser:
             self.consume(TokenType.RIGHT_BRACKET, "Expect ']' after list elements.")
             return Expr.List(elements, operator)
     
-    def primary(self):
+    def primary(self) -> Expr:
         if self.match(TokenType.FALSE):
             return Expr.Literal(False)
         if self.match(TokenType.TRUE):
@@ -867,7 +868,7 @@ class Parser:
         
         raise ParseError(self.peek(), "Expect expression.")
 
-    def match(self, *args): # *args: variable number of non-keyword arguments.
+    def match(self, *args) -> bool: # *args: variable number of non-keyword arguments.
         for type in args:
             if self.check(type):
                 self.advance()
@@ -875,18 +876,18 @@ class Parser:
         
         return False
 
-    def consume(self, type: TokenType, message: str):
+    def consume(self, type: TokenType, message: str) -> Token | None:
         if self.check(type):
             return self.advance()
         # Put error code here instead.
         raise ParseError(self.peek(), message)
 
-    def check(self, type: TokenType):
+    def check(self, type: TokenType) -> bool:
         if self.isAtEnd():
             return False
         return (self.peek().type == type)
 
-    def advance(self):
+    def advance(self) -> Token:
         if not self.isAtEnd():
             self.current += 1
         return self.previous()        
@@ -903,7 +904,7 @@ class Parser:
     def previous(self) -> Token:
         return self.tokens[self.current - 1]
     
-    def synchronize(self):
+    def synchronize(self) -> None:
         self.advance()
 
         while not self.isAtEnd():

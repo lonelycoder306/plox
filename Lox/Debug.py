@@ -1,3 +1,14 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+from Environment import Environment
+from Error import StopError
+from Expr import Expr
+import State
+
+if TYPE_CHECKING:
+    import Interpreter
+
 '''
 Features to implement:
 1) Breakpoints (figure out a way to allow them to be added at function entry points as well). DONE.
@@ -19,10 +30,9 @@ Possibly:
 class CLISwitch(Exception):
     pass
 
-from Error import StopError
-import State
 class breakpointStop(Exception):
-    def __init__(self, interpreter, environment, expr):
+    def __init__(self, interpreter: Interpreter, environment: Environment, 
+                 expr: Expr.Call) -> None:
         self.breakpoints = []
         self.interpreter = interpreter
         self.environment = environment
@@ -46,7 +56,7 @@ class breakpointStop(Exception):
         self.token = expr.callee.name
         self.quit = False # Continue debug prompt so long as this is false.
 
-    def debugStart(self):
+    def debugStart(self) -> None:
         # Will turn off some features or specifications in our interpreter.
         State.debugMode = True
         if not State.inAFile:
@@ -87,7 +97,7 @@ class breakpointStop(Exception):
                     print("Not a valid command/instruction. Type 'help' for a list of valid commands/instructions.")
         State.debugMode = False
 
-    def debugInstruction(self, choice):
+    def debugInstruction(self, choice: str) -> None:
         match choice:
             case "continue":
                 self.quit = True
@@ -136,7 +146,7 @@ class breakpointStop(Exception):
                     value = self.interpreter.stringify(variables[var])
                     print(f"{var}: {value}")
     
-    def displayHelp(self):
+    def displayHelp(self) -> None:
         print(
 '''Available commands:
         h(elp)      - Display this help screen.
@@ -155,7 +165,7 @@ Available instructions:
         v(alue) [l/local or g/global] (expr)    - Prints the value of the given expression within the given scope.
         break [line #]                          - Adds a breakpoint at the given line (if the line has yet to be passed).''')
 
-    def debugCommand(self, command, arguments):
+    def debugCommand(self, command: str, arguments: list[str]) -> None:
         match command:
             case "value": # Can evaluate expressions, but they must contain NO spaces.
                 self.comm_value(arguments)
@@ -164,7 +174,7 @@ Available instructions:
             case "break":
                 self.comm_break(arguments)
     
-    def comm_value(self, arguments):
+    def comm_value(self, arguments: list[str]) -> None:
         options = ["l", "local", "g", "global"]
         if len(arguments) == 0:
             print("No arguments provided.")
@@ -219,7 +229,7 @@ Available instructions:
             finally:
                 self.interpreter.environment = prevEnv
     
-    def comm_break(self, arguments):
+    def comm_break(self, arguments: list[str]) -> None:
         if len(arguments) == 0:
             print("No line provided.")
             return
@@ -248,15 +258,15 @@ class replDebugger():
     - exit
     '''
 
-    def __init__(self, interpreter):
+    def __init__(self, interpreter: Interpreter) -> None:
         self.interpreter = interpreter
         self.instructions = {}
         self.commands = {}
-        self.watches = []
-        self.checks = []
+        self.watches: list[str] = []
+        self.checks: list[str] = []
         self.exit = False
 
-    def runDebugger(self):
+    def runDebugger(self) -> None:
         State.replDebug = True
         
         while not self.exit:
@@ -271,10 +281,10 @@ class replDebugger():
             
         State.replDebug = False
     
-    def addWatch(self, expr):
+    def addWatch(self, expr: Expr) -> None:
         self.watches.append(expr)
 
-    def runWatches(self):
+    def runWatches(self) -> None:
         from Scanner import Scanner
         from Parser import Parser
         statement = ""
@@ -285,10 +295,10 @@ class replDebugger():
 
         self.interpreter.interpret(statements)
     
-    def addCheck(self, expr):
+    def addCheck(self, expr: Expr) -> None:
         self.checks.append(expr)
     
-    def runChecks(self):
+    def runChecks(self) -> None:
         from Scanner import Scanner
         from Parser import Parser
         statement = ""

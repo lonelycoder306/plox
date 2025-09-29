@@ -1,21 +1,29 @@
+from __future__ import annotations
+from typing import Any, TYPE_CHECKING, Literal
+
 from LoxCallable import LoxCallable
 from Error import RuntimeError
 from String import String
 
+if TYPE_CHECKING:
+    from Expr import Expr
+    from Interpreter import Interpreter
+
 class ListFunction(LoxCallable):
-    def __init__(self, mode):
-        self.mode = mode
-        self.instance = None
+    def __init__(self, mode: str) -> None:
+        self.mode: str = mode
+        self.instance: List | None = None
     
-    def bind(self, instance):
+    def bind(self, instance: List) -> None:
         self.instance = instance
     
-    def check(self, expr, arguments):
+    def check(self, expr: Expr.Call, arguments: list[Any]):
         checkFuncString = "check_" + self.mode
         checkFunc = ListFunction.__dict__[checkFuncString]
         return checkFunc(self, expr, arguments)
 
-    def call(self, interpreter, expr, arguments):
+    def call(self, interpreter: Interpreter, expr: Expr.Call, 
+             arguments: list[Any]) -> Any | tuple:
         if self.check(expr, arguments):
             match self.mode:
                 # Adds element to the end of the list.
@@ -130,19 +138,20 @@ class ListFunction(LoxCallable):
                 case "average":
                     return self.l_average(expr)
     
-    def l_add(self, expr, element):
+    def l_add(self, expr: Expr.Call, element: Any) -> None:
         self.instance.array.append(element)
     
-    def l_insert(self, expr, index, element):
+    def l_insert(self, expr: Expr.Call, index: float, 
+                 element: Any) -> None:
         index = int(index)
         self.instance.array.insert(index, element)
 
-    def l_pop(self, expr):
+    def l_pop(self, expr: Expr.Call) -> Any | None:
         if len(self.instance.array) == 0:
             return #None
         return self.instance.array.pop()
 
-    def l_remove(self, expr, index):
+    def l_remove(self, expr: Expr.Call, index: float) -> Any:
         # Check index validity before running this.
         array = self.instance.array
         index = int(index)
@@ -151,7 +160,7 @@ class ListFunction(LoxCallable):
         self.instance.array = array
         return element
 
-    def compareHelper(self, object, element) -> bool:
+    def compareHelper(self, object: Any, element: Any) -> bool:
         if type(object) != type(element):
             return False
         match object:
@@ -167,7 +176,8 @@ class ListFunction(LoxCallable):
             case _:
                 return (object == element)
 
-    def l_delete(self, expr, element, all: bool = False):
+    def l_delete(self, expr: Expr.Call, element: Any, 
+                 all: bool = False) -> None:
         # Handle ValueError here.
         array = self.instance.array
         removed = False
@@ -183,23 +193,25 @@ class ListFunction(LoxCallable):
                 if self.compareHelper(object, element):
                     array.remove(object)
 
-    def l_join(self, expr):
+    def l_join(self, expr: Expr.Call) -> String:
         string = ""
         for part in self.instance.array:
             string += part.text
         return String(string)
     
-    def l_unique(self, expr):
+    def l_unique(self, expr: Expr.Call) -> List:
         array = self.instance.array
         uniqueArray = list(set(array))
         return List(uniqueArray)
 
-    def l_forEach(self, expr, interpreter, operation):
+    def l_forEach(self, expr: Expr.Call, interpreter: Interpreter, 
+                  operation: LoxCallable) -> None:
         array = self.instance.array
         for element in array:
             operation.call(interpreter, expr, [element])
 
-    def l_transform(self, expr, interpreter, mapping):
+    def l_transform(self, expr: Expr.Call, interpreter: Interpreter, 
+                    mapping: LoxCallable) -> List | None:
         array = self.instance.array
         newArray = []
         for element in array:
@@ -209,7 +221,8 @@ class ListFunction(LoxCallable):
             newArray.append(value)
         return List(newArray)
 
-    def l_filter(self, expr, interpreter, condition):
+    def l_filter(self, expr: Expr.Call, interpreter: Interpreter, 
+                 condition: LoxCallable) -> List | None:
         array = self.instance.array
         filterArray = []
         for element in array:
@@ -222,7 +235,7 @@ class ListFunction(LoxCallable):
                 raise RuntimeError(expr.rightParen, "Function argument must return a Boolean value.")
         return List(filterArray)
 
-    def flatHelper(self, array):
+    def flatHelper(self, array: list[Any]) -> list:
         flatArray = []
         for element in array:
             if type(element) == List:
@@ -231,27 +244,27 @@ class ListFunction(LoxCallable):
                 flatArray.append(element)
         return flatArray
 
-    def l_flat(self, expr):
+    def l_flat(self, expr: Expr.Call) -> List:
         array = self.instance.array
         return List(self.flatHelper(array))
 
-    def l_contains(self, expr, element):
+    def l_contains(self, expr: Expr.Call, element: Any) -> bool:
         for object in self.instance.array:
             if self.compareHelper(object, element):
                 return True
         return False
     
-    def l_duplicate(self, expr):
+    def l_duplicate(self, expr: Expr.Call) -> bool:
         array = self.instance.array
         return (len(array) != len(set(array)))
 
-    def l_index(self, expr, element):
+    def l_index(self, expr: Expr.Call, element: Any) -> float | None:
         for i, object in enumerate(self.instance.array):
             if self.compareHelper(object, element):
                 return float(i)
         return #None
 
-    def l_indexLast(self, expr, element):
+    def l_indexLast(self, expr: Expr.Call, element: Any) -> float | None:
         import copy
         array = copy.deepcopy(self.instance.array)
         array.reverse()
@@ -260,7 +273,8 @@ class ListFunction(LoxCallable):
                 return float(len(array) - i - 1)
         return #None
 
-    def l_any(self, expr, interpreter, condition):
+    def l_any(self, expr: Expr.Call, interpreter: Interpreter, 
+              condition: LoxCallable) -> bool | None:
         array = self.instance.array
         for element in array:
             predicate = condition.call(interpreter, expr, [element])
@@ -270,7 +284,8 @@ class ListFunction(LoxCallable):
                 raise RuntimeError(expr.rightParen, "Function argument must return a Boolean value.")
         return False
 
-    def l_all(self, expr, interpreter, condition):
+    def l_all(self, expr: Expr.Call, interpreter: Interpreter, 
+              condition: LoxCallable) -> bool | None:
         array = self.instance.array
         for element in array:
             predicate = condition.call(interpreter, expr, [element])
@@ -280,14 +295,13 @@ class ListFunction(LoxCallable):
                 raise RuntimeError(expr.rightParen, "Function argument must return a Boolean value.")
         return True
 
-    def l_reverse(self, expr):
+    def l_reverse(self, expr: Expr.Call) -> List:
         import copy
         array = copy.deepcopy(self.instance.array)
         array.reverse()
         return List(array)
 
-    # Update to sort strings?
-    def l_sort(self, expr, ascending: bool = True):
+    def l_sort(self, expr: Expr.Call, ascending: bool = True) -> List:
         import copy
         array = copy.deepcopy(self.instance.array)
         if (len(array) != 0) and (type(array[0]) == String):
@@ -297,8 +311,7 @@ class ListFunction(LoxCallable):
             array = [String(obj) for obj in array]
         return List(array)
     
-    # Update comparisons for strings.
-    def l_sorted(self, expr, ascending: bool = True):
+    def l_sorted(self, expr: Expr.Call, ascending: bool = True) -> bool:
         array = self.instance.array
         if (len(array) != 0) and (type(array[0]) == String):
             array = [obj.text for obj in array]
@@ -311,7 +324,7 @@ class ListFunction(LoxCallable):
                     return False
         return True
 
-    def l_pair(self, expr, secondList):
+    def l_pair(self, expr: Expr.Call, secondList: List) -> List:
         array = self.instance.array
         # Argument check before ensures secondList is a List object.
         secondList = secondList.array
@@ -325,7 +338,7 @@ class ListFunction(LoxCallable):
             i += 1
         return List(pair)
 
-    def l_separate(self, expr):
+    def l_separate(self, expr: Expr.Call) -> List:
         # Already checked that each element in instance's array
         # is a list containing exactly two elements.
         array = self.instance.array
@@ -336,34 +349,35 @@ class ListFunction(LoxCallable):
             largeList[1].append(elemArray[1])
         return List(largeList)
 
-    def l_sum(self, expr):
+    def l_sum(self, expr: Expr.Call) -> float:
         array = self.instance.array
         return float(sum(array))
 
-    def l_min(self, expr):
+    def l_min(self, expr: Expr.Call) -> float:
         array = self.instance.array
         return float(min(array))
 
-    def l_max(self, expr):
+    def l_max(self, expr: Expr.Call) -> float:
         array = self.instance.array
         return float(max(array))
 
-    def l_average(self, expr):
+    def l_average(self, expr: Expr.Call) -> float:
         array = self.instance.array
         return float(sum(array) / len(array))
 
     # ------------------------------------------------------------
 
-    def check_add(self, expr, arguments):
+    def check_add(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_insert(self, expr, arguments):
+    def check_insert(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_pop(self, expr, arguments):
+    def check_pop(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_remove(self, expr, arguments):
+    def check_remove(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         index = arguments[0]
         if type(index) != float:
             raise RuntimeError(expr.rightParen, "Index argument must evaluate to a number.")
@@ -373,73 +387,80 @@ class ListFunction(LoxCallable):
             raise RuntimeError(expr.rightParen, "Index value is beyond list end.")
         return True
     
-    def check_delete(self, expr, arguments):
+    def check_delete(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_join(self, expr, arguments):
+    def check_join(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         for obj in self.instance.array:
             if type(obj) != String:
                 raise RuntimeError(expr.rightParen, 
                                    "List given must only contain strings.")
         return True
     
-    def check_unique(self, expr, arguments):
+    def check_unique(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_forEach(self, expr, arguments):
+    def check_forEach(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         operation = arguments[0]
         if not isinstance(operation, LoxCallable):
             raise RuntimeError(expr.rightParen,
                                "Operation given is not a callable object.")
         return True
     
-    def check_transform(self, expr, arguments):
+    def check_transform(self, expr: Expr.Call, 
+                            arguments: list[Any]) -> bool | None:
         mapping = arguments[0]
         if not isinstance(mapping, LoxCallable):
             raise RuntimeError(expr.rightParen,
                                "Mapping given is not a callable object.")
         return True
     
-    def check_filter(self, expr, arguments):
+    def check_filter(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         condition = arguments[0]
         if not isinstance(condition, LoxCallable):
             raise RuntimeError(expr.rightParen,
                                "Filter given is not a callable object.")
         return True
     
-    def check_flat(self, expr, arguments):
+    def check_flat(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_contains(self, expr, arguments):
+    def check_contains(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
 
-    def check_duplicate(self, expr, arguments):
+    def check_duplicate(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_index(self, expr, arguments):
+    def check_index(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_indexLast(self, expr, arguments):
+    def check_indexLast(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_any(self, expr, arguments):
+    def check_any(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         condition = arguments[0]
         if not isinstance(condition, LoxCallable):
             raise RuntimeError(expr.rightParen,
                                "Condition given is not a callable object.")
         return True
     
-    def check_all(self, expr, arguments):
+    def check_all(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         condition = arguments[0]
         if not isinstance(condition, LoxCallable):
             raise RuntimeError(expr.rightParen,
                                "Condition given is not a callable object.")
         return True
     
-    def check_reverse(self, expr, arguments):
+    def check_reverse(self, expr: Expr.Call, arguments: list[Any]) -> bool:
         return True
     
-    def check_sort(self, expr, arguments):
+    def check_sort(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             if (len(arguments) == 0) or (type(arguments[0]) == bool):
@@ -461,7 +482,8 @@ class ListFunction(LoxCallable):
             raise RuntimeError(expr.rightParen,
                                 "Argument must evaluate to a Boolean.")
 
-    def check_sorted(self, expr, arguments):
+    def check_sorted(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             if (len(arguments) == 0) or (type(arguments[0]) == bool):
@@ -483,13 +505,15 @@ class ListFunction(LoxCallable):
             raise RuntimeError(expr.rightParen,
                                 "Argument must evaluate to a Boolean.")
     
-    def check_pair(self, expr, arguments):
+    def check_pair(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         if type(arguments[0]) != List:
             raise RuntimeError(expr.rightParen,
                                "Argument must be a list.")
         return True
     
-    def check_separate(self, expr, arguments):
+    def check_separate(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             return True
@@ -502,7 +526,8 @@ class ListFunction(LoxCallable):
                                    "Elements must be lists containing exactly two elements.")
         return True
     
-    def check_sum(self, expr, arguments):
+    def check_sum(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             return True
@@ -512,7 +537,8 @@ class ListFunction(LoxCallable):
                                    "List must contain numbers only.")
         return True
     
-    def check_min(self, expr, arguments):
+    def check_min(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             return True
@@ -522,7 +548,8 @@ class ListFunction(LoxCallable):
                                    "List must contain numbers only.")
         return True
     
-    def check_max(self, expr, arguments):
+    def check_max(self, expr: Expr.Call, 
+                    arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             return True
@@ -532,7 +559,8 @@ class ListFunction(LoxCallable):
                                    "List must contain numbers only.")
         return True
 
-    def check_average(self, expr, arguments):
+    def check_average(self, expr: Expr.Call, 
+                        arguments: list[Any]) -> bool | None:
         array = self.instance.array
         if len(array) == 0:
             return True
@@ -544,7 +572,7 @@ class ListFunction(LoxCallable):
 
     # ------------------------------------------------------------
 
-    def arity(self):
+    def arity(self) -> list[int]:
         match self.mode:
             case "add":
                 return [1,1]
@@ -604,7 +632,7 @@ class ListFunction(LoxCallable):
                 return [0,0]
     
     # ------------------------------------------------------------
-    def toString(self):
+    def toString(self) -> str:
         return "<list method>"
 
 functions = ["add", "insert", "pop", "remove", "delete",
@@ -614,13 +642,13 @@ functions = ["add", "insert", "pop", "remove", "delete",
              "sum", "min", "max", "average"]
 
 class List:
-    def __init__(self, array: list):
+    def __init__(self, array: list) -> None:
         self.array = array
-        self.methods = dict()
+        self.methods: dict[str, ListFunction] = {}
         for function in functions:
             self.methods[function] = ListFunction(function)
 
-    def get(self, name):
+    def get(self, name) -> ListFunction | None:
         method = self.methods.get(name.lexeme, None)
         if method != None:
             import copy
@@ -630,10 +658,10 @@ class List:
         
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
 
-    def set():
+    def set() -> None:
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         from Interpreter import Interpreter
         dummyInterpreter = Interpreter()
         string = "["
@@ -652,10 +680,7 @@ class List:
 # To have a List() constructor function.
 # Alternative way of creating/declaring a list.
 class ListInit(LoxCallable):
-    def bind(self, instance):
-        self.instance = instance
-    
-    def check(self, expr, arguments):
+    def check(self, expr: Expr.Call, arguments: list[Any]) -> bool | None:
         if len(arguments) == 0:
             return True
         obj = arguments[0]
@@ -669,7 +694,8 @@ class ListInit(LoxCallable):
                                        "Arguments do not match accepted parameter types.\n" \
                                        "Types are: list/string/integer.")
 
-    def call(self, interpreter, expr, arguments):
+    def call(self, interpreter: Interpreter, expr: Expr.Call, 
+                arguments: list[Any]) -> List:
         if self.check(expr, arguments):
             if len(arguments) > 0:
                 obj = arguments[0]
@@ -690,10 +716,10 @@ class ListInit(LoxCallable):
             else:
                 return List([])
 
-    def arity(self):
+    def arity(self) -> list[int]:
         return [0,1]
     
-    def toString(self):
+    def toString(self) -> str:
         return "<List constructor>"
 
 initList = ListInit()

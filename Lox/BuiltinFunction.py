@@ -49,7 +49,8 @@ class BuiltinFunction(LoxCallable):
     def __init__(self, mode: str) -> None:
         self.mode: str = mode
     
-    def call(self, interpreter: Interpreter, expr: Expr.Call, arguments: list[Any]) -> Any:
+    def call(self, interpreter: Interpreter, expr: Expr.Call, 
+             arguments: list[Any]) -> Any:
         if self.mode == "clock":
             return self.b_clock()
         if self.mode == "type":
@@ -117,7 +118,8 @@ class BuiltinFunction(LoxCallable):
         elif type(object) == List:
             return float(len(object.array))
     
-    def b_copy(self, interpreter: Interpreter, expr: Expr.Call, arguments: list[Any]) -> Any:
+    def b_copy(self, interpreter: Interpreter, expr: Expr.Call, 
+               arguments: list[Any]) -> Any:
         object = arguments[0]
         if isinstance(object, LoxInstance):
             return object.klass.call(interpreter, expr, arguments)
@@ -135,7 +137,8 @@ class BuiltinFunction(LoxCallable):
             raise RuntimeError(callee, "strformat() only accepts string arguments.")
         return String(object.text.encode("utf-8").decode("unicode_escape"))
      
-    def b_perror(self, expr: Expr.Call, message: String, format: bool = True) -> None:
+    def b_perror(self, expr: Expr.Call, message: String, 
+                 format: bool = True) -> None:
         if type(message) != String:
             raise RuntimeError(expr.rightParen, "perror() only accepts string arguments.")
         import sys

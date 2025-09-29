@@ -11,7 +11,8 @@ TokenType = Enum('TokenType',
                  'SLASH_EQUALS, POST_INC, POST_DEC, FIX, GROUP, MATCH, IS, FALLTHROUGH, END')
 
 class Token:
-    def __init__(self, type: TokenType, lexeme: str, literal, line: int, column: int, fileName: str):
+    def __init__(self, type: TokenType, lexeme: str, literal, 
+                    line: int, column: int, fileName: str) -> None:
         self.type = type
         self.lexeme = lexeme
         self.literal = literal
@@ -19,7 +20,7 @@ class Token:
         self.column = column
         self.fileName = fileName
     
-    def toString(self):
+    def toString(self) -> str:
         if self.type.name != "EOF":
             return self.type.name + " " + self.lexeme + " " + str(self.literal)
         return self.type.name + " Null"
