@@ -1,7 +1,7 @@
 # File to handle multiple shared ("global") variables across interpreter files.
 
 # For handling command-line arguments to the interpreter (used in LoxMain).
-fileName = None
+fileName: str
 testMode = False
 cleanMode = False
 Error = False # True if "-error" or "-linepos" options have been used.

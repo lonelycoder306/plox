@@ -10,6 +10,7 @@ from LoxCallable import LoxCallable
 from LoxInstance import LoxInstance
 from Reference import Reference
 from String import String
+from Token import Token
 
 if TYPE_CHECKING:
     from Interpreter import Interpreter
@@ -92,7 +93,7 @@ class BuiltinFunction(LoxCallable):
         return String(interpreter.stringify(object))
     
     def b_number(self, expr: Expr.Call, object: Any) -> float | None:
-        callee = None
+        callee: Token
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
@@ -105,7 +106,7 @@ class BuiltinFunction(LoxCallable):
         return float(object.text)
     
     def b_length(self, expr: Expr.Call, object: Any) -> float | None:
-        callee = None
+        callee: Token
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
@@ -128,7 +129,7 @@ class BuiltinFunction(LoxCallable):
         return newObj
     
     def b_strformat(self, expr: Expr.Call, object: Any) -> String | None:
-        callee = None
+        callee: Token
         if type(expr.callee) == Expr.Variable:
             callee = expr.callee.name
         elif type(expr.callee) == Expr.Access:
@@ -164,32 +165,33 @@ class BuiltinFunction(LoxCallable):
         from Debug import replDebugger
         replDebugger(interpreter).runDebugger()
 
-    def arity(self) -> list[int]:
-        if self.mode == "clock":
-            return [0,0]
-        if self.mode == "type":
-            return [1,1]
-        if self.mode == "string":
-            return [1,1]
-        if self.mode == "number":
-            return [1,1]
-        if self.mode == "length":
-            return [1,1]
-        if self.mode == "copy":
-            return [1,1]
-        if self.mode == "strformat":
-            return [1,1]
-        if self.mode == "perror":
-            return [1,2]
-        if self.mode == "arity":
-            return [1,1]
-        if self.mode == "reference":
-            return [1,1]
-        if self.mode == "breakpoint":
-            return [0,0] # breakpointStop's constructor takes one argument, 
-                         # but the user breakpoint() function takes none.
-        if self.mode == "debug":
-            return [0,0]
+    def arity(self) -> list[int] | None:
+        match (self.mode):
+            case "clock":
+                return [0,0]
+            case "type":
+                return [1,1]
+            case "string":
+                return [1,1]
+            case "number":
+                return [1,1]
+            case "length":
+                return [1,1]
+            case "copy":
+                return [1,1]
+            case "strformat":
+                return [1,1]
+            case "perror":
+                return [1,2]
+            case "arity":
+                return [1,1]
+            case "reference":
+                return [1,1]
+            case "breakpoint":
+                return [0,0]    # breakpointStop's constructor takes one argument, 
+                                # but the user breakpoint() function takes none.
+            case "debug":
+                return [0,0]
 
     def toString(self) -> str:
         return "<native fn>"

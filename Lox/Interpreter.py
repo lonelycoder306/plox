@@ -1,4 +1,4 @@
-from typing import Any, NoReturn
+from typing import Any, Mapping, NoReturn, Protocol, Sequence
 
 from BuiltinFunction import BuiltinFunction
 import copy
@@ -20,6 +20,9 @@ import sys
 from Token import Token, TokenType
 from Warning import UserWarning
 
+class StmtHasAccept(Protocol):
+    def accept(self, visitor) -> None: ...
+
 class Interpreter:
     def __init__(self) -> None:
         self.globals = Environment()
@@ -36,7 +39,7 @@ class Interpreter:
         builtins.define("List", initList, "VAR")
         self.builtins = builtins
 
-    def interpret(self, statements: list[Stmt]) -> None:
+    def interpret(self, statements: Sequence[StmtHasAccept]) -> None:
         try:
             for statement in statements:
                 try:
@@ -61,10 +64,10 @@ class Interpreter:
     def resolve(self, expr: Expr.Variable, depth: int) -> None:
         self.locals[expr] = depth
     
-    def execute(self, stmt: Stmt) -> None:
+    def execute(self, stmt: StmtHasAccept) -> None:
         stmt.accept(self)
     
-    def executeBlock(self, statements: list[Stmt], environment: Environment):
+    def executeBlock(self, statements: list[StmtHasAccept], environment: Environment) -> None:
         previous = self.environment
         currentCallStack = State.callStack
         try:
@@ -91,7 +94,7 @@ class Interpreter:
     def visitBlockStmt(self, stmt: Stmt.Block) -> None:
         self.executeBlock(stmt.statements, Environment(self.environment))
     
-    def methodSetUp(self, methodDict: list[Stmt.Function]) -> dict[str, LoxFunction]:
+    def methodSetUp(self, methodDict: list[Stmt.Function]) -> Mapping[str, LoxFunction | InstanceFunction]:
         newDict: dict[str, LoxFunction] = {}
         for method in methodDict:
             variadic = False

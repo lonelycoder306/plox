@@ -36,8 +36,10 @@ class LoxClass(LoxInstance, LoxCallable):
             import State as State
             if State.inMethod:
                 method = self.private.get(nameString)
+                assert (method != None)
                 if method.context["class"].name == self.name:
                     return method
+            assert (nameToken != None)
             raise RuntimeError(nameToken, f"Private method '{nameString}' is inaccessible.")
         
         elif nameString in self.public.keys():

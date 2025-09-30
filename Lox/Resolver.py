@@ -16,7 +16,7 @@ class Resolver:
         self.currentClass = self.classType.NONE
         # Will record all the defined variables (until they are used) and their line of declaration.
         # Once the variable is used somewhere, it is removed from the dictionary.
-        self.localVars: dict[Token, tuple[int, bool]] = {}
+        self.localVars: dict[Token, list] = {}
         # Flag variable marking that we are resolving an assignment expression.
         # If true, resolving a variable will not mark it as having been "used".
         # Therefore, only assigning to a variable will not be sufficient to avoid a warning (must use the variable somewhere).
@@ -64,7 +64,7 @@ class Resolver:
             except StaticError as error:
                 error.show()
     
-    def resolveLocal(self, expr: Expr.Variable, name: Token) -> None:
+    def resolveLocal(self, expr: Expr, name: Token) -> None:
         size = len(self.scopes)
 
         for i in range(size - 1, -1, -1): # -1 increment to iterate in reverse

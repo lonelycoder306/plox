@@ -47,7 +47,8 @@ class Scanner:
         "end": TokenType.END
     }
 
-    def __init__(self, source: str, fileName: str) -> None:
+    # fileName is None for debugger.
+    def __init__(self, source: str, fileName: str | None) -> None:
         self.source = source
         self.fileName = fileName
 

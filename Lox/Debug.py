@@ -5,9 +5,10 @@ from Environment import Environment
 from Error import StopError
 from Expr import Expr
 import State
+from Stmt import Stmt
 
 if TYPE_CHECKING:
-    import Interpreter
+    from Interpreter import Interpreter
 
 '''
 Features to implement:
@@ -169,8 +170,6 @@ Available instructions:
         match command:
             case "value": # Can evaluate expressions, but they must contain NO spaces.
                 self.comm_value(arguments)
-            case "vars":
-                self.comm_vars(arguments)
             case "break":
                 self.comm_break(arguments)
     
@@ -262,8 +261,8 @@ class replDebugger():
         self.interpreter = interpreter
         self.instructions = {}
         self.commands = {}
-        self.watches: list[str] = []
-        self.checks: list[str] = []
+        self.watches: list[Expr] = []
+        self.checks: list[Expr] = []
         self.exit = False
 
     def runDebugger(self) -> None:
@@ -280,31 +279,3 @@ class replDebugger():
                 arguments = [x.strip() for x in prompt[1:]]
             
         State.replDebug = False
-    
-    def addWatch(self, expr: Expr) -> None:
-        self.watches.append(expr)
-
-    def runWatches(self) -> None:
-        from Scanner import Scanner
-        from Parser import Parser
-        statement = ""
-        for watch in self.watches:
-            statement += f"print \"{watch}: \" + ({watch});"
-        tokens = Scanner(statement, None).scanTokens()
-        statements = Parser(tokens).parse()
-
-        self.interpreter.interpret(statements)
-    
-    def addCheck(self, expr: Expr) -> None:
-        self.checks.append(expr)
-    
-    def runChecks(self) -> None:
-        from Scanner import Scanner
-        from Parser import Parser
-        statement = ""
-        for check in self.checks:
-            statement += f"{check};"
-        tokens = Scanner(statement, None).scanTokens()
-        statements = Parser(tokens).parse()
-
-        self.interpreter.interpret(statements)

@@ -41,11 +41,11 @@ class Environment:
         self.values[name] = value
         self.access[name] = access
 
-    def ancestor(self, distance: int):
+    def ancestor(self, distance: int) -> Environment:
         environment = self
         for i in range(0, distance):
-            environment = environment.enclosing
-        return environment
+            environment = environment.enclosing #type: ignore
+        return environment #type: ignore
     
     def getAt(self, distance: int, name: Token) -> Any | None:
         return self.ancestor(distance).get(name)

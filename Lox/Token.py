@@ -1,3 +1,5 @@
+from typing import Any
+
 from enum import Enum
 
 TokenType = Enum('TokenType', 
@@ -11,8 +13,9 @@ TokenType = Enum('TokenType',
                  'SLASH_EQUALS, POST_INC, POST_DEC, FIX, GROUP, MATCH, IS, FALLTHROUGH, END')
 
 class Token:
-    def __init__(self, type: TokenType, lexeme: str, literal, 
-                    line: int, column: int, fileName: str) -> None:
+    def __init__(self, type: TokenType, lexeme: str, literal: Any, 
+                    line: int, column: int, fileName: str | None) -> None:
+        # fileName is None for dummy tokens.
         self.type = type
         self.lexeme = lexeme
         self.literal = literal

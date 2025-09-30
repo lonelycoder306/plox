@@ -60,6 +60,7 @@ class UserError(Exception):
     
     def show(self, interpreter: Interpreter) -> None:
         method = self.error.klass.findMethod("show")
+        assert (method != None)
         method.bind(self.error).call(interpreter,
                                      self.expression,
                                      [])

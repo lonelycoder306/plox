@@ -1,3 +1,5 @@
+from typing import Protocol, TypeVar
+
 import sys
 from Token import TokenType
 from Scanner import Scanner
@@ -7,6 +9,9 @@ from Resolver import Resolver
 from Error import BaseError, ScanError, ParseError, StaticError, RuntimeError
 import os
 import State
+
+class StmtHasAccept(Protocol):
+    def accept(self, interpreter: Interpreter) -> None: ...
 
 interpreter = Interpreter()
 
@@ -84,7 +89,7 @@ def runFile(path: str, baseName: str | None = None) -> None:
         with open(path, "r") as file:
             content = file.read()
         if State.testMode:
-            piping(path, baseName)
+            piping(path, baseName) # type: ignore
         if State.testMode and ("Error" in path):
             for line in State.fileLines[path]:
                 # We run each line separately so errors for each line
@@ -144,16 +149,16 @@ def runPrompt() -> None:
 def error(error: BaseError) -> None:
     if type(error) == ScanError:
         report(error, "")
-    elif error.token.type == TokenType.EOF:
+    elif error.token.type == TokenType.EOF: # type: ignore
         report(error, " at end")
     else:
-        report(error, " at '" + error.token.lexeme + "'")
+        report(error, " at '" + error.token.lexeme + "'") # type: ignore
 
 def report(error: BaseError, where: str) -> None:
     # Scan errors are different since there are no tokens whose fields we can use.
-    line = error.line if (type(error) == ScanError) else error.token.line
-    column = error.column if (type(error) == ScanError) else error.token.column
-    message = error.message
+    line = error.line if (type(error) == ScanError) else error.token.line # type: ignore
+    column = error.column if (type(error) == ScanError) else error.token.column # type: ignore
+    message = error.message # type: ignore
     lexerFile = error.file if (type(error) == ScanError) else None
 
     sys.stderr.write(error.__class__.__name__[:-5] + " ")
@@ -174,9 +179,9 @@ def report(error: BaseError, where: str) -> None:
 
     lexemeLen = 1
     if lexerFile == None:
-        lexemeLen = len(error.token.lexeme)
+        lexemeLen = len(error.token.lexeme) # type: ignore
 
-    file = lexerFile or error.token.fileName or "_REPL_"
+    file = lexerFile or error.token.fileName or "_REPL_" # type:ignore
     fileText = "" if (file == "_REPL_") else f"\"{file}\", "
     # Length = 0 -> token = EOF (no significant column value).
     if lexemeLen == 0:
@@ -233,7 +238,7 @@ def printErrorLine(line: int, file: str, start: int | None = None,
     prevLineLen = len(printLine)
     printLine = printLine.lstrip()
     newLineLen = len(printLine)
-    if start != None:
+    if (start != None) and (end != None): # end automatically guaranteed if start is not None
         start -= (prevLineLen - newLineLen)
         end -= (prevLineLen - newLineLen)
         sys.stderr.write(f"{line} |\t{printLine}\n")
