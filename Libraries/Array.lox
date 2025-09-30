@@ -17,6 +17,16 @@ class Array
         return str + ")";
     }
 
+    _eq(other)
+    {
+        for (var i = 0; i < length(this.array); i++)
+        {
+            if (this.array[i] != other.array[i]) return false;
+        }
+
+        return true;
+    }
+
     size()
     {
         return length(this.array);
