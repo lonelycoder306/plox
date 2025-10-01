@@ -3,6 +3,16 @@
 ### Built-in Functions
 * Those are too numerous to go over here in their entirety. However, the comments at the beginning of the [code file](../Lox/BuiltinFunction.py) should be sufficiently clear and detailed to explain what they all do, including the arguments they take.
 
+### Command-Line Argument Access/Retrieval
+* The interpreter now allows a user to pass command line arguments to their Lox programs/scripts. This can be interestingly combined with file IO (see [imports](#file-imports) and [IO](#io) below for more on that) to access other files through a Lox program.
+* In order to not clutter the built-in global namespace, the two key variables here, `argc` and `argv` (used here identically to their usage in C/C++ and Python) are stored in the `cl` -- standing for "command-line" -- group (see [groups](#groupsnamespaces) below).\
+  Thus, to access `argv` and `argc`, simply use the following syntax:
+  ```
+  print cl.argv;
+  print cl.argc;
+  ```
+* The group does not need to be imported. The group itself is built in to the interpreter.
+
 ### Debugger
 * The debugger itself has a number of features, instructions, and parts, and thus deserves its own [Debugger](./Debugger.md) file.
 
@@ -25,20 +35,20 @@
 1. GetMod
     * This is used for modules (currently: userIO, fileIO).
     * This will make all functions and methods within these modules available for use.
-    * Example: ```GetMod "userIO";```.
+    * Example: `GetMod "userIO";`.
 2. GetLib
     * This is used for library files (currently: Error, Map, Set, String, Warning).
     * As with modules, all functions, classes, and methods within these library files will be made available for use.
     * Only the file name is passed; no extension should be added.
-    * Example: ```GetLib "Map";```.
+    * Example: `GetLib "Map";`.
 3. GetFile
     * This is used with user-owned Lox files.
     * Passing non-Lox files will raise an error.
     * The path to the file must be passed.
-    * Example: ```GetFile "FileDir/Example.lox";```.
+    * Example: `GetFile "FileDir/Example.lox";`.
 
 ### Fixed-Value Variables
-* To declare a fixed value variable, simply use the ```fix``` modifier in place of ```var```, as below:
+* To declare a fixed value variable, simply use the `fix` modifier in place of `var`, as below:
   ```
   fix x = 1;
   ```
@@ -80,7 +90,7 @@
 
   A.show(); // Prints 1.
   ```
-* Declarations and statements inside groups still follow lexical scoping. Thus, in the previous example, the ```x``` in ```show()``` always resolves to the variable ```x``` declared just above it.
+* Declarations and statements inside groups still follow lexical scoping. Thus, in the previous example, the `x` in `show()` always resolves to the variable `x` declared just above it.
 * Though perhaps not recommended for good, readable code, it is allowed to nest groups. Access to group members works the same way. As an example:
   ```
   group A
@@ -147,7 +157,7 @@
     is 1:
         print 2;
   ```
-* The match-is structure does not have fallthrough behaviour enabled by default. To enable fallthrough behavior, simply add the keyword ```fallthrough``` at the end of the case that you wish fallthrough to occur after (assuming the case hits a match):
+* The match-is structure does not have fallthrough behaviour enabled by default. To enable fallthrough behavior, simply add the keyword `fallthrough` at the end of the case that you wish fallthrough to occur after (assuming the case hits a match):
   ```
   match (1)
     is 1:
@@ -156,7 +166,7 @@
     is 2:
         print 2; // This will also run.
   ```
-* To exit from fallthrough (in case you only which to run a certain number of consecutive cases), add the keyword ```end``` at the end of the case you wish to stop after:
+* To exit from fallthrough (in case you only which to run a certain number of consecutive cases), add the keyword `end` at the end of the case you wish to stop after:
   ```
   match (1)
     is 1:
@@ -179,10 +189,10 @@
 * Some notes:
   * It is necessary to place whatever the match expression is between parentheses.\
     Parentheses are entirely optional for any of the cases below it.
-  * The ```fallthrough``` keyword is ***not*** followed by a semicolon. 
-  * The ```fallthrough``` keyword should always be at the *end* of the case. If the statement following the check (```is [expr]:```) is a block, keep the keyword *outside* the block.
-  * The ```end``` keyword follows similar rules.
-  * The ```fallthrough``` and ```end``` keywords should not be combined (in any order) within a single case.\
+  * The `fallthrough` keyword is ***not*** followed by a semicolon. 
+  * The `fallthrough` keyword should always be at the *end* of the case. If the statement following the check (`is [expr]:`) is a block, keep the keyword *outside* the block.
+  * The `end` keyword follows similar rules.
+  * The `fallthrough` and `end` keywords should not be combined (in any order) within a single case.\
     Both combinations will result in errors.
   * The default case (if any) will also run if fallthrough behavior is enabled.
   * There is no issue in excluding the default case altogether. This will not result in any warnings or errors.
@@ -192,11 +202,11 @@
 * The tests check expected output and error messages for a wide number of different test cases which check multiple features, including edge cases.
 * The tests rely on pre-written test and expected output files, which can be found in the "Testing" directory (currently hidden). 
 * The testing option can be used with the following command:\
-  ```plox -test```
+  `plox -test`
 * This command generates all the necessary Python testing scripts, as well as executing the given Lox test files, organizing the output into a dedicated child directory in "Testing".
-* After running the command, simply run: ```pytest```. This will use the Python testing scripts to give test results.
+* After running the command, simply run: `pytest`. This will use the Python testing scripts to give test results.
 * To clean up the left-over Python testing files and output files, simply run:\
-  ```plox -clean```
+  `plox -clean`
 * **Note:** The file "testList.txt" and any files in the "Tests" child directory should ***not*** be deleted for the testing option to work.
 
 ### User-Defined Comparison Operators
@@ -204,12 +214,12 @@
 
   |   Operator   |     Method     |
   |:------------:|:--------------:|
-  |   ```==```   |    ```_eq```   |
-  |   ```!=```   |    ```_ne```   |
-  |   ```>```    |    ```_gt```   |
-  |   ```>=```   |    ```_ge```   |
-  |   ```<```    |    ```_lt```   |
-  |   ```<=```   |    ```_le```   |
+  |     `==`     |      `_eq`     |
+  |     `!=`     |      `_ne`     |
+  |      `>`     |      `_gt`     |
+  |     `>=`     |      `_ge`     |
+  |      `<`     |      `_lt`     |
+  |     `<=`     |      `_le`     |
 * These methods *must* return a Boolean value, or an error will result.\
   They must also each take a single argument, which will be the RHS of the comparison expression.
 * The appropriate method will only run if two instances of the same class are being compared; otherwise, they will not be used, and an error will result if the operator is an inequality operator (since the instances cannot be compared with such an operator).
@@ -219,12 +229,12 @@
 * As with other topics here, user-defined errors and warnings need a dedicated treatment, and are thus covered separately in [Exceptions](./Exceptions.md).
 
 ### User-Defined Print Output for Classes
-* If users wish to have custom output be printed if a person attempts to print an instance of their custom class, they can define the ```_str``` method in their class.
+* If users wish to have custom output be printed if a person attempts to print an instance of their custom class, they can define the `_str` method in their class.
 * The method must take *no* parameters and must return a string, or an error will result.
 
 ### Variadic Functions
-* To declare a variadic function, simply put ```...``` where the variable list of arguments should start, like so:\
-  ```fun nothing(...) {}```
+* To declare a variadic function, simply put `...` where the variable list of arguments should start, like so:\
+  `fun nothing(...) {}`
 * Variadic functions can also have regular (non-default) parameters *before* the ellipsis (...). For example:
   ```
   fun nothing(a, b, ...) {}
@@ -232,9 +242,9 @@
   fun anotherProblem(a = 1, ...) {} // Error! Can't have a default parameter before the ellipsis.
   ```
 * Variadic functions can accept a total of 256 arguments (the maximum number a Lox function can accept).
-* Variadic functions declared with only an ellipsis (...) can accept zero arguments (though ```vargs``` would be empty).
-* ```vargs``` is not defined automatically for *non*-variadic functions (and thus there is no need to worry about name collisions).
-* The variable list of arguments (following any regular arguments) will be saved in a list called ```vargs``` which can be accessed in the function body. For example:
+* Variadic functions declared with only an ellipsis (...) can accept zero arguments (though `vargs` would be empty).
+* `vargs` is not defined automatically for *non*-variadic functions (and thus there is no need to worry about name collisions).
+* The variable list of arguments (following any regular arguments) will be saved in a list called `vargs` which can be accessed in the function body. For example:
   ```
   fun loop(...)
   {

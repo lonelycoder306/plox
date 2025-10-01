@@ -68,6 +68,7 @@ For further instruction on how to make use of some of these features, please go 
 * Added support for user-defined printing functions on user-defined classes.
 * Added support for user-defined comparison operators on user-defined classes.
 * Added unique switch-/match-case ("match-is") structure with modifiable fallthrough behavior.
+* Added command-line argument access (which can be nicely combined with file IO).
 
 # Brief Q&A
 This section will hopefully address some shorter questions regarding more significant design choices or simple inquiries concerning the interpreter and project as a whole.
