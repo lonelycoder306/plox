@@ -7,6 +7,7 @@ cleanMode = False
 Error = False # True if "-error" or "-linepos" options have been used.
 linePos = False # True if line-position info should be printed.
 linePrint = False # True if error lines should be printed.
+argv = []
 
 # For error-handling.
 hadError = False # If a lex error, parse error, or resolve error occurred during their respective stages.

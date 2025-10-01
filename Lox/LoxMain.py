@@ -1,4 +1,4 @@
-from typing import Protocol, TypeVar
+from typing import Protocol, Optional
 
 import sys
 from Token import TokenType
@@ -332,9 +332,15 @@ def main() -> None:
         else:
             fileNameCheck(State.fileName)
             runFile(State.fileName)
-    else:
-        sys.stderr.write("Usage: plox [option or script]\n")
-        sys.exit(64)
+    elif len(sys.argv) > 2:
+        State.fileName = sys.argv[1]
+        State.linePos = True
+        State.linePrint = True
+        fileNameCheck(State.fileName)
+        State.argv = sys.argv[2:]
+        runFile(State.fileName)
+        # sys.stderr.write("Usage: plox [option or script]\n")
+        # sys.exit(64)
 
 if __name__ == "__main__":
     main()

@@ -40,6 +40,13 @@ class Interpreter:
         self.builtins = builtins
 
     def interpret(self, statements: Sequence[StmtHasAccept]) -> None:
+        # Have to place this here instead of constructor since
+        # the constructor runs globally before main() can set 
+        # up State.argv, so we (incorrectly) end up with an 
+        # empty argv list.
+        from CommandLine import argvSetUp
+        self.globals.define("cl", argvSetUp(), "FIX")
+
         try:
             for statement in statements:
                 try:
