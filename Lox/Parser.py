@@ -377,6 +377,8 @@ class Parser:
         cases = []
         default = None
         while self.match(TokenType.IS):
+            fallthrough = False
+            end = False
             if self.match(TokenType.Q_MARK):
                 self.consume(TokenType.COLON, "Expect ':' after case value.")
                 stmt = self.declaration()
@@ -390,8 +392,6 @@ class Parser:
             caseValue = self.expression()
             self.consume(TokenType.COLON, "Expect ':' after case value.")
             caseStmt = self.declaration()
-            fallthrough = False
-            end = False
             if self.match(TokenType.FALLTHROUGH):
                 if self.match(TokenType.END):
                     raise ParseError(self.previous(),
