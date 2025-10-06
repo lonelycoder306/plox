@@ -583,6 +583,8 @@ class fileFunction(LoxCallable):
 
 fileRef = LoxClass(None, None, "file", {}, {})
 def fileIOSetUp():
+    fileIO.define("FILE_BEG", String("b"), "FIX")
+    fileIO.define("FILE_END", String("e"), "FIX")
     for function in functions[:4]:
         fileIO.define(function, fileFunction(function), "VAR")
     for function in functions[4:]:
