@@ -71,7 +71,7 @@ a[0](1);
 ```
 ### Status
 The main bug here has been resolved. The fix consisted of switching the variable resolving so that we fetch values from the current environment before searching the global scope. Doing the opposite (which is what originally occurred) would lead to the problem above, since we resolve to the global list ```a``` (in the above example) rather than the local parameter variable. The look-up code snippet (as of writing this):
-``` python
+```python
 if distance != None:
     value = self.environment.getAt(distance, name)
     return value
@@ -83,8 +83,31 @@ else:
     return self.builtins.get(name)
 ```
 However, there are still issues with this solution, since any local variable (even in the current environment) should have a distance other than None associated with the variable expression containing it. Thus, if our static resolving code is working correctly, we should expect that the below if-clause be obsolete, since it searches the current environment directly (even though the check above it should already do this indirectly):
-``` python
+```python
 if name.lexeme in self.environment.values.keys():
     return self.environment.get(name)
 ```
 The deeper issue here has yet to be located/diagnosed.
+
+## Bug 3 - Incorrect Execution Order for Post-Increment/Decrement Operator
+### Description
+Unlike in most programming languages, the post-increment and post-decrement operators (the only two increment operators in this implementation) both increment their operand immediately. Thus, if the incremented value is used in a larger expression, its incremented value is used, rather than its original (pre-increment) value.
+#### Location: Parser (in `assignment()`).
+### Example
+Example 1:
+```
+var x = 1;
+x++;
+print x; // Prints 2, as expected (x++ and ++x are equivalent here.)
+```
+
+Example 2:
+```
+var x = 1;
+var y = x++;
+print x; // Should print: 2. Prints: 2.
+print y; // Should print: 1. Prints: 2 (since x++ executed immediately).
+```
+### Status
+The problem here is well-understood and diagnosed. The main cause for it is a mis-handling of the operator parsing code, since the post-increment operator is mistakenly de-sugared to an assignment (i.e., `x++` is actually seen by the interpreter as `x = x + 1`). This bug is only being reported here for transparency and clarity.\
+This may be fixed by re-organizing parts of the parser to replace post-increment/decrement operators with their prefix counterparts, or by some more clever desugaring which makes the operators behave appropriately. As of yet, the bug remains unresolved.
