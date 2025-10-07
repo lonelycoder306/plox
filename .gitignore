@@ -6,8 +6,10 @@ Extras/
 .vscode/
 *.lox
 !Libraries/*
+!toy programs/*
 *.pyc
 *.txt
+!toy programs/*
 !requirements.txt
 *.json
 Testing/
