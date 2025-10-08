@@ -24,7 +24,7 @@ class Parser:
         self.inInit = False
     
     def parse(self) -> list[Stmt]:
-        statements = list()
+        statements: list[Stmt] = []
         while not self.isAtEnd():
             try:
                 statements.append(self.declaration())
@@ -155,11 +155,10 @@ class Parser:
     
     def fetchStatement(self) -> Stmt.Fetch:
         mode = self.previous()
-        name = None
-        if (mode.lexeme[3:] == "Lib"):
-            name = self.consume(TokenType.STRING, "Expect name of import.")
-            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
+        name = self.consume(TokenType.STRING, "Expect name of import.")
+        self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
+        if mode.lexeme[3:] == "Lib":
             from Scanner import Scanner
             file = "Libraries/" + name.lexeme[1:-1] + ".lox"
             try:
@@ -177,25 +176,25 @@ class Parser:
             newTokens = scanner.scanTokens()[:-1]
             self.tokens[self.current:self.current] = newTokens
 
-        elif (mode.lexeme[3:] == "File"):
-            name = self.consume(TokenType.STRING, "Expect name of import.")
-            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
-
+        elif mode.lexeme[3:] == "File":
             from Scanner import Scanner
             file = name.lexeme[1:-1]
             if (len(file) < 4) or (file[-4:] != ".lox"):
                 raise ParseError(name, "Invalid Lox file.")
             try:
-                text = open(file, "r").read()
+                with open(file, "r") as f:
+                    text = f.read()
+                f.close()
+                import State as State
+                with open(file, "r") as f:
+                    lines = f.readlines()
+                    lines = [line.rstrip() for line in lines]
+                    State.fileLines[file] = lines
             except FileNotFoundError:
                 raise ParseError(name, "File not found.")
             scanner = Scanner(text, file)
             newTokens = scanner.scanTokens()[:-1]
             self.tokens[self.current:self.current] = newTokens
-
-        elif mode.lexeme[3:] == "Mod":
-            name = self.consume(TokenType.STRING, "Expect name of import.")
-            self.consume(TokenType.SEMICOLON, "Expect ';' after fetch statement.")
 
         return Stmt.Fetch(mode, name)
 
@@ -860,8 +859,9 @@ class Parser:
         # Could possibly add more operators (comma, ternary, etc.), but these are sufficient as important binary operators.
         # For other operators, the "Expect expression" error message would probably be sufficient.
         # Slash could not be used here at the beginning for a comment, as comments are eliminated in the scanning stage.
-        operators = (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH, TokenType.MOD, TokenType.POWER,
-                    TokenType.AND, TokenType.OR)
+        operators = (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, 
+                     TokenType.SLASH, TokenType.MOD, TokenType.POWER,
+                     TokenType.AND, TokenType.OR)
         for x in operators:
             if self.match(x):
                 raise ParseError(self.previous(), "Missing left operand.")
