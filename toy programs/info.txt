@@ -2,3 +2,4 @@ This directory contains a nice batch of short, direct scripts that demonstrate s
 While they will undoubtedly use the regular features of Lox, they will likely focus moreso on what this implementation uniquely adds or changes.
 These short scripts can also serve as additional, helpful examples for the features outlined in the docs.
 Each script will start with a brief comment that explains what it should do, followed directly by the code.
+Note: these scripts do not aim to comprehensively demonstrate *all* the features of this implementation (that's what the docs are for).
