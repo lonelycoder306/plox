@@ -106,9 +106,10 @@
   ```
 
 ### Interpreter Error Reporting
-* When executing a file, the interpreter will automatically issue complete, detailed errors which are terminal.\
-  They will mention the file name (in case any import was made, allowing the error to be in another file), the line number in the file, and the position of the error on that line. The line itself will also be printed with the error position visually pointed out.
-  The errors being terminal means that execution will fully halt once an error (of any type) is reached, and other error types from following phases in the interpreter will not appear.
+* When executing a file, the interpreter will automatically issue complete, detailed errors which are terminal.
+* They will mention the file name (in case any import was made, allowing the error to be in another file), the line number in the file, and the position of the error on that line.
+* The line itself will also be printed with the error position visually pointed out.
+* The errors being terminal means that execution will fully halt once an error (of any type) is reached, and other error types from following phases in the interpreter will not appear.
 * Example:
   ```
   // Code.
@@ -139,6 +140,7 @@
 * Some notes:
   * The position of the line is determined by singular tokens, and thus may not be perfectly accurate in capturing where the error actually is (though it will be close).
   * The `-error` option in REPL mode automatically also enables the `-linepos` option, and thus there is no reason to use both of them. Using both of them will cause the interpreter to assume that you are executing a file, which is problematic.
+  * While errors in the REPL do not cause the REPL session to end, they will prevent errors from subsequent phases of the interpreter to not be reported (this is primarily done for both the REPL and file execution modes to avoid nonsensical cascading error messages).
 
 ### IO
 * Input/output operations in this implementation can be split into user IO (covered in [this file](./userIO.md)) and file IO (covered in [this file](./fileIO.md)).
