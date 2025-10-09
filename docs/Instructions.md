@@ -105,6 +105,41 @@
   print B.x; // Error! "B" is undefined.
   ```
 
+### Interpreter Error Reporting
+* When executing a file, the interpreter will automatically issue complete, detailed errors which are terminal.\
+  They will mention the file name (in case any import was made, allowing the error to be in another file), the line number in the file, and the position of the error on that line. The line itself will also be printed with the error position visually pointed out.
+  The errors being terminal means that execution will fully halt once an error (of any type) is reached, and other error types from following phases in the interpreter will not appear.
+* Example:
+  ```
+  // Code.
+
+  fun show()
+  {
+      print x;
+  }
+
+  show();
+  ```
+  ```
+  // Error Message.
+
+  Runtime error at 'x' ["example.lox", line 3, 11]: Undefined variable or function 'x'.
+  3 |     print x;
+    |   
+  ```
+* In REPL mode, on the other hand, there are three modes for error reporting:
+  1. Default - In the default mode, error messages will simply state the error type and message, with no further information.\
+     Example: `Runtime error: Undefined variable or function 'x'.`
+  2. Position - In this mode, error messages will additionally also display the line number and position on the line of the error.\
+     To turn on this mode, run `plox` with option `-linepos`.\
+     Example: `Runtime error at 'x' [line 3, 11]: Undefined variable or function 'x'.`
+  3. Full - In this mode, error messages will be displayed like with file execution.\
+     To turn on this mode, run `plox` with option `-error`.\
+     Example: See file execution example above.
+* Some notes:
+  * The position of the line is determined by singular tokens, and thus may not be perfectly accurate in capturing where the error actually is (though it will be close).
+  * The `-error` option in REPL mode automatically also enables the `-linepos` option, and thus there is no reason to use both of them. Using both of them will cause the interpreter to assume that you are executing a file, which is problematic.
+
 ### IO
 * Input/output operations in this implementation can be split into user IO (covered in [this file](./userIO.md)) and file IO (covered in [this file](./fileIO.md)).
 
