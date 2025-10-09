@@ -856,9 +856,12 @@ class Parser:
             if type(expr) == Expr.List:
                 return Expr.List(expr.elements, expr.operator)
         
-        # Could possibly add more operators (comma, ternary, etc.), but these are sufficient as important binary operators.
-        # For other operators, the "Expect expression" error message would probably be sufficient.
-        # Slash could not be used here at the beginning for a comment, as comments are eliminated in the scanning stage.
+        # Could possibly add more operators (comma, ternary, etc.), 
+        # but these are sufficient as important binary operators.
+        # For other operators, the "Expect expression" error message 
+        # would probably be sufficient.
+        # Slash could not be used here at the beginning for a comment, 
+        # as comments are eliminated in the scanning stage.
         operators = (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, 
                      TokenType.SLASH, TokenType.MOD, TokenType.POWER,
                      TokenType.AND, TokenType.OR)
