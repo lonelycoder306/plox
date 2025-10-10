@@ -41,7 +41,7 @@ class LoxInstance:
         if method != None:
             if type(method) == LoxFunction:
                 return method.bind(self)
-            else:
+            elif isinstance(method, LoxCallable):
                 import copy
                 func = copy.deepcopy(method)
                 func.bind(self)
