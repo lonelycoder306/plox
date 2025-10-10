@@ -100,10 +100,10 @@ class BuiltinFunction(LoxCallable):
             callee = expr.rightParen
         if type(object) != String:
             raise RuntimeError(callee, "Invalid input to number().")
-        for char in object.text:
-            if not (char.isdigit() or (char == '.') or (char in ['+', '-'])):
-                raise RuntimeError(callee, "Invalid input to number().")
-        return float(object.text)
+        try:
+            return float(object.text)
+        except ValueError:
+            raise RuntimeError(callee, "Invalid input to number().")
     
     def b_length(self, expr: Expr.Call, object: Any) -> float | None:
         callee: Token
