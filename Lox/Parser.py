@@ -658,7 +658,7 @@ class Parser:
                         return Expr.Assign(name, operator, rhs)
                     
                     if type(expr) == Expr.Get:
-                        return Expr.Set(expr.object, expr.name, rhs)
+                        return Expr.Set(expr.object, expr.name, rhs, "public")
                     
                     if type(expr) == Expr.Access:
                         return Expr.Modify(expr, operator, rhs)
