@@ -49,7 +49,7 @@ class LoxInstance:
         
         raise RuntimeError(name, f"Undefined property or method '{name.lexeme}'.")
     
-    def set(self, name: Token, value: Any, access: str):
+    def set(self, name: Token, value: Any, visibility: str):
         if name.lexeme in self.private.keys():
             if State.inMethod and self.verifyClass(self.klass):
                 self.private[name.lexeme] = value
@@ -59,9 +59,9 @@ class LoxInstance:
         if tempMethod != None:
             raise RuntimeError(name, f"Method in class definition cannot be re-assigned.")
         
-        if access == "private":
+        if visibility == "private":
             self.private[name.lexeme] = value
-        elif access == "public":
+        elif visibility == "public":
             self.public[name.lexeme] = value
     
     def toString(self, interpreter: Interpreter, 

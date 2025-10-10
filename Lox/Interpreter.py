@@ -937,7 +937,7 @@ class Interpreter:
             if type(value) == List:
                 import copy
                 value = copy.deepcopy(value)
-            object.set(expr.name, value, expr.access)
+            object.set(expr.name, value, expr.visibility)
             return value
         
         raise RuntimeError(expr.name, "Only instances have modifiable fields.")
