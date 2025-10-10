@@ -30,6 +30,8 @@ class LoxClass(LoxInstance, LoxCallable):
             initializer.bind(instance).call(interpreter, expr, arguments)
         return instance
     
+    # We have a separate nameString parameter since we sometimes
+    # pass a raw string to this method.
     def findMethod(self, nameString: str, 
                     nameToken: Token | None = None) -> LoxFunction | None:
         if nameString in self.private.keys():
