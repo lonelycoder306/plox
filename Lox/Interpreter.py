@@ -420,6 +420,8 @@ class Interpreter:
         match object:
             case float(): # No check for int() since all values in Lox are saved as floats/doubles.
                 return "number"
+            case str(): # In case an internal function passes an actual string.
+                return "string"
             case String():
                 return "string"
             case bool(): # Fun fact: Bool is a subclass of int.
