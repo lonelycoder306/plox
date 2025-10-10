@@ -441,12 +441,12 @@ class Interpreter:
                 return "native function"
             case InstanceFunction():
                 return "native method"
-            case _ if isinstance(object, LoxCallable):
-                return object.toString()[1:-1]
             case _ if isinstance(object, time): # Format to check Boolean conditions in match-case structure.
                 return "datetime"
             case _ if isinstance(object, LoxClass):
                 return "class"
+            case _ if isinstance(object, LoxCallable):
+                return object.toString()[1:-1]
             case _ if isinstance(object, LoxInstance):
                 return object.varType()
             case _:
