@@ -692,7 +692,7 @@ class Parser:
         expr = self.equality()
 
         while self.match(TokenType.Q_MARK):
-            left = self.equality()
+            left = self.expression()
             self.consume(TokenType.COLON,
                         "Expect colon separator between ternary operator branches.")
             right = self.ternary()
