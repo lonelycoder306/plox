@@ -149,4 +149,3 @@ class Expr:
 
 		def accept(self, visitor):
 			return visitor.visitVariableExpr(self)
-
