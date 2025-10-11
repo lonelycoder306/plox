@@ -157,6 +157,13 @@ class Interpreter:
 
         self.environment.assign(stmt.name, klass)
 
+        classInit = metaclass.findMethod("init")
+        if classInit != None:
+            if classInit.arity() != [0,0]:
+                raise RuntimeError(classInit.declaration.name, 
+                                    "Initializer for class object cannot take arguments.")
+            classInit.call(self, None, [])
+
     def visitContinueStmt(self, stmt: Stmt.Continue) -> NoReturn:
         raise ContinueError(stmt.continueCMD, stmt.loopType)
 
