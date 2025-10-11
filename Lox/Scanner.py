@@ -75,9 +75,15 @@ class Scanner:
             case ')':
                 self.addToken(TokenType.RIGHT_PAREN)
             case '{':
-                self.addToken(TokenType.LEFT_BRACE)
+                if self.match('{'):
+                    self.addToken(TokenType.DOUBLE_LEFT_BRACE)
+                else:
+                    self.addToken(TokenType.LEFT_BRACE)
             case '}':
-                self.addToken(TokenType.RIGHT_BRACE)
+                if self.match('}'):
+                    self.addToken(TokenType.DOUBLE_RIGHT_BRACE)
+                else:
+                    self.addToken(TokenType.RIGHT_BRACE)
             case '[':
                 self.addToken(TokenType.LEFT_BRACKET)
             case ']':
