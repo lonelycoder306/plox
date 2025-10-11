@@ -22,7 +22,10 @@ def defineAST(directory: str, classes: list[str], file: TextIOWrapper) -> None:
 
         file.write("\n")
         file.write("\t\tdef accept(self, visitor):\n")
-        file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
+        if directory == "Stmt":
+            file.write(f"\t\t\tvisitor.visit{className}{directory}(self)\n\n")
+        else:
+            file.write(f"\t\t\treturn visitor.visit{className}{directory}(self)\n\n")
 
 ExprClasses = [ "Access     : object, operator, start, end",
                 "Assign     : name, equals, value",
@@ -58,7 +61,7 @@ StmtClasses = [ "Break      : breakCMD, loopType",
                 "Print      : expression",
                 "Report     : keyword, exception",
                 "Return     : keyword, value",
-                "Var        : name, equals, initializer, access",
+                "Var        : name, equals, initializer, access, static",
                 "While      : condition, body"]
 
 scriptDir = os.path.dirname(__file__) # scriptDir = 'Lox/utils'

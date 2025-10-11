@@ -11,7 +11,7 @@ TokenType = Enum('TokenType',
                  'BREAK, CONTINUE, Q_MARK, COLON, MOD, POWER, LIST, GET, '
                  'SAFE, ATTEMPT, HANDLE, REPORT, ELLIPSIS, PLUS_EQUALS, MINUS_EQUALS, STAR_EQUALS, '
                  'SLASH_EQUALS, POST_INC, POST_DEC, FIX, GROUP, MATCH, IS, FALLTHROUGH, END,' \
-                 'DOUBLE_LEFT_BRACE, DOUBLE_RIGHT_BRACE')
+                 'DOUBLE_LEFT_BRACE, DOUBLE_RIGHT_BRACE, STATE')
 
 class Token:
     def __init__(self, type: TokenType, lexeme: str, literal: Any, 

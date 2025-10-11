@@ -6,6 +6,7 @@ from Stmt import Stmt
 from Error import ParseError
 from Warning import returnWarning
 from String import String
+import State
 
 class Parser:
     def __init__(self, tokens: list[Token]) -> None:
@@ -48,10 +49,17 @@ class Parser:
             return self.function("lambda")
         
         if self.match(TokenType.VAR):
-            return self.varDeclaration("VAR")
+            return self.varDeclaration("VAR", False)
         
         if self.match(TokenType.FIX):
-            return self.varDeclaration("FIX")
+            return self.varDeclaration("FIX", False)
+        
+        if self.match(TokenType.STATE):
+            if State.parsingFunction:
+                return self.varDeclaration("VAR", True)
+            else:
+                raise ParseError(self.previous(),
+                                    "Cannot declare static variable outside a function.")
         
         if self.match(TokenType.LIST):
             return self.listDeclaration()
@@ -447,7 +455,10 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after private field declaration.")
         return Stmt.Expression(declaration)
 
-    def varDeclaration(self, access) -> Stmt.Var:
+    def varDeclaration(self, access: str, static: bool) -> Stmt.Var:
+        if (access == "FIX") or static:
+            self.consume(TokenType.VAR, "Expect declaration keyword 'var'.")
+
         name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
 
         initializer = None
@@ -460,7 +471,7 @@ class Parser:
         
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
 
-        return Stmt.Var(name, equals, initializer, access)
+        return Stmt.Var(name, equals, initializer, access, static)
     
     def whileStatement(self) -> Stmt.While:
         self.loopLevel += 1
@@ -514,6 +525,9 @@ class Parser:
         return (defaultFound, defaults, variadic)
 
     def function(self, kind) -> Stmt.Function:
+        inFunction = State.parsingFunction
+        State.parsingFunction = True
+
         # Default in case of unassigned lambda.
         funcName = None
 
@@ -547,6 +561,7 @@ class Parser:
         body = self.block()
 
         self.inInit = prevInit
+        State.parsingFunction = inFunction
         return Stmt.Function(funcName, parameters, body, defaults)
     
     def block(self) -> list[Stmt]:

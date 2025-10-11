@@ -44,7 +44,8 @@ class Scanner:
         "match": TokenType.MATCH,
         "is": TokenType.IS,
         "fallthrough": TokenType.FALLTHROUGH,
-        "end": TokenType.END
+        "end": TokenType.END,
+        "state": TokenType.STATE
     }
 
     # fileName is None for debugger.

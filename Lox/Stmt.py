@@ -5,14 +5,14 @@ class Stmt:
 			self.loopType = loopType
 
 		def accept(self, visitor):
-			return visitor.visitBreakStmt(self)
+			visitor.visitBreakStmt(self)
 
 	class Block:
 		def __init__(self, statements):
 			self.statements = statements
 
 		def accept(self, visitor):
-			return visitor.visitBlockStmt(self)
+			visitor.visitBlockStmt(self)
 
 	class Class:
 		def __init__(self, name, superclass, private, public, classMethods):
@@ -23,7 +23,7 @@ class Stmt:
 			self.classMethods = classMethods
 
 		def accept(self, visitor):
-			return visitor.visitClassStmt(self)
+			visitor.visitClassStmt(self)
 
 	class Continue:
 		def __init__(self, continueCMD, loopType):
@@ -31,7 +31,7 @@ class Stmt:
 			self.loopType = loopType
 
 		def accept(self, visitor):
-			return visitor.visitContinueStmt(self)
+			visitor.visitContinueStmt(self)
 
 	class Error:
 		def __init__(self, body, errors, handler):
@@ -40,14 +40,14 @@ class Stmt:
 			self.handler = handler
 
 		def accept(self, visitor):
-			return visitor.visitErrorStmt(self)
+			visitor.visitErrorStmt(self)
 
 	class Expression:
 		def __init__(self, expression):
 			self.expression = expression
 
 		def accept(self, visitor):
-			return visitor.visitExpressionStmt(self)
+			visitor.visitExpressionStmt(self)
 
 	class Fetch:
 		def __init__(self, mode, name):
@@ -55,7 +55,7 @@ class Stmt:
 			self.name = name
 
 		def accept(self, visitor):
-			return visitor.visitFetchStmt(self)
+			visitor.visitFetchStmt(self)
 
 	class Function:
 		def __init__(self, name, params, body, defaults):
@@ -65,7 +65,7 @@ class Stmt:
 			self.defaults = defaults
 
 		def accept(self, visitor):
-			return visitor.visitFunctionStmt(self)
+			visitor.visitFunctionStmt(self)
 
 	class Group:
 		def __init__(self, name, vars, functions, classes):
@@ -75,7 +75,7 @@ class Stmt:
 			self.classes = classes
 
 		def accept(self, visitor):
-			return visitor.visitGroupStmt(self)
+			visitor.visitGroupStmt(self)
 
 	class If:
 		def __init__(self, condition, thenBranch, elseBranch):
@@ -84,7 +84,7 @@ class Stmt:
 			self.elseBranch = elseBranch
 
 		def accept(self, visitor):
-			return visitor.visitIfStmt(self)
+			visitor.visitIfStmt(self)
 
 	class List:
 		def __init__(self, name, initializer):
@@ -92,7 +92,7 @@ class Stmt:
 			self.initializer = initializer
 
 		def accept(self, visitor):
-			return visitor.visitListStmt(self)
+			visitor.visitListStmt(self)
 
 	class Match:
 		def __init__(self, value, cases, default):
@@ -101,14 +101,14 @@ class Stmt:
 			self.default = default
 
 		def accept(self, visitor):
-			return visitor.visitMatchStmt(self)
+			visitor.visitMatchStmt(self)
 
 	class Print:
 		def __init__(self, expression):
 			self.expression = expression
 
 		def accept(self, visitor):
-			return visitor.visitPrintStmt(self)
+			visitor.visitPrintStmt(self)
 
 	class Report:
 		def __init__(self, keyword, exception):
@@ -116,7 +116,7 @@ class Stmt:
 			self.exception = exception
 
 		def accept(self, visitor):
-			return visitor.visitReportStmt(self)
+			visitor.visitReportStmt(self)
 
 	class Return:
 		def __init__(self, keyword, value):
@@ -124,17 +124,18 @@ class Stmt:
 			self.value = value
 
 		def accept(self, visitor):
-			return visitor.visitReturnStmt(self)
+			visitor.visitReturnStmt(self)
 
 	class Var:
-		def __init__(self, name, equals, initializer, access):
+		def __init__(self, name, equals, initializer, access, static):
 			self.name = name
 			self.equals = equals
 			self.initializer = initializer
 			self.access = access
+			self.static = static
 
 		def accept(self, visitor):
-			return visitor.visitVarStmt(self)
+			visitor.visitVarStmt(self)
 
 	class While:
 		def __init__(self, condition, body):
@@ -142,4 +143,4 @@ class Stmt:
 			self.body = body
 
 		def accept(self, visitor):
-			return visitor.visitWhileStmt(self)
+			visitor.visitWhileStmt(self)

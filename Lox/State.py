@@ -30,3 +30,8 @@ replDebug = False
 # For access to private fields within methods.
 inMethod = False
 currentClass = None
+
+# For static variables in functions.
+from LoxFunction import LoxFunction
+parsingFunction = False # For parsing error-handling.
+currentFunction: LoxFunction | None = None

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, Never
+from typing import Any, TYPE_CHECKING
 
 from LoxCallable import LoxCallable
 from Expr import Expr
@@ -20,6 +20,8 @@ class LoxFunction(LoxCallable):
         self.declaration = declaration
         self.closure = closure
         self.context = context
+        self.count = 0
+        self.statics: dict[str, Any] = {}
     
     def bind(self, instance: LoxInstance) -> LoxFunction:
         environment = Environment(self.closure)
@@ -44,9 +46,7 @@ class LoxFunction(LoxCallable):
                         vargs = arguments[i:argLen]
                         break
                 elif type(param) == Expr.Assign:
-                    name = param.name
-                    value = arguments[i]
-                    environment.define(name.lexeme, value, "VAR")
+                    environment.define(param.name.lexeme, arguments[i], "VAR")
             # Will never have default parameters and variable-length parameter lists.
             # Any combination including both will throw a parse error.
             if not self.context["variadic"]:
@@ -63,18 +63,26 @@ class LoxFunction(LoxCallable):
         if self.context["variadic"]:
             environment.define("vargs", List(vargs), "VAR")
         
+        # Add all our saved static variables to the environment.
+        for var in self.statics:
+            environment.define(var, self.statics[var], "VAR")
+        
         dummyToken = Token(TokenType.THIS, "this", None, 0, 0, None)
 
-        import State as State
+        import State
         currentState = State.inMethod
         currentClass = State.currentClass
+        currentFunction = State.currentFunction
 
         try:
+            State.currentFunction = self
             if self.context["isMethod"]:
                 State.inMethod = True
                 State.currentClass = self.context["class"]
             interpreter.executeBlock(self.declaration.body, environment)
         except Return as r:
+            self.count += 1
+            State.currentFunction = currentFunction
             State.callStack = State.callStack[1:]
             # Reset inMethod.
             if self.context["isMethod"]:
@@ -84,6 +92,7 @@ class LoxFunction(LoxCallable):
                 return self.closure.getAt(0, dummyToken)
             return r.value
         
+        State.currentFunction = currentFunction
         State.callStack = State.callStack[1:]
         # Reset inMethod.
         if self.context["isMethod"]:
@@ -92,6 +101,7 @@ class LoxFunction(LoxCallable):
         if self.context["isInitializer"]:
             return self.closure.getAt(0, dummyToken)
         
+        self.count += 1
         return ()
     
     def arity(self) -> list[int]:

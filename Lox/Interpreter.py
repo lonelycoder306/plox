@@ -365,6 +365,12 @@ class Interpreter:
         raise Return(value)
 
     def visitVarStmt(self, stmt: Stmt.Var) -> None:
+        # Only return if declaration is for a static variable
+        # and function has already run once.
+        if stmt.static:
+            if (State.currentFunction != None) and (State.currentFunction.count > 0):
+                return
+
         # Default value will be an empty tuple.
         # Reasoning: Since Lox does not support tuples, a user 
         # cannot assign this value to a variable (whether intentionally 
@@ -387,6 +393,12 @@ class Interpreter:
                                "Cannot assign list to variable with 'var' or 'fix' modifiers.")
 
         self.environment.define(stmt.name.lexeme, value, stmt.access)
+        # Add new static variable to function's "statics" dict.
+        if stmt.static:
+            # currentFunction cannot be None, since we raise a parse
+            # error if a static variable declaration is outside of
+            # a function.
+            State.currentFunction.statics[stmt.name.lexeme] = value
 
     def visitWhileStmt(self, stmt: Stmt.While) -> None:
         self.loopLevel += 1
@@ -728,6 +740,12 @@ class Interpreter:
         distance = self.locals.get(expr, None)
         if distance != None:
             self.environment.assignAt(distance, expr.name, value)
+
+            if State.currentFunction != None:
+                # Make sure this is a static variable.
+                # Assignments don't indicate this, unlike declarations.
+                if expr.name.lexeme in State.currentFunction.statics.keys():
+                    State.currentFunction.statics[expr.name.lexeme] = value
         else:
             self.globals.assign(expr.name, value)
         return value
