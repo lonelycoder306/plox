@@ -365,10 +365,12 @@ class Interpreter:
         raise Return(value)
 
     def visitVarStmt(self, stmt: Stmt.Var) -> None:
-        # Default value will be a tuple containing only None.
-        # Reasoning: Since Lox does not support tuples, a user cannot assign this value to a variable (whether intentionally or otherwise).
-        # Thus, if this is the value of a variable we are checking, then the variable must be uninitialized in the user's code.
-        # Chose to make it a tuple instead of a list since lists may be implemented later (unlikely for tuples).
+        # Default value will be an empty tuple.
+        # Reasoning: Since Lox does not support tuples, a user 
+        # cannot assign this value to a variable (whether intentionally 
+        # or otherwise).
+        # Thus, if this is the value of a variable we are checking, then the 
+        # variable must be uninitialized in the user's code.
         value = tuple()
         if stmt.initializer != None:
             value = self.evaluate(stmt.initializer)
