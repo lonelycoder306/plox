@@ -451,7 +451,7 @@ class Parser:
         if type(declaration) != Expr.Set:
             raise ParseError(keyword, 
                                "Cannot use modifier 'safe' outside of field declaration.")
-        declaration.access = "private"
+        declaration.visibility = "private"
         self.consume(TokenType.SEMICOLON, "Expect ';' after private field declaration.")
         return Stmt.Expression(declaration)
 
