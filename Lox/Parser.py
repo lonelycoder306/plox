@@ -925,26 +925,22 @@ class Parser:
     def synchronize(self) -> None:
         self.advance()
 
+        stopTokens = [
+            TokenType.CLASS,    TokenType.FUN,      TokenType.VAR,
+            TokenType.FOR,      TokenType.IF,       TokenType.WHILE,
+            TokenType.PRINT,    TokenType.RETURN,   TokenType.BREAK,
+            TokenType.CONTINUE, TokenType.LIST,     TokenType.GET,
+            TokenType.SAFE,     TokenType.ATTEMPT,  TokenType.HANDLE,
+            TokenType.REPORT,   TokenType.FIX,      TokenType.GROUP,
+            TokenType.MATCH,    TokenType.IS,       TokenType.FALLTHROUGH,
+            TokenType.END
+        ]
+
         while not self.isAtEnd():
             if self.previous().type == TokenType.SEMICOLON:
                 return
             
-            match self.peek().type:
-                case TokenType.CLASS:
-                    return
-                case TokenType.FUN:
-                    return
-                case TokenType.VAR:
-                    return
-                case TokenType.FOR:
-                    return
-                case TokenType.IF:
-                    return
-                case TokenType.WHILE:
-                    return
-                case TokenType.PRINT:
-                    return
-                case TokenType.RETURN:
-                    return
+            if self.peek().type in stopTokens:
+                return
             
             self.advance()
