@@ -23,7 +23,7 @@ Lox Keywords in this Implementation (32):
 22. GetFile
 23. safe
 24. attempt
-25. 2handle
+25. handle
 26. report
 27. fix
 28. group
