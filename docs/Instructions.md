@@ -3,6 +3,25 @@
 ### Built-in Functions
 * Those are too numerous to go over here in their entirety. However, the comments at the beginning of the [code file](../Lox/BuiltinFunction.py) should be sufficiently clear and detailed to explain what they all do, including the arguments they take.
 
+### Class "Set-Up" Constructors
+* Since fields on instances are defined and looked up dynamically in Lox, it can become somewhat irritating or inelegant to define static variables for classes dynamically.\
+  They cannot simply be declared in the `init()` constructor either, since that only executes when an instance of that class is defined.
+* To solve this issue, this implementation allows you to declare a static `init()` method which contains said field declarations. This method will immediately and automatically execute *after* the class is defined (since field declarations can only execute on defined objects).
+* Example:
+  ```
+  class Math
+  {
+    class init()
+    {
+        Math.pi = 3.14;
+        Math.e = 2.718;
+    }
+  }
+
+  print Math.pi; // Prints: 3.14
+  print Math.e; // Prints: 2.718
+* This constructor cannot take any parameters (since there is currently nowhere to put them), and giving it parameters will result in an error.
+
 ### Command-Line Argument Access/Retrieval
 * The interpreter now allows a user to pass command line arguments to their Lox programs/scripts. This can be interestingly combined with file IO (see [imports](#file-imports) and [IO](#io) below for more on that) to access other files through a Lox program.
 * In order to not clutter the built-in global namespace, the two key variables here, `argc` and `argv` (used here identically to their usage in C/C++ and Python) are stored in the `cl` -- standing for "command-line" -- group (see [groups](#groupsnamespaces) below).\
@@ -48,13 +67,13 @@
     * Example: `GetFile "FileDir/Example.lox";`.
 
 ### Fixed-Value Variables
-* To declare a fixed value variable, simply use the `fix` modifier in place of `var`, as below:
+* To declare a fixed value variable, simply use the `fix` modifier before keyword `var`, as below:
   ```
-  fix x = 1;
+  fix var x = 1;
   ```
 * As is the case in other languages with this feature, you can access this variable freely. However, attempting to assign to it after it has been declared will result in an error:
   ```
-  fix x = 1;
+  fix var x = 1;
   x = 2; // Error! Fixed variable 'x' cannot be re-assigned.
   ```
 * A fixed variable must be provided with an initializer. Not providing one will result in an error.
@@ -234,6 +253,13 @@
   * The default case (if any) will also run if fallthrough behavior is enabled.
   * There is no issue in excluding the default case altogether. This will not result in any warnings or errors.
 * Since the structure internally uses comparison to verify a case-hit, the usability of the structure for complex, custom-type objects remains a work in progress.
+
+### Static Variables in Functions
+* This implementation supports the declaration of static variables (strictly) within functions.
+* To declare a static variable, add the modifier `state` before keyword `var`, as below:
+  `state var x = 1;`
+* Static variables in this implementation cannot be fixed-value variables. This also means that you can assign to them as you wish.
+* Declaring a static variable outside of a function leads to an error.
 
 ### Testing and Clean-up
 * The tests check expected output and error messages for a wide number of different test cases which check multiple features, including edge cases.
