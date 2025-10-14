@@ -686,38 +686,68 @@ class ListInit(LoxCallable):
         obj = arguments[0]
         argType = type(obj)
         if (argType == List) or (argType == String):
-            return True
+            if len(arguments) == 1:
+                return True
+            count = arguments[1]
+            if (type(count) == float) and (int(count) == count):
+                return True
         elif argType == float:
             if int(obj) == obj:
-                return True
+                if len(arguments) == 1:
+                    return True
+                count = arguments[1]
+                if (type(count) == float) and (int(count) == count):
+                    return True
         raise RuntimeError(expr.rightParen, 
                                        "Arguments do not match accepted parameter types.\n" \
-                                       "Types are: list/string/integer.")
+                                       "Types are: list/string/integer, integer.")
+
+    def arrayList(self, obj: List) -> List:
+        return List(obj.array)
+
+    def stringList(self, string: String) -> List:
+        array = list()
+        string = string.text
+        for char in string:
+            array.append(String(char))
+        return List(array)
+
+    # Size is passed as a float but we cast 
+    # it inside the function.
+    def floatList(self, size: float) -> List:
+        length = int(size)
+        array = list()
+        for i in range(0, length):
+            array.append(None)
+        return List(array)
 
     def call(self, interpreter: Interpreter, expr: Expr.Call, 
                 arguments: list[Any]) -> List:
         if self.check(expr, arguments):
-            if len(arguments) > 0:
-                obj = arguments[0]
+            obj = arguments[0] if len(arguments) > 0 else None
+            if len(arguments) == 2:
+                matrix = []
+                count = int(arguments[1])
+                for i in range(0, count):
+                    if type(obj) == List:
+                        matrix.append(self.arrayList(obj))
+                    elif type(obj) == String:
+                        matrix.append(self.stringList(obj))
+                    elif type(obj) == float:
+                        matrix.append(self.floatList(obj))
+                return List(matrix)
+            if len(arguments) == 1:
                 if type(obj) == List:
-                    return List(obj.array)
+                    return self.arrayList(obj)
                 elif type(obj) == String:
-                    array = list()
-                    string = obj.text
-                    for char in string:
-                        array.append(String(char))
-                    return List(array)
+                    return self.stringList(obj)
                 elif type(obj) == float:
-                    length = int(obj)
-                    array = list()
-                    for i in range(0, length):
-                        array.append(None)
-                    return List(array)
+                    return self.floatList(obj)
             else:
                 return List([])
 
     def arity(self) -> list[int]:
-        return [0,1]
+        return [0,2]
     
     def toString(self) -> str:
         return "<List constructor>"
