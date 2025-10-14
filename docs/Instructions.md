@@ -47,7 +47,7 @@
 * As is also the case with most programming languages, a default parameter's value will be bound to the parameter if no value is passed in its place as an argument when the function is called.
 
 ### File Imports
-* All imports are scope, i.e., they follow the same variable binding and shadowing rules as regular objects in the language, and do not apply outside the scope in which the import is made.\
+* All imports are scoped, i.e., they follow the same variable binding and shadowing rules as regular objects in the language, and do not apply outside the scope in which the import is made.\
 **Note:** Imports are done by accessing files through particular paths. For them to work, the interpreter ***must*** be run from within the project's root directory.
 
 * There are three main import directives supported:
