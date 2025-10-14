@@ -41,6 +41,17 @@
          list d = List("string"); // d = ["s", "t", "r", "i", "n", "g"]
          list e = List(5); // e = [nil, nil, nil, nil, nil]
          ```
+       * Update: to facilitate the declaration of 2D arrays, the `List()` constructor now accepts an optional second integer argument.\
+         Providing a second argument will instead create a List containing that many Lists. Each List element will be initialized with the first argument, following the details above.\
+         Examples:
+         ```
+         // Cannot remove first argument altogether.
+         list mat1 = List([], 2); // mat1 = [[], []]
+         list mat2 = List([1,2,3], 2); // mat2 = [[1, 2, 3], [1, 2, 3]]
+         list mat3 = List(mat2, 2); // mat3 = [[[1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3]]]
+         list mat4 = List("str", 2); // mat4 = [["s", "t", "r"], ["s", "t", "r"]]
+         list mat5 = List(2, 2); // mat5 = [[nil, nil], [nil, nil]]
+         ```
     4. A function call to the built-in ```reference()``` function.
        * This function can accept a List object as its argument, returning that object itself (*not* a copy of it).
        * A call to this function cannot itself be treated as a List object. For example, the following is not allowed:
