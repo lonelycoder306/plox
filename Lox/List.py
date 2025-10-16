@@ -8,6 +8,7 @@ from String import String
 if TYPE_CHECKING:
     from Expr import Expr
     from Interpreter import Interpreter
+    from Token import Token
 
 class ListFunction(LoxCallable):
     def __init__(self, mode: str) -> None:
@@ -648,7 +649,7 @@ class List:
         for function in functions:
             self.methods[function] = ListFunction(function)
 
-    def get(self, name) -> ListFunction | None:
+    def get(self, name: Token) -> ListFunction | None:
         method = self.methods.get(name.lexeme, None)
         if method != None:
             import copy
