@@ -222,7 +222,7 @@
     is 2:
         print 2; // This will also run.
   ```
-* To exit from fallthrough (in case you only which to run a certain number of consecutive cases), add the keyword `end` at the end of the case you wish to stop after:
+* To exit from fallthrough (in case you only wish to run a certain number of consecutive cases), add the keyword `end` at the end of the case you wish to stop after:
   ```
   match (1)
     is 1:
@@ -256,7 +256,7 @@
 
 ### Static Variables in Functions
 * This implementation supports the declaration of static variables (strictly) within functions.
-* To declare a static variable, add the modifier `state` before keyword `var`, as below:
+* To declare a static variable, add the modifier `state` before keyword `var`, as below:\
   `state var x = 1;`
 * Static variables in this implementation cannot be fixed-value variables. This also means that you can assign to them as you wish.
 * Declaring a static variable outside of a function leads to an error.
@@ -305,8 +305,6 @@
   fun anotherProblem(a = 1, ...) {} // Error! Can't have a default parameter before the ellipsis.
   ```
 * Variadic functions can accept a total of 256 arguments (the maximum number a Lox function can accept).
-* Variadic functions declared with only an ellipsis (...) can accept zero arguments (though `vargs` would be empty).
-* `vargs` is not defined automatically for *non*-variadic functions (and thus there is no need to worry about name collisions).
 * The variable list of arguments (following any regular arguments) will be saved in a list called `vargs` which can be accessed in the function body. For example:
   ```
   fun loop(...)
@@ -328,3 +326,5 @@
     }
   }
   ```
+* Variadic functions declared with only an ellipsis (...) can accept zero arguments (though `vargs` would be empty).
+* `vargs` is not defined automatically for *non*-variadic functions (and thus there is no need to worry about name collisions).
